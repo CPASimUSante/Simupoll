@@ -18,8 +18,8 @@
             </div>
 
             <div class="panel-body" id="text_content">
-
-            <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+                
+            <form action="{{ path('cpasimusante_managecategories', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
                 {{ form(form) }}
             </form>
 

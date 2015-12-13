@@ -2,3 +2,8 @@ simupoll_controller:
     resource: "@CPASimUSanteSimupollBundle/Controller/SimupollController.php"
     type: annotation
     prefix: /
+
+paper_controller:
+    resource: "@CPASimUSanteSimupollBundle/Controller/PaperController.php"
+    type: annotation
+    prefix: /

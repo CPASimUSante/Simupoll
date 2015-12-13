@@ -19,10 +19,13 @@
 
             <div class="panel-body" id="text_content">
 
-            <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+            comment dupliquer
+            <form action="{{ path('cpasimusante_managequestions', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
                 {{ form(form) }}
             </form>
-
+                <a class="btn btn-default" data-toggle="tooltip" title="{{ 'duplicate' | trans }}" href="{{ path('ujm_question_duplicate', { 'interID': interaction.id, 'exoID': exerciseID }) }}">
+                    <i class="fa fa-repeat"></i>
+                </a>
             </div>
 
             <div class="panel-footer">

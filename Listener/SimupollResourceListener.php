@@ -16,7 +16,7 @@ class SimupollResourceListener extends ContainerAware
     public function onCreateForm(CreateFormResourceEvent $event)
     {
         $form = $this->container->get('form.factory')
-            ->create(new SimupollType(), new Simupoll());
+            ->create(new SimupollType(), new Simupoll(), array('inside'=>false));
         $content = $this->container->get('templating')->render(
             'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',
             array(
@@ -31,10 +31,12 @@ class SimupollResourceListener extends ContainerAware
     {
         $request = $this->container->get('request');
         $form = $this->container->get('form.factory')
-            ->create(new SimupollType(), new Simupoll());
+            ->create(new SimupollType(), new Simupoll(), array('inside'=>false));
         $form->handleRequest($request);
         if ($form->isValid()) {
             $simupoll = $form->getData();
+            //update name
+            $simupoll->setName($simupoll->getTitle());
 
             $event->setResources(array($simupoll));
             $event->stopPropagation();
@@ -64,7 +66,7 @@ class SimupollResourceListener extends ContainerAware
         $route = $this->container
             ->get('router')
             ->generate(
-                'cpasimusante_editsimupoll',
+                'cpasimusante_opensimupoll',
                 array(
                     'id' => $event->getResource()->getId()
                 )

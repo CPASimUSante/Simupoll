@@ -23,6 +23,13 @@ use CPASimUSante\SimupollBundle\Entity\QuestionGroup;
 class Simupoll extends AbstractResource
 {
     /**
+     * @var string $title
+     *
+     * @ORM\Column(name="title", type="string", length=255)
+     */
+    private $title;
+
+    /**
      * @var $questiongroups[]
      *
      * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\QuestionGroup", mappedBy="simupoll", cascade={"all"})
@@ -35,6 +42,26 @@ class Simupoll extends AbstractResource
     public function __construct()
     {
         $this->questiongroups = new ArrayCollection();
+    }
+
+    /**
+     * Set title
+     *
+     * @param string $title
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * Get title
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     /**

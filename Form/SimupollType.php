@@ -19,6 +19,11 @@ class SimupollType extends AbstractType
                 'name', 'hidden', array(
                     'data' => 'simupoll'
                 )
+            )
+            ->add(
+                'title', 'text', array(
+                    'label' => 'title'
+                )
             );
         //To avoid displaying them in Simupoll Resource creation modal
         if ($options['inside']) {

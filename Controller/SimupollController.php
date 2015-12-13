@@ -100,9 +100,171 @@ class SimupollController extends Controller
      */
     public function openAction($simupoll)
     {
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+
+        //can user access ?
+        $this->checkAccess($simupoll);
+
+        //can user edit ?
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isSimupollAdmin($simupoll);
+
+        //can user manage exercise
+        $allowToCompose = 0;
+
+        if (is_object($user) && ($simupollAdmin === true) )
+        {
+            $allowToCompose = 1;
+        }
+
+        $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')->getCountQuestion($simupoll->getId());
+
         return array(
-            '_resource' => $simupoll,
+            '_resource'         => $simupoll,
+            'allowToCompose'    => $allowToCompose,
+            'nbQuestion'        => $nbQuestions['nbq'],
         );
+    }
+
+    /**
+     * Manage Categories entity
+     *
+     * @EXT\Route(
+     *      "/managecategories",
+     *      name="cpasimusante_managecategories",
+     *      requirements={},
+     *      options={"expose"=true}
+     * )
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:categories.html.twig")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function manageCategoriesAction()
+    {
+
+    }
+
+    /**
+     * Finds and displays a Question entity to this Simupoll
+     *
+     * @EXT\Route(
+     *      "/managequestions/{id}/{pageNow}/{displayAll}/{categoryToFind}/{titleToFind}",
+     *      name="cpasimusante_managequestions",
+     *      defaults={ "pageNow" = 0, "categoryToFind" = "z", "titleToFind" = "z", "displayAll" = 0 },
+     *      requirements={"id" = "\d+", "categoryToFind" =".+", "titleToFind" = ".+"},
+     *      options={"expose"=true}
+     * )
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:questions.html.twig")
+     *
+     * @access public
+     *
+     * @param integer $id id of Simupoll
+     * @param integer $pageNow actual page for the pagination
+     * @param string $categoryToFind used for pagination (for example after creating a question, go back to page contaning this question)
+     * @param string $titleToFind used for pagination (for example after creating a question, go back to page contaning this question)
+     * @param boolean $displayAll to use pagination or not
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function showQuestionsAction($id, $pageNow, $categoryToFind, $titleToFind, $displayAll)
+    {
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+        $allowEdit = array();
+        $em = $this->getDoctrine()->getManager();
+        $exercise = $em->getRepository('UJMExoBundle:Exercise')->find($id);
+        $this->checkAccess($exercise);
+
+        $workspace = $exercise->getResourceNode()->getWorkspace();
+
+        $exoAdmin = $this->container->get('ujm.exercise_services')->isExerciseAdmin($exercise);
+
+        $max = 10; // Max Per Page
+        $request = $this->get('request');
+        $page = $request->query->get('page', 1);
+
+        if ($exoAdmin === true) {
+            $interactions = $this->getDoctrine()
+                ->getManager()
+                ->getRepository('UJMExoBundle:Interaction')
+                ->getExerciseInteraction($em, $id, 0);
+
+            if ($displayAll == 1) {
+                $max = count($interactions);
+            }
+
+            $questionWithResponse = array();
+            foreach ($interactions as $interaction) {
+                $response = $em->getRepository('UJMExoBundle:Response')
+                    ->findBy(array('interaction' => $interaction->getId()));
+                if (count($response) > 0) {
+                    $questionWithResponse[$interaction->getId()] = 1;
+                } else {
+                    $questionWithResponse[$interaction->getId()] = 0;
+                }
+
+                $share = $this->container->get('ujm.exercise_services')->controlUserSharedQuestion(
+                    $interaction->getQuestion()->getId());
+
+                if ($user->getId() == $interaction->getQuestion()->getUser()->getId()) {
+                    $allowEdit[$interaction->getId()] = 1;
+                } else if(count($share) > 0) {
+                    $allowEdit[$interaction->getId()] = $share[0]->getAllowToModify();
+                } else {
+                    $allowEdit[$interaction->getId()] = 0;
+                }
+
+            }
+
+            if ($categoryToFind != '' && $titleToFind != '' && $categoryToFind != 'z' && $titleToFind != 'z') {
+                $i = 1 ;
+                $pos = 0 ;
+                $temp = 0;
+
+                foreach ($interactions as $interaction) {
+                    if ($interaction->getQuestion()->getCategory() == $categoryToFind) {
+                        $temp = $i;
+                    }
+                    if ($interaction->getQuestion()->getTitle() == $titleToFind && $temp == $i) {
+                        $pos = $i;
+                        break;
+                    }
+                    $i++;
+                }
+
+                if ($pos % $max == 0) {
+                    $pageNow = $pos / $max;
+                } else {
+                    $pageNow = ceil($pos / $max);
+                }
+            }
+
+            $pagination = $this->paginationWithIf($interactions, $max, $page, $pageNow);
+
+            $interactionsPager = $pagination[0];
+            $pagerQuestion = $pagination[1];
+
+            return $this->render(
+                'UJMExoBundle:Question:exerciseQuestion.html.twig',
+                array(
+                    'workspace'            => $workspace,
+                    'interactions'         => $interactionsPager,
+                    'exerciseID'           => $id,
+                    'questionWithResponse' => $questionWithResponse,
+                    'pagerQuestion'        => $pagerQuestion,
+                    'displayAll'           => $displayAll,
+                    'allowEdit'            => $allowEdit,
+                    '_resource'            => $exercise
+                )
+            );
+
+        } else {
+            return $this->redirect($this->generateUrl('ujm_exercise_open', array('exerciseId' => $id)));
+        }
     }
 
     /**

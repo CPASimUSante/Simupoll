@@ -17,12 +17,7 @@
         </div>
 
         <div class="panel-body" id="text_content">
-            open
-            {% if is_granted('ADMINISTRATE', _resource) %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_editsimupoll', { 'id': _resource.id }) }}">
-                    <i class="fa fa-eye"></i> {{ 'edit' | trans }}
-                </a>
-            {% endif %}
+papers
         </div>
 
         <div class="panel-footer">
