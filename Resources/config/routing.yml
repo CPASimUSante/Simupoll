@@ -1,0 +1,4 @@
+simupoll_controller:
+    resource: "@CPASimUSanteSimupollBundle/Controller/SimupollController.php"
+    type: annotation
+    prefix: /

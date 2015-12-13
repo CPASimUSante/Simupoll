@@ -1,0 +1,10 @@
+services:
+    # Simupoll services
+    cpasimusante_simupoll.services.simupoll:
+        class: %cpasimusante_simupoll.services.simupoll.class%
+        arguments:
+            objectManager:   @doctrine.orm.entity_manager
+            securityAuth:    @security.authorization_checker
+#            securityToken:   @security.token_storage
+#            resourceManager: @claroline.manager.resource_manager
+#            utils:           @claroline.security.utilities

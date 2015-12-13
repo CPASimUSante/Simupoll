@@ -1,0 +1,11 @@
+services:
+    # Simupoll controller
+    cpasimusante_simupoll.controller.simupoll:
+        class: %cpasimusante_simupoll.controller.simupoll.class%
+        calls:
+            - [ setContainer, [ @service_container ]]
+#        arguments:
+#            formFactory:       form.factory
+#            pathManager:       @cpasimusante_simupoll.manager.path
+#            publishingManager: @cpasimusante_simupoll.manager.publishing
+#        scope: request

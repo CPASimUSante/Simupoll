@@ -1,0 +1,14 @@
+plugin:
+    has_options: false
+    icon: res_simu_si.png
+    resources:
+        -
+            class: CPASimUSante\SimupollBundle\Entity\Simupoll
+            name: cpasimusante_simupoll
+            is_exportable: false
+            icon: res_simu_si.png
+    widgets:
+        -
+            name: simupoll_stat
+            is_configurable: true
+            is_exportable: false

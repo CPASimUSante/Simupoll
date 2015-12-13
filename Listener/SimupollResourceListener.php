@@ -1,0 +1,76 @@
+<?php
+namespace CPASimUSante\SimupollBundle\Listener;
+
+use Symfony\Component\DependencyInjection\ContainerAware;
+use Claroline\CoreBundle\Event\CopyResourceEvent;
+use Claroline\CoreBundle\Event\CreateFormResourceEvent;
+use Claroline\CoreBundle\Event\CreateResourceEvent;
+use Claroline\CoreBundle\Event\OpenResourceEvent;
+use Claroline\CoreBundle\Event\DeleteResourceEvent;
+use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Form\SimupollType;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+class SimupollResourceListener extends ContainerAware
+{
+    public function onCreateForm(CreateFormResourceEvent $event)
+    {
+        $form = $this->container->get('form.factory')
+            ->create(new SimupollType(), new Simupoll());
+        $content = $this->container->get('templating')->render(
+            'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',
+            array(
+                'form' => $form->createView(),
+                'resourceType' => 'cpasimusante_simupoll'
+            )
+        );
+        $event->setResponseContent($content);
+        $event->stopPropagation();
+    }
+    public function onCreate(CreateResourceEvent $event)
+    {
+        $request = $this->container->get('request');
+        $form = $this->container->get('form.factory')
+            ->create(new SimupollType(), new Simupoll());
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $published = $form->get('published')->getData();
+            $event->setPublished($published);
+            $event->setResources(array($form->getData()));
+            $event->stopPropagation();
+            return;
+        }
+        $content = $this->container->get('templating')->render(
+            'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',
+            array(
+                'form' => $form->createView(),
+                'resourceType' => $event->getResourceType()
+            )
+        );
+        $event->setErrorFormContent($content);
+        $event->stopPropagation();
+    }
+    public function onDelete(DeleteResourceEvent $event)
+    {
+        $event->stopPropagation();
+    }
+    public function onCopy(CopyResourceEvent $event)
+    {
+        $newRes = null;
+        $event->setCopy($newRes);
+        $event->stopPropagation();
+    }
+    public function onOpen(OpenResourceEvent $event)
+    {
+        $route = $this->container
+            ->get('router')
+            ->generate(
+                'cpasimusante_editsimupoll',
+                array(
+                    'id' => $event->getResource()->getId()
+                )
+            );
+        $event->setResponse(new RedirectResponse($route));
+        $event->stopPropagation();
+    }
+}

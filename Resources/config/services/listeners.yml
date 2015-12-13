@@ -1,0 +1,11 @@
+services:
+    cpasimusante_simupoll.listener.simupoll:
+        class: %cpasimusante_simupoll.listener.simupoll.class%
+        calls:
+            - [setContainer, ["@service_container"]]
+        tags:
+            - { name: kernel.event_listener, event: create_form_cpasimusante_simupoll,  method: onCreateForm }
+            - { name: kernel.event_listener, event: create_cpasimusante_simupoll,       method: onCreate }
+            - { name: kernel.event_listener, event: delete_cpasimusante_simupoll,       method: onDelete }
+            - { name: kernel.event_listener, event: copy_cpasimusante_simupoll,         method: onCopy }
+            - { name: kernel.event_listener, event: open_cpasimusante_simupoll,         method: onOpen }
