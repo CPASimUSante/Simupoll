@@ -3,12 +3,19 @@ namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Claroline\CoreBundle\Entity\User;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
  * CPASimUSante\SimupollBundle\Entity\Category
  *
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\CategoryRepository")
- * @ORM\Table(name="cpasimusante__simupoll_category")
+ * @ORM\Table(
+ *      name="cpasimusante__simupoll_category",
+ *      uniqueConstraints={
+ *          @ORM\UniqueConstraint(name="category_unique_name_and_user", columns={"user_id", "name"})
+ *      }
+ * )
+ * @DoctrineAssert\UniqueEntity({"name", "user"})
  */
 class Category
 {
@@ -20,16 +27,19 @@ class Category
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
+
     /**
      * @var string $value
      *
-     * @ORM\Column(name="value", type="string", length=255)
+     * @ORM\Column(name="name", type="string", length=255, nullable=false)
      */
-    private $value;
+    private $name;
+
     /**
      * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\User")
      */
     private $user;
+
     /**
      * Get id
      *
@@ -39,32 +49,27 @@ class Category
     {
         return $this->id;
     }
-    /**
-     * Set value
-     *
-     * @param string $value
-     */
-    public function setValue($value)
+
+    public function getName()
     {
-        $this->value = $value;
+        return $this->name;
     }
-    /**
-     * Get value
-     *
-     * @return string
-     */
-    public function getValue()
+
+    public function setName($name)
     {
-        return $this->value;
+        $this->name = $name;
     }
+
     public function __toString()
     {
-        return $this->value;
+        return $this->id . '-' . $this->value;
     }
+
     public function getUser()
     {
         return $this->user;
     }
+
     public function setUser(User $user)
     {
         $this->user = $user;

@@ -11,16 +11,21 @@
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
             </div>
 
             <div class="panel-body" id="text_content">
+                {#
+                Gérer Catégories
 
+edit - comment dupliquer
+<form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
                 {{ form(form) }}
-
+</form>
+              #}
             </div>
 
             <div class="panel-footer">
@@ -28,7 +33,6 @@
                 <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
             </div>
         </div>
-    </form>
 
 {% endblock %}
 
@@ -41,4 +45,9 @@
     {# Claroline JS #}
     {{ parent() }}
     <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
 {% endblock %}

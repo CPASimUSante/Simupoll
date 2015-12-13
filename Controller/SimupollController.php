@@ -1,12 +1,16 @@
 <?php
 namespace CPASimUSante\SimupollBundle\Controller;
+
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
 /**
  * Class SimupollController
  *
@@ -38,14 +42,35 @@ class SimupollController extends Controller
      */
     public function editAction(Request $request, Simupoll $simupoll)
     {
+
         //can user access ?
         $this->checkAccess($simupoll);
+
         //can user edit ?
-        $simupollAdmin = $this->container->get('cpasimusante_simupoll.services.simupoll')->isSimupollAdmin($simupoll);
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isSimupollAdmin($simupoll);
+
         if ($simupollAdmin === true)
         {
+            $em = $this->getDoctrine()->getManager();
             $form = $this->get('form.factory')
                 ->create(new SimupollType(), $simupoll);
+/*
+            //Category form
+            $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
+                ->findAll();//an array
+            */
+/*
+            $cv = array();
+            foreach($categories as $category)
+            {
+                $cv[] = $category->createView();
+            }
+
+            $form_category = $this->get('form.factory')
+                ->create(new CategoryType());
+*/
             $form->handleRequest($request);
             if ($form->isValid()) {
                 $em = $this->getDoctrine()->getManager();
@@ -53,8 +78,9 @@ class SimupollController extends Controller
                 $em->flush();
             }
             return array(
-                '_resource' => $simupoll,
-                'form' => $form->createView(),
+                '_resource'     => $simupoll,
+  //              'cv'    => $cv,
+//http://stackoverflow.com/questions/29187899/the-forms-view-data-is-expected-to-be-an-instance-of-class-my-but-is-an
             );
         }
         //If not admin, open
@@ -63,6 +89,7 @@ class SimupollController extends Controller
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
     }
+
     /**
      *
      * @EXT\Route("/open/{id}", name="cpasimusante_opensimupoll", requirements={"id" = "\d+"}, options={"expose"=true})
@@ -77,6 +104,7 @@ class SimupollController extends Controller
             '_resource' => $simupoll,
         );
     }
+
     /**
      * To check the right to open or not
      *

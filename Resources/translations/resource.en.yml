@@ -1,1 +1,7 @@
 cpasimusante_simupoll: Simupoll
+date_end: End
+date_start: Begin
+group_name: Group name
+question_title: Question title
+choose_category: Choose a category
+category_name: Category name

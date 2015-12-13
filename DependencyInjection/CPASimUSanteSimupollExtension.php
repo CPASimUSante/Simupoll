@@ -27,6 +27,7 @@ class CPASimUSanteSimupollExtension extends Extension
         $loader->load('listeners.yml');
         $loader->load('controllers.yml');
         $loader->load('forms.yml');
+        $loader->load('services.yml');
         return $this;
     }
 

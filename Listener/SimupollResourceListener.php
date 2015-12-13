@@ -34,11 +34,10 @@ class SimupollResourceListener extends ContainerAware
             ->create(new SimupollType(), new Simupoll());
         $form->handleRequest($request);
         if ($form->isValid()) {
-            $published = $form->get('published')->getData();
-            $event->setPublished($published);
-            $event->setResources(array($form->getData()));
+            $simupoll = $form->getData();
+
+            $event->setResources(array($simupoll));
             $event->stopPropagation();
-            return;
         }
         $content = $this->container->get('templating')->render(
             'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',

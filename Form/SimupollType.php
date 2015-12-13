@@ -4,6 +4,7 @@ namespace CPASimUSante\SimupollBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use CPASimUSante\SimupollBundle\Repository\CategoryRepository;
 
 class SimupollType extends AbstractType
 {
@@ -21,6 +22,20 @@ class SimupollType extends AbstractType
             );
         //To avoid displaying them in Simupoll Resource creation modal
         if ($options['inside']) {
+           /* $builder
+                ->add(
+                    'category', 'entity', [
+                        'label'         => 'Categorie',
+                        'class'         => 'CPASimUSanteSimupollBundle:Category',
+                        'choice_label'  => 'name',
+                        'empty_value'   => 'Choisissez une catégorie',
+                        'query_builder' => function(CategoryRepository $er) {
+                            $qb = $er->createQueryBuilder('c')
+                                ->orderBy('c.name', 'ASC');
+                            return $qb;
+                        }
+                    ]
+                );*/
         }
     }
 

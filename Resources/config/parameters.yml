@@ -7,3 +7,6 @@ parameters:
 
     # Form types
     cpasimusante_simupoll.form.type.simupoll.class: CPASimUSante\SimupollBundle\Form\SimupollType
+
+    # Services types
+    cpasimusante_simupoll.services.simupoll.class: CPASimUSante\SimupollBundle\Services\SimupollServices
