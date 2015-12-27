@@ -1,0 +1,8 @@
+{% for item in tags %}
+    <option value="{{ item.id }}">
+        {% for i in range(0, level) %}&nbsp;{% endfor %}
+        {{ item.name }}
+    </option>
+   {# {% if level < loop.last %}{% endif %}#}
+    {% include 'CPASimUSanteSimupollBundle::subtag.html.twig' with {'tags': item.children, 'level': level + 1} %}
+{% endfor %}

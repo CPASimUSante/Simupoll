@@ -6,6 +6,7 @@ use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use Doctrine\Common\Collections\ArrayCollection;
+use CPASimUSante\SimupollBundle\Tag\RecursiveTagIterator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
@@ -148,6 +149,39 @@ class SimupollController extends Controller
 
     }
 
+    /**
+     * Manage Categories entity
+     *
+     * @EXT\Route(
+     *      "/managetags",
+     *      name="cpasimusante_managetags",
+     *      requirements={},
+     *      options={"expose"=true}
+     * )
+     * @EXT\Template("CPASimUSanteSimupollBundle::tag.html.twig")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function manageTagsAction()
+    {
+        $em = $this->getDoctrine()->getManager();
+        $rootTags = $em->getRepository("CPASimUSanteSimupollBundle:Tag")->findBy(['parent' => null]);
+
+        $collection = new ArrayCollection($rootTags);
+        $tag_iterator = new RecursiveTagIterator($collection);
+        $recursive_iterator = new \RecursiveIteratorIterator($tag_iterator, \RecursiveIteratorIterator::SELF_FIRST);
+
+        $select = '';
+        foreach ($recursive_iterator as $index => $child_tag)
+        {
+            $select .= '<option value="' . $child_tag->getId() . '">' . str_repeat('&nbsp;&nbsp;', $recursive_iterator->getDepth()) . $child_tag->getName() . '</option>';
+        }
+
+        return array(
+            'tags' => $recursive_iterator,
+            'select' => $select
+        );
+    }
     /**
      * Finds and displays a Question entity to this Simupoll
      *

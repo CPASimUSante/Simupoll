@@ -1,3 +1,7 @@
+cpasimusante_simupoll_tag:
+    resource: "@CPASimUSanteSimupollBundle/Resources/config/routing/tag.yml"
+    prefix:   /tag
+
 simupoll_controller:
     resource: "@CPASimUSanteSimupollBundle/Controller/SimupollController.php"
     type: annotation

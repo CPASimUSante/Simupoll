@@ -1,0 +1,49 @@
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% extends layout %}
+
+{% block section_content %}
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ 'tag_list' | trans }}</h3>
+    </div>
+
+    <div class="panel-body">
+
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Parent</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for tag in tags %}
+            <tr>
+                <td>{{ tag.name }}</td>
+                <td>{% if tag.parent is not null %}
+                    {{ tag.parent.name }}
+                    {% else %}
+                        Aucun
+                    {% endif %}
+                </td>
+                <td>
+                <ul>
+                    <li>
+                        <a href="{{ path('tag_edit', { 'id': tag.id }) }}"><i class="fa fa-pencil"></i> edit</a>
+                    </li>
+                    <li>
+                        <a href="{{ path('tag_delete', { 'id': tag.id }) }}"><i class="fa fa-trash-o"></i> delete</a>
+                    </li>
+                </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+            <a href="{{ path('tag_new') }}" class="btn btn-primary">Create a new tag</a>
+</div>
+
+    {% endblock %}
