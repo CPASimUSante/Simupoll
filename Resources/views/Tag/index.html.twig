@@ -10,6 +10,39 @@
     </div>
 
     <div class="panel-body">
+        <table class="table table-responsive">
+            <tr>
+                <th>Name</th>
+                <th>Parent</th>
+                <th>Actions</th>
+            </tr>
+            {% for tag in arr_tag %}
+                <tr>
+                    <td>{{ tag['name'] }}</td>
+                    <td>{{ tag['parent'] }}</td>
+                    <td>
+                        {% if tag['parent'] is not null %}
+                        <a href="{{ path('tag_edit', { 'id': tag['id']  }) }}"
+                           class="btn btn-default tagedit"
+                           data-toggle="tooltip"
+                           data-tag-id="{{ tag['id']  }}"
+                           data-original-title="Editer">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        <a href="{{ path('tag_delete', { 'id': tag['id']  }) }}"
+                           class="btn btn-default tagdelete"
+                           data-toggle="tooltip"
+                           data-tag-id="{{ tag['id']  }}"
+                           data-original-title="Effacer">
+                            <i class="fa fa-trash-o"></i>
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+
 
     <table class="table table-responsive">
         <thead>
@@ -20,7 +53,7 @@
             </tr>
         </thead>
         <tbody>
-        {% for tag in tags %}
+        {% for inc, tag in tags %}
             <tr>
                 <td>{{ tag.name }}</td>
                 <td>{% if tag.parent is not null %}

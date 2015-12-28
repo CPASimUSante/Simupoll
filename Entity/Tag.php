@@ -43,12 +43,14 @@ class Tag
      */
     private $children;
 
+    /**
+     * @ORM\Column(name="lvl", type="integer", nullable=false)
+     */
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
     }
-
-    // mutators omitted
 
     /**
      * Get id

@@ -5,6 +5,8 @@ namespace CPASimUSante\SimupollBundle\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Doctrine\Common\Collections\ArrayCollection;
+use CPASimUSante\SimupollBundle\Tag\RecursiveTagIterator;
 
 use CPASimUSante\SimupollBundle\Entity\Tag;
 use CPASimUSante\SimupollBundle\Form\TagType;
@@ -24,10 +26,44 @@ class TagController extends Controller
         $em = $this->getDoctrine()->getManager();
         //display only the tags for this user
         $user = $this->get('security.token_storage')->getToken()->getUser();
-        $tags = $em->getRepository('CPASimUSanteSimupollBundle:Tag')->findByUser(array($user->getId()));
+        $tags = $em->getRepository('CPASimUSanteSimupollBundle:Tag')
+            ->findBy(
+                array(
+                    'user' => $user->getId()
+                ),
+                array('parent' => 'ASC')
+            );
+        $rootTags = $em->getRepository('CPASimUSanteSimupollBundle:Tag')
+            ->findBy(
+                array(
+                    'parent' => null,
+                    'user' => $user->getId()
+                ),
+                array('parent' => 'ASC')
+            );
+        $collection = new ArrayCollection($rootTags);
+        $tag_iterator = new RecursiveTagIterator($collection);
+        $recursive_iterator = new \RecursiveIteratorIterator($tag_iterator, \RecursiveIteratorIterator::SELF_FIRST);
+
+        $arr_tag = array();
+        foreach ($recursive_iterator as $index => $child_tag)
+        {
+            if ($child_tag->getUser() != null)
+            {
+                $parent = $child_tag->getParent();
+                $parentname = (isset($parent)) ? $child_tag->getParent()->getName() : null;
+                $arr_tag[] = array(
+                    'name' => str_repeat('--', $recursive_iterator->getDepth()) . $child_tag->getName(),
+                    'parent' => $parentname,
+                    'id' => $child_tag->getId()
+                );
+            }
+        }
 
         return $this->render('CPASimUSanteSimupollBundle:Tag:index.html.twig', array(
             'tags' => $tags,
+            'tags2' => $recursive_iterator,
+            'arr_tag' => $arr_tag
         ));
     }
 
@@ -46,9 +82,10 @@ class TagController extends Controller
         if ($form->isValid()) {
             $em = $this->getDoctrine()->getManager();
 
-            //Add user
-            $user = $this->get('security.token_storage')->getToken()->getUser();
             $tag = $form->getData();
+
+            //Set user
+            $user = $this->get('security.token_storage')->getToken()->getUser();
             $tag->setUser($user);
 
             $em->persist($entity);

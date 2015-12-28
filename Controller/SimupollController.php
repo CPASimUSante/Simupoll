@@ -165,7 +165,15 @@ class SimupollController extends Controller
     public function manageTagsAction()
     {
         $em = $this->getDoctrine()->getManager();
-        $rootTags = $em->getRepository("CPASimUSanteSimupollBundle:Tag")->findBy(['parent' => null]);
+        $user = $this->get('security.token_storage')->getToken()->getUser();
+        $rootTags = $em->getRepository("CPASimUSanteSimupollBundle:Tag")
+            ->findBy(
+                array(
+                    'parent' => null,
+                    'user'=>$user->getId()
+                ),
+                array('parent' => 'ASC')
+            );
 
         $collection = new ArrayCollection($rootTags);
         $tag_iterator = new RecursiveTagIterator($collection);
