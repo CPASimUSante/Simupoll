@@ -13,7 +13,7 @@ use CPASimUSante\SimupollBundle\Form\TagType;
  * Tag controller for CRUD
  *
  */
-class TagController extends Controller
+class TagController_v1 extends Controller
 {
     /**
      * Lists all Tag entities.
@@ -141,18 +141,19 @@ class TagController extends Controller
         if ($entity->getUser()->getId() == $user->getId())
         {
             $editForm = $this->createEditForm($entity);
+            $deleteForm = $this->createDeleteForm($id);
 
             return $this->render('CPASimUSanteSimupollBundle:Tag:edit.html.twig', array(
+                'entity'      => $entity,
                 'edit_form'   => $editForm->createView(),
-                'tid'         => $id,
+                'delete_form' => $deleteForm->createView(),
             ));
         }
         //prevent editing other user tags
         else
         {
-            return $this->render('CPASimUSanteSimupollBundle:Tag:edit.html.twig', array(
-                'edit_form'   => ''
-            ));
+            $tags = $em->getRepository('CPASimUSanteSimupollBundle:Tag')->findByUser(array($user->getId()));
+            return new RedirectResponse($this->generateUrl('tag'));
         }
     }
 
@@ -215,24 +216,26 @@ class TagController extends Controller
      */
     public function deleteAction(Request $request, $id)
     {
-        $em = $this->getDoctrine()->getManager();
-        $entity = $em->getRepository('CPASimUSanteSimupollBundle:Tag')->find($id);
-        $user = $this->get('security.token_storage')->getToken()->getUser();
+        $form = $this->createDeleteForm($id);
+        $form->handleRequest($request);
 
-        if (!$entity) {
-            throw $this->createNotFoundException('Unable to find Tag entity.');
-        }
+        if ($form->isValid()) {
 
-        if ($entity->getUser()->getId() == $user->getId())
-        {
+            var_dump('inside');
+            die();
+            $em = $this->getDoctrine()->getManager();
+            $entity = $em->getRepository('CPASimUSanteSimupollBundle:Tag')->find($id);
+
+            if (!$entity) {
+                throw $this->createNotFoundException('Unable to find Tag entity.');
+            }
+
             $em->remove($entity);
             $em->flush();
-            return $this->redirect($this->generateUrl('tag'));
         }
-       else
-       {
-           throw $this->createNotFoundException('You can\'t delete this element');
-       }
+        var_dump('outside'. $id);
+        die();
+        return $this->redirect($this->generateUrl('tag'));
     }
 
     /**

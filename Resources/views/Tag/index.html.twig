@@ -2,6 +2,8 @@
 
 {% extends layout %}
 
+{% block title %} {{ 'tag_list' | trans }} {% endblock %}
+
 {% block section_content %}
     <div class="panel-heading">
         <h3 class="panel-title">{{ 'tag_list' | trans }}</h3>
@@ -22,28 +24,98 @@
             <tr>
                 <td>{{ tag.name }}</td>
                 <td>{% if tag.parent is not null %}
-                    {{ tag.parent.name }}
+                        {{ tag.parent.name }}
                     {% else %}
                         Aucun
                     {% endif %}
                 </td>
                 <td>
-                <ul>
-                    <li>
-                        <a href="{{ path('tag_edit', { 'id': tag.id }) }}"><i class="fa fa-pencil"></i> edit</a>
-                    </li>
-                    <li>
-                        <a href="{{ path('tag_delete', { 'id': tag.id }) }}"><i class="fa fa-trash-o"></i> delete</a>
-                    </li>
-                </ul>
+                    {% if tag.parent is not null %}
+                    <a href="{{ path('tag_edit', { 'id': tag.id }) }}"
+                       class="btn btn-default tagedit"
+                       data-toggle="tooltip"
+                       data-tag-id="{{ tag.id }}"
+                       data-original-title="Editer">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                    <a href="{{ path('tag_delete', { 'id': tag.id }) }}"
+                       class="btn btn-default tagdelete"
+                       data-toggle="tooltip"
+                       data-tag-id="{{ tag.id }}"
+                       data-original-title="Effacer">
+                        <i class="fa fa-trash-o"></i>
+                        {% endif %}
+                    </a>
                 </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-
-            <a href="{{ path('tag_new') }}" class="btn btn-primary">Create a new tag</a>
+        <a href="{{ path('tag_new') }}" id="newtag" class="btn btn-primary" >Create a new tag</a>
 </div>
+{% endblock %}
 
-    {% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function () {
+            var url;
+            var modal = window.Claroline.Modal;
+
+            /*Create new tag*/
+            $('#newtag').on('click', function(event){
+                event.preventDefault();
+                var url = $(this).attr('href');
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    cache: false,
+                    success: function (data) {
+                        $('body').append(data);
+                        var modalElement = $('#modaltag');
+                        modalElement.modal('show');
+                    }
+                });
+            });
+
+            /*Edit tag*/
+            $('.tagedit').on('click', function(event){
+                event.preventDefault();
+                url = $(this).attr('href');
+                //to prevent same modal
+                var tid = $(this).data('tag-id');
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    cache: false,
+                    success: function (data) {
+                        var popup = data;
+                        $('body').append(popup);
+                        var modalElement = $('#modaltagedit'+tid);
+                        modalElement.modal('show');
+                    }
+                });
+            });
+/*
+
+            $('.tagdelete').on('click', function(event){
+                event.preventDefault();
+                url = $(this).attr('href');
+                //to prevent same modal
+                var tid = $(this).data('tag-id');
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    cache: false,
+                    success: function (data) {
+                        var popup = data;
+                        $('body').append(popup);
+                        var modalElement = $('#modaltagdelete'+tid);
+                        modalElement.modal('show');
+                    }
+                });
+            });
+            */
+        });
+    </script>
+{% endblock %}

@@ -5,15 +5,28 @@ namespace CPASimUSante\SimupollBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use CPASimUSante\SimupollBundle\Repository\TagRepository;
 
 class TagType extends AbstractType
 {
+    /**
+     * @var int the resource type ( Exercise)
+     */
+    private $user;
+
+    public function __construct($user)
+    {
+        $this->user = $user;
+    }
+
     /**
      * @param FormBuilderInterface $builder
      * @param array $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $user   = $this->user;
+
         $builder
             ->add('name', 'text', array(
                 'label' => 'Nom'
@@ -21,7 +34,13 @@ class TagType extends AbstractType
             ->add('parent', 'entity', array(
                 'class' => 'CPASimUSanteSimupollBundle:Tag',
                 'choice_label' => 'name',
-                'label' => 'Parent'
+                'label' => 'Parent',
+                'query_builder' => function(TagRepository $er) use ($user) {
+                    $qb = $er->createQueryBuilder('tag')
+                        ->where('tag.user = :user')
+                        ->setParameter('user', $user);
+                    return $qb;
+                }
             ))
         ;
     }

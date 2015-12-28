@@ -27,4 +27,4 @@ tag_update:
 tag_delete:
     path:     /{id}/delete
     defaults: { _controller: "CPASimUSanteSimupollBundle:Tag:delete" }
-    methods:  [POST, DELETE]
+    methods:  [POST, DELETE,GET]
