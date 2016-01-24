@@ -5,8 +5,9 @@ namespace CPASimUSante\SimupollBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
-class CategoryHierarchyType extends AbstractType
+class V1CategoryType extends AbstractType
 {
     /**
      * @param FormBuilderInterface $builder
@@ -14,10 +15,12 @@ class CategoryHierarchyType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('level')
-            ->add('parent')
-        ;
+        $builder->add('name', 'text', array(
+                'label' => 'category_name',
+                'required' => true,
+                'constraints' => new NotBlank()
+            )
+        );
     }
     
     /**
@@ -26,7 +29,7 @@ class CategoryHierarchyType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'CPASimUSante\SimupollBundle\Entity\CategoryHierarchy'
+            'data_class' => 'CPASimUSante\SimupollBundle\Entity\V1Category'
         ));
     }
 
@@ -35,6 +38,6 @@ class CategoryHierarchyType extends AbstractType
      */
     public function getName()
     {
-        return 'cpasimusante_simupollbundle_categoryhierarchy';
+        return 'cpasimusante_simupollbundle_v1category';
     }
 }

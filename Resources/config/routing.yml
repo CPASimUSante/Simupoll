@@ -7,6 +7,16 @@ simupoll_controller:
     type: annotation
     prefix: /
 
+simupoll_category_controller:
+    resource: "@CPASimUSanteSimupollBundle/Controller/CategoryController.php"
+    type: annotation
+    prefix: /category
+
+simupoll_question_controller:
+    resource: "@CPASimUSanteSimupollBundle/Controller/QuestionController.php"
+    type: annotation
+    prefix: /question
+
 paper_controller:
     resource: "@CPASimUSanteSimupollBundle/Controller/PaperController.php"
     type: annotation

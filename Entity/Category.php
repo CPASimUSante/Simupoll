@@ -2,13 +2,15 @@
 namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\User;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
- * CPASimUSante\SimupollBundle\Entity\Category
+ * Simupoll categories
  *
- * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\CategoryRepository")
+ * @ORM\Entity(repositoryClass="Gedmo\Tree\Entity\Repository\NestedTreeRepository")
  * @ORM\Table(
  *      name="cpasimusante__simupoll_category",
  *      uniqueConstraints={
@@ -16,19 +18,19 @@ use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
  *      }
  * )
  * @DoctrineAssert\UniqueEntity({"name", "user"})
+ * @Gedmo\Tree(type="nested")
  */
 class Category
 {
     /**
-     * @var integer $id
-     *
-     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
     /**
+     * name of the category
      * @var string $value
      *
      * @ORM\Column(name="name", type="string", length=255, nullable=false)
@@ -36,18 +38,82 @@ class Category
     private $name;
 
     /**
+     * @Gedmo\TreeLeft
+     * @ORM\Column(name="lft", type="integer")
+     */
+    private $lft;
+
+    /**
+     * @Gedmo\TreeLevel
+     * @ORM\Column(name="lvl", type="integer")
+     */
+    private $lvl;
+
+    /**
+     * @Gedmo\TreeRight
+     * @ORM\Column(name="rgt", type="integer")
+     */
+    private $rgt;
+
+    /**
+     * @Gedmo\TreeRoot
+     * @ORM\Column(name="root", type="integer", nullable=true)
+     */
+    private $root;
+
+    /**
+     * @Gedmo\TreeParent
+     * @ORM\ManyToOne(
+     *     targetEntity="CPASimUSante\SimupollBundle\Entity\Category",
+     *     inversedBy="children"
+     * )
+     * @ORM\JoinColumn(name="parent_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    protected $parent;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\User")
      */
     private $user;
 
     /**
-     * Get id
+     * @ORM\OneToMany(
+     *     targetEntity="CPASimUSante\SimupollBundle\Entity\Category",
+     *     mappedBy="parent",
+     * )
+     * @ORM\OrderBy({"lft" = "ASC"})
+     */
+    protected $children;
+
+    /**
+     * propoerty used in hierarchy display, like selectbox
+     */
+    private $indentedName;
+
+    public function __construct()
+    {
+        $this->children = new ArrayCollection();
+    }
+
+    /**
+     * Returns the resource id.
      *
      * @return integer
      */
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Sets the resource id.
+     * Required by the ResourceController when it creates a fictionnal root
+     *
+     * @param integer $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function getName()
@@ -60,9 +126,44 @@ class Category
         $this->name = $name;
     }
 
-    public function __toString()
+    /**
+     * Returns the children resource instances.
+     *
+     * @return \Doctrine\Common\ArrayCollection|Category[]
+     */
+    public function getChildren()
     {
-        return $this->id . '-' . $this->value;
+        return $this->children;
+    }
+
+    /**
+     * Returns the parent category.
+     *
+     * @return \CPASimUSante\SimupollBundle\Entity\Category
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Sets the parent category.
+     *
+     * @param \CPASimUSante\SimupollBundle\Entity\Category $parent
+     */
+    public function setParent(\CPASimUSante\SimupollBundle\Entity\Category $parent = null)
+    {
+        $this->parent = $parent;
+    }
+
+    /**
+     * Return the lvl value of the resource in the tree.
+     *
+     * @return integer
+     */
+    public function getLvl()
+    {
+        return $this->lvl;
     }
 
     public function getUser()
@@ -73,5 +174,13 @@ class Category
     public function setUser(User $user)
     {
         $this->user = $user;
+    }
+
+    /**
+     * allows hierachy display
+     * @return string
+     */
+    public function getIndentedName() {
+        return str_repeat($this->parent." > ", $this->lvl) . $this->name;
     }
 }

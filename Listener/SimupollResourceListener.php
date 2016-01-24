@@ -27,6 +27,7 @@ class SimupollResourceListener extends ContainerAware
         $event->setResponseContent($content);
         $event->stopPropagation();
     }
+
     public function onCreate(CreateResourceEvent $event)
     {
         $request = $this->container->get('request');
@@ -51,16 +52,19 @@ class SimupollResourceListener extends ContainerAware
         $event->setErrorFormContent($content);
         $event->stopPropagation();
     }
+
     public function onDelete(DeleteResourceEvent $event)
     {
         $event->stopPropagation();
     }
+
     public function onCopy(CopyResourceEvent $event)
     {
         $newRes = null;
         $event->setCopy($newRes);
         $event->stopPropagation();
     }
+
     public function onOpen(OpenResourceEvent $event)
     {
         $route = $this->container

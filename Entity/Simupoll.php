@@ -30,21 +30,6 @@ class Simupoll extends AbstractResource
     private $title;
 
     /**
-     * @var $questiongroups[]
-     *
-     * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\QuestionGroup", mappedBy="simupoll", cascade={"all"})
-     */
-    protected $questiongroups;
-
-    /**
-     * Class constructor
-     */
-    public function __construct()
-    {
-        $this->questiongroups = new ArrayCollection();
-    }
-
-    /**
      * Set title
      *
      * @param string $title
@@ -62,38 +47,5 @@ class Simupoll extends AbstractResource
     public function getTitle()
     {
         return $this->title;
-    }
-
-    /**
-     * Add questiongroups
-     *
-     * @param \CPASimUSante\SimupollBundle\Entity\QuestionGroup $questiongroups
-     * @return Simupoll
-     */
-    public function addQuestiongroup(QuestionGroup $questiongroups)
-    {
-        $this->questiongroups[] = $questiongroups;
-
-        return $this;
-    }
-
-    /**
-     * Remove questiongroups
-     *
-     * @param \CPASimUSante\SimupollBundle\Entity\QuestionGroup $questiongroups
-     */
-    public function removeQuestiongroup(QuestionGroup $questiongroups)
-    {
-        $this->questiongroups->removeElement($questiongroups);
-    }
-
-    /**
-     * Get questiongroups
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getQuestiongroups()
-    {
-        return $this->questiongroups;
     }
 }

@@ -1,9 +1,12 @@
 <?php
 namespace CPASimUSante\SimupollBundle\Controller;
 
+use CPASimUSante\SimupollBundle\Entity\Question;
+use CPASimUSante\SimupollBundle\Form\QuestionType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Class QuestionController
@@ -18,12 +21,64 @@ use Symfony\Component\HttpFoundation\Request;
  * @link       http://simusante.com
  *
  * @EXT\Route(
- *      "/",
- *      name    = "cpasimusante_question",
+ *      name    = "cpasimusante_simupoll_question",
  * )
  */
 class QuestionController extends Controller
 {
+    /**
+     * list questions
+     */
+    public function indexAction()
+    {
+
+    }
+
+    /**
+     * manage questions
+     * @EXT\Route("/manage/{id}", name="cpasimusante_simupoll_question_manage", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("question", class="CPASimUSanteSimupollBundle:Question", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Question:manage.html.twig")
+     * @param Request $request
+     * @param Question $question
+     * @return array
+     */
+    public function manageAction(Request $request, Question $question)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        // Create an ArrayCollection of the current Proposition objects in the database
+        $originalPropositions = new ArrayCollection();
+        foreach ($question->getPropositions() as $proposition) {
+            $originalPropositions->add($proposition);
+        }
+
+        $form = $this->get('form.factory')
+            ->create(new QuestionType(), $question);
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            // remove the relationship between the Proposition and the Question
+            foreach ($originalPropositions as $proposition) {
+                if (false === $question->getPropositions()->contains($proposition)) {
+                    // in a a many-to-one relationship, remove the relationship
+                    $proposition->setQuestion(null);
+                    $em->persist($proposition);
+                    // to delete the Proposition entirely, you can also do that
+                    $em->remove($proposition);
+                }
+            }
+
+            $em->persist($question);
+            $em->flush();
+        }
+
+        return array(
+            '_resource' => $question,
+            'form'      => $form->createView(),
+        );
+    }
+
     /**
      * To duplicate a question
      *

@@ -1,0 +1,58 @@
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% if isDesktop() %}
+    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+{% else %}
+    {% set workspace = _resource.getResourceNode().getWorkspace() %}
+{% endif %}
+
+{% extends layout %}
+
+{% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
+
+{% macro isel_prototype(form) %}
+    <table class="table">
+        <tr>
+            <td class="isel_label">{{ form_label(form.choice) }}</td>
+            <td class="isel_widget">{{ form_widget(form.choice) }}</td>
+            <td class="isel_widget">{{ form_errors(form.choice) }}</td>
+        </tr>
+    </table>
+{% endmacro %}
+
+{% block section_content %}
+    <form action="{{ path('cpasimusante_simupoll_question_manage', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
+            </div>
+
+            <div class="panel-body" id="text_content">
+                {{ form_row(form.title) }}
+                <label class="control-label col-md-4">Indiquer les propositions possibles pour cette question</label>
+
+                <ul class="isel-proposition" data-prototype="{{ _self.isel_prototype(form.propositions.vars.prototype)|e }}">
+                    {% for proposition in form.propositions %}
+                        <li class="proposition">{{ _self.isel_prototype(proposition) }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="panel-footer">
+                <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
+                <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {# Claroline JS #}
+    {{ parent() }}
+    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script>
+{% endblock %}

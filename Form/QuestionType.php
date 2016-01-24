@@ -26,17 +26,21 @@ class QuestionType extends AbstractType
                     'label' => 'Category.value',
                     'required' => true,
                     'empty_value' => 'choose_category',
-/*
-                    'query_builder' => function (CategoryRepository $cr) use ($uid) {
-                        if ($this->catID === -1) {
-                            return $cr->getUserCategory($uid);
-                        } else {
-                            return $cr->createQueryBuilder('c')
-                                ->where('c.id = ?1')
-                                ->setParameter(1, $this->catID);
-                        }
+                    'choice_label' => 'indentedName',   //the formated name
+                    'query_builder' => function (CategoryRepository $cr)  {
+                        //https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#repository-methods-all-strategies
+                        //node (null = all nodes), direct (true or null), sortByField, direction, includeNode (true/false)
+                        return $cr->getChildrenQueryBuilder(null, null, 'root', 'asc', false);
                     }
-*/
+                )
+            )
+            ->add(
+                'propositions', 'collection', array(
+                    'type'          => new PropositionType(),
+                    'by_reference'  => false,
+                    'prototype'     => true,
+                    'allow_add'     => true,
+                    'allow_delete'  => true,
                 )
             )
         ;
