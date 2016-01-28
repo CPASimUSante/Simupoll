@@ -35,7 +35,8 @@ class QuestionController extends Controller
     }
 
     /**
-     * manage questions
+     * Manage questions
+     *
      * @EXT\Route("/manage/{id}", name="cpasimusante_simupoll_question_manage", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("question", class="CPASimUSanteSimupollBundle:Question", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Question:manage.html.twig")
@@ -111,8 +112,8 @@ class QuestionController extends Controller
 
         $allowToAccess = FALSE;
 
-        if ($id != -1) {
-            $exercise = $this->getDoctrine()->getManager()->getRepository('UJMExoBundle:Exercise')->find($id);
+        if ($qid != -1) {
+            $exercise = $this->getDoctrine()->getManager()->getRepository('UJMExoBundle:Exercise')->find($qid);
 
             if ($this->container->get('ujm.exercise_services')
                     ->isExerciseAdmin($exercise) === true) {
@@ -208,7 +209,7 @@ class QuestionController extends Controller
             $categoryToFind = $interactionX[0]->getInteraction()->getQuestion()->getCategory();
             $titleToFind = $interactionX[0]->getInteraction()->getQuestion()->getTitle();
 
-            if ($id == -1) {
+            if ($qid == -1) {
                 return $this->redirect(
                     $this->generateUrl('ujm_question_index', array(
                             'categoryToFind' => base64_encode($categoryToFind), 'titleToFind' => base64_encode($titleToFind))
@@ -217,7 +218,7 @@ class QuestionController extends Controller
             } else {
                 return $this->redirect(
                     $this->generateUrl('ujm_exercise_questions', array(
-                            'id' => $id, 'categoryToFind' => $categoryToFind, 'titleToFind' => $titleToFind)
+                            'id' => $qid, 'categoryToFind' => $categoryToFind, 'titleToFind' => $titleToFind)
                     )
                 );
             }

@@ -25,22 +25,20 @@ class SimupollType extends AbstractType
                     'label' => 'title'
                 )
             );
-        //To avoid displaying them in Simupoll Resource creation modal
+
+        //To avoid displaying those fields in Simupoll resource creation modal
         if ($options['inside']) {
-           /* $builder
+            $builder
                 ->add(
-                    'category', 'entity', [
-                        'label'         => 'Categorie',
-                        'class'         => 'CPASimUSanteSimupollBundle:Category',
-                        'choice_label'  => 'name',
-                        'empty_value'   => 'Choisissez une catégorie',
-                        'query_builder' => function(CategoryRepository $er) {
-                            $qb = $er->createQueryBuilder('c')
-                                ->orderBy('c.name', 'ASC');
-                            return $qb;
-                        }
-                    ]
-                );*/
+                    'questions', 'collection', array(
+                        'type'          => new QuestionType(),
+                        'by_reference'  => false,
+                        'prototype'     => true,
+                        'prototype_name'    => '__simupoll_proto__',
+                        'allow_add'     => true,
+                        'allow_delete'  => true,
+                    )
+                );
         }
     }
 

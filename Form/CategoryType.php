@@ -29,7 +29,8 @@ class CategoryType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'CPASimUSante\SimupollBundle\Entity\Category'
+            'data_class' => 'CPASimUSante\SimupollBundle\Entity\Category',
+            'translation_domain' => 'resource',
         ));
     }
 

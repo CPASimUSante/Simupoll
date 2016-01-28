@@ -17,7 +17,7 @@
         </div>
 
         <div class="panel-body" id="text_content">
-            {% if allowToCompose == 1 and nbQuestion > 0 %}
+            {% if allowToCompose == 1 %}
                 <a class="btn btn-primary" href="{{ path('ujm_exercise_paper', { 'id': _resource.id }) }}">
                     <i class="fa fa-check-square-o"></i> {{ 'compose' | trans }}
                 </a>
@@ -30,12 +30,14 @@
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}">
                     <i class="fa fa-pencil"></i> {{ 'manage_categories' | trans }}
                 </a>
+                {#
                 <a class="btn btn-primary" href="{{ path('cpasimusante_managetags', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'manage_tags' | trans }}
-                </a>
+                      <i class="fa fa-pencil"></i> {{ 'manage_tags' | trans }}
+                  </a>
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_question_manage', { 'id': _resource.id }) }}">
                     <i class="fa fa-pencil"></i> {{ 'manage_questions' | trans }}
                 </a>
+                #}
             {% endif %}
 
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}

@@ -6,6 +6,7 @@ use CPASimUSante\SimupollBundle\Repository\CategoryRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 
 class QuestionType extends AbstractType
 {
@@ -23,24 +24,31 @@ class QuestionType extends AbstractType
             )
             ->add('category', 'entity', array(
                     'class' => 'CPASimUSante\\SimupollBundle\\Entity\\Category',
-                    'label' => 'Category.value',
+                    'label' => 'category_value',
                     'required' => true,
                     'empty_value' => 'choose_category',
                     'choice_label' => 'indentedName',   //the formated name
-                    'query_builder' => function (CategoryRepository $cr)  {
+                    'query_builder' => function (NestedTreeRepository $cr)  {
                         //https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#repository-methods-all-strategies
                         //node (null = all nodes), direct (true or null), sortByField, direction, includeNode (true/false)
-                        return $cr->getChildrenQueryBuilder(null, null, 'root', 'asc', false);
-                    }
+                        return $cr->getChildrenQueryBuilder(null, null, 'lft', 'asc', false);
+                    },
+                    /*'query_builder' => function (CategoryRepository $cr)  {
+                        return $cr->createQueryBuilder('c')
+                            ->orderBy('c.root', 'ASC')
+                            ->addOrderBy('c.lft', 'ASC');
+                    },*/
                 )
             )
             ->add(
                 'propositions', 'collection', array(
-                    'type'          => new PropositionType(),
-                    'by_reference'  => false,
-                    'prototype'     => true,
-                    'allow_add'     => true,
-                    'allow_delete'  => true,
+                    'type'              => new PropositionType(),
+                    'label'             => 'propositions_value',
+                    'by_reference'      => false,
+                    'prototype'         => true,
+                    'prototype_name'    => '__proposition_proto__',
+                    'allow_add'         => true,
+                    'allow_delete'      => true,
                 )
             )
         ;

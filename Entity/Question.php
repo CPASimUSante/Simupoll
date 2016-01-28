@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\Resource\AbstractResource;
 use CPASimUSante\SimupollBundle\Entity\Category;
+use CPASimUSante\SimupollBundle\Entity\Simupoll;
 
 /**
  * @ORM\Table(name="cpasimusante__simupoll_question")
@@ -37,6 +38,21 @@ class Question
      * @ORM\Column(name="title", type="string", length=255, nullable=true)
      */
     private $title;
+
+    /**
+     * @var integer $order
+     *
+     * @ORM\Column(name="order", type="integer")
+     */
+    private $order;
+
+    /**
+     * @var Simupoll
+     *
+     * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Simupoll", inversedBy="questions")
+     * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id")
+     */
+    protected $simupoll;
 
     /**
      * Category of question
@@ -94,6 +110,29 @@ class Question
     }
 
     /**
+     * Set order
+     *
+     * @param integer $order
+     * @return Question
+     */
+    public function setOrder($order)
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * Get order
+     *
+     * @return integer
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+
+    /**
      * Set category
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Category $category
@@ -123,7 +162,7 @@ class Question
      *
      * @return Question
      */
-    public function addItem(\CPASimUSante\SimupollBundle\Entity\Proposition $proposition)
+    public function addProposition(\CPASimUSante\SimupollBundle\Entity\Proposition $proposition)
     {
         /*       $this->items[] = $item;
                //$item->setItemselector($this);
@@ -152,5 +191,29 @@ class Question
     public function getPropositions()
     {
         return $this->propositions;
+    }
+
+    /**
+     * Get simupoll
+     *
+     * @return \CPASimUSante\SimupollBundle\Entity\Simupoll
+     */
+    public function getSimupoll()
+    {
+        return $this->simupoll;
+    }
+
+    /**
+     * Set simupoll
+     *
+     * @param \CPASimUSante\SimupollBundle\Entity\Question $question
+     *
+     * @return Question
+     */
+    public function setSimupoll(Simupoll $simupoll = null)
+    {
+        $this->simupoll = $simupoll;
+
+        return $this;
     }
 }

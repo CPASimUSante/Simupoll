@@ -180,7 +180,18 @@ class Category
      * allows hierachy display
      * @return string
      */
-    public function getIndentedName() {
-        return str_repeat($this->parent." > ", $this->lvl) . $this->name;
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
+    /**
+     * allows hierachy display
+     * @return string
+     */
+    public function getIndentedName()
+    {
+        return str_repeat("--", $this->lvl) . $this->name;
+        //return str_repeat($this->getParent()." > ", $this->lvl) . $this->name;
     }
 }

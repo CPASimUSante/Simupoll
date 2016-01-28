@@ -43,7 +43,6 @@ class SimupollController extends Controller
      */
     public function editAction(Request $request, Simupoll $simupoll)
     {
-
         //can user access ?
         $this->checkAccess($simupoll);
 
@@ -57,29 +56,30 @@ class SimupollController extends Controller
             $em = $this->getDoctrine()->getManager();
             $form = $this->get('form.factory')
                 ->create(new SimupollType(), $simupoll);
-/*
-            //Category form
-            $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
-                ->findAll();//an array
-            */
-/*
-            $cv = array();
-            foreach($categories as $category)
-            {
-                $cv[] = $category->createView();
-            }
 
-            $form_category = $this->get('form.factory')
-                ->create(new CategoryType());
-*/
+//echo '<pre>';var_dump($form);echo '</pre>';
             $form->handleRequest($request);
             if ($form->isValid()) {
-                $em = $this->getDoctrine()->getManager();
                 $em->persist($simupoll);
+
+               /* foreach ($form->get('question')->getData() as $question)
+                {
+                    $question->setSimupoll($simupoll);
+                    foreach($question->getProposition() as $proposition)
+                    {
+                        $proposition->setQuestion($question);
+                    }
+                }*/
+
                 $em->flush();
+                $this->get('session')->getFlashBag()->add('info', 'Simupoll mis à jour');
             }
+            //http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection-of-forms-in-symfony2
+//echo '<pre>';var_dump($form->createView());echo '</pre>';
+//die();
             return array(
                 '_resource'     => $simupoll,
+                'form'          => $form->createView(),
   //              'cv'    => $cv,
 //http://stackoverflow.com/questions/29187899/the-forms-view-data-is-expected-to-be-an-instance-of-class-my-but-is-an
             );
@@ -122,12 +122,12 @@ class SimupollController extends Controller
             $allowToCompose = 1;
         }
 
-        $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')->getCountQuestion($simupoll->getId());
+      //  $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')->getCountQuestion($simupoll->getId());
 
         return array(
             '_resource'         => $simupoll,
             'allowToCompose'    => $allowToCompose,
-            'nbQuestion'        => $nbQuestions['nbq'],
+           // 'nbQuestion'        => $nbQuestions['nbq'],
         );
     }
 

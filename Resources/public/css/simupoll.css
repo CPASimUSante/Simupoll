@@ -1,1 +1,2 @@
-.isel-proposition { list-style-type:none}
+.groupquestion , .groupproposition { list-style-type:none;padding: 0}
+.groupquestion td { border-top:0!important;}

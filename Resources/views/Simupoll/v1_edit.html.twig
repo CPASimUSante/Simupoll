@@ -9,16 +9,7 @@
 {% extends layout %}
 
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
-
-{% macro proposition_prototype(form) %}
-    <table class="table">
-        <tr>
-            <td class="proposition_label">{{ form_label(form.choice) }}</td>
-            <td class="proposition_widget">{{ form_widget(form.choice) }}</td>
-        </tr>
-    </table>
-{% endmacro %}
-
+{# http://jsfiddle.net/w9usmhwL/1/ #}
 {% macro question_prototype(form) %}
     <table class="table">
         <tr>
@@ -32,7 +23,8 @@
         <tr>
             <td class="question_label">{{ form_label(form.propositions) }}</td>
             <td class="question_widget">
-                <ul class="groupproposition" data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}"></ul>
+                <ul class="isel-proposition" data-prototype="{{ form_widget(form.propositions.vars.prototype)|e }}">
+                </ul>
             </td>
         </tr>
     </table>
@@ -46,9 +38,16 @@
 
         <div class="panel-body" id="text_content">
             <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
-                <h3>{{ form.title.vars.value }}</h3>
+                {{ form_row(form.title) }}
                 <label class="control-label col-md-4">Indiquez les questions associées à ce Simupoll</label>
-                <ul class="groupquestion" data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}"></ul>
+
+                <ul class="isel-question" data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
+                    {# {% for question in form.questions %}
+                         <li class="proposition">{{ _self.question_prototype(question) }}</li>
+                     {% endfor %}
+                          #}
+                </ul>
+
             </form>
         </div>
 

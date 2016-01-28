@@ -14,7 +14,6 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\Resource\AbstractResource;
-use CPASimUSante\SimupollBundle\Entity\QuestionGroup;
 
 /**
  * @ORM\Table(name="cpasimusante__simupoll")
@@ -28,6 +27,21 @@ class Simupoll extends AbstractResource
      * @ORM\Column(name="title", type="string", length=255)
      */
     private $title;
+
+    /**
+     * @var Questions[]
+     *
+     * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\Question", mappedBy="simupoll", cascade={"all"})
+     */
+    protected $questions;
+
+    /**
+     * Class constructor
+     */
+    public function __construct()
+    {
+        $this->questions = new ArrayCollection();
+    }
 
     /**
      * Set title
@@ -47,5 +61,42 @@ class Simupoll extends AbstractResource
     public function getTitle()
     {
         return $this->title;
+    }
+
+    /**
+     * Add question
+     * @param \CPASimUSante\SimupollBundle\Entity\Question $question
+     *
+     * @return Simupoll
+     */
+    public function addProposition(\CPASimUSante\SimupollBundle\Entity\Question $question)
+    {
+        /*       $this->items[] = $item;
+               //$item->setItemselector($this);
+               return $this;
+       */
+        $question->setSimupoll($this);
+
+        $this->questions->add($question);
+    }
+
+    /**
+     * Remove question
+     *
+     * @param \CPASimUSante\SimupollBundle\Entity\Question $question
+     */
+    public function removeQuestion(\CPASimUSante\SimupollBundle\Entity\Question $question)
+    {
+        $this->questions->removeElement($question);
+    }
+
+    /**
+     * Get questions
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getQuestions()
+    {
+        return $this->questions;
     }
 }
