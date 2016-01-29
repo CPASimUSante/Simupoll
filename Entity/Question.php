@@ -40,11 +40,11 @@ class Question
     private $title;
 
     /**
-     * @var integer $order
+     * @var integer $orderq
      *
-     * @ORM\Column(name="order", type="integer")
+     * @ORM\Column(name="orderq", type="integer")
      */
-    private $order;
+    private $orderq;
 
     /**
      * @var Simupoll
@@ -74,6 +74,7 @@ class Question
     public function __construct()
     {
         $this->propositions = new ArrayCollection();
+        $this->orderq = 0;
     }
 
     /**
@@ -115,9 +116,9 @@ class Question
      * @param integer $order
      * @return Question
      */
-    public function setOrder($order)
+    public function setOrderq($orderq)
     {
-        $this->order = $order;
+        $this->orderq = $orderq;
 
         return $this;
     }
@@ -127,9 +128,9 @@ class Question
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrderq()
     {
-        return $this->order;
+        return $this->orderq;
     }
 
     /**

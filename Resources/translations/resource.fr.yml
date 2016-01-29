@@ -1,11 +1,21 @@
 cpasimusante_simupoll: Simupoll
-date_end: Fin
-date_start: Début
-group_name: Nom du groupe
-question_title: Titre de la question
-choose_category: Choisissez une catégorie
+
 category_name: Nom de la catégorie
+category_choice: Choisissez une catégorie
 category_delete: Supprimer la catégorie
 category_add: Ajouter une catégorie
 
+date_end: Fin
+date_start: Début
 
+group_name: Nom du groupe
+
+question_add: Ajouter une question
+question_delete: Supprimer la question
+question_title: Titre de la question
+
+proposition_add: Ajouter une proposition
+proposition_delete: Supprimer la proposition
+proposition_value: Les propositions
+
+simupoll_question_add: Indiquez les questions associées à ce Simupoll

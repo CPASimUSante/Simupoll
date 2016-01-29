@@ -5,7 +5,6 @@ http://stackoverflow.com/questions/25090919/create-tree-nested-select-option
 Nested forms
 http://stackoverflow.com/questions/31021507/symfony2-nested-collections-and-the-prototype
 http://stackoverflow.com/questions/16487129/symfony2-multiple-nested-forms-prototype
-http://stackoverflow.com/questions/16487129/symfony2-multiple-nested-forms-prototype
 http://stackoverflow.com/questions/26095864/symfony-2-how-to-handle-nested-collections-in-forms
 http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection-of-forms-in-symfony2
 
@@ -13,3 +12,9 @@ http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection
 https://gist.github.com/havvg/31ab826a5dc68877462c
 
 http://jsfiddle.net/w9usmhwL/1/
+
+TODO :
+Simupoll creation :
+- translation in js not working
+- add/delete not working in already saved proposition
+- persist not working : saves only the last question and the last proposition

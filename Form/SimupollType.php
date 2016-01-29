@@ -31,12 +31,12 @@ class SimupollType extends AbstractType
             $builder
                 ->add(
                     'questions', 'collection', array(
-                        'type'          => new QuestionType(),
-                        'by_reference'  => false,
-                        'prototype'     => true,
+                        'type'              => new QuestionType(),
+                        'by_reference'      => false,
+                        'prototype'         => true,
                         'prototype_name'    => '__simupoll_proto__',
-                        'allow_add'     => true,
-                        'allow_delete'  => true,
+                        'allow_add'         => true,
+                        'allow_delete'      => true,
                     )
                 );
         }

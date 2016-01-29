@@ -69,7 +69,7 @@ class Simupoll extends AbstractResource
      *
      * @return Simupoll
      */
-    public function addProposition(\CPASimUSante\SimupollBundle\Entity\Question $question)
+    public function addQuestion(\CPASimUSante\SimupollBundle\Entity\Question $question)
     {
         /*       $this->items[] = $item;
                //$item->setItemselector($this);

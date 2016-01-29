@@ -13,6 +13,7 @@
 {% macro proposition_prototype(form) %}
     <table class="table">
         <tr>
+            <td class="proposition_label">{{ form_label(form.choice) }}</td>
             <td class="proposition_widget">{{ form_widget(form.choice) }}</td>
         </tr>
     </table>
@@ -22,7 +23,7 @@
     <table class="table">
         <tr>
             <td class="question_label">{{ form_label(form.title) }}</td>
-            <td class="question_widget">{{ form_widget(form.title) }}{{ form_widget(form.orderq) }}</td>
+            <td class="question_widget">{{ form_widget(form.title) }}</td>
         </tr>
         <tr>
             <td class="question_label">{{ form_label(form.category) }}</td>
@@ -31,13 +32,7 @@
         <tr>
             <td class="question_label">{{ form_label(form.propositions) }}</td>
             <td class="question_widget">
-                <ul class="groupproposition"
-                    data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}">
-                    {# Add already saved propositions #}
-                    {% for proposition in form.propositions %}
-                        <li class="proposition">{{ _self.proposition_prototype(proposition) }}</li>
-                    {% endfor %}
-                </ul>
+                <ul class="groupproposition" data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}"></ul>
             </td>
         </tr>
     </table>
@@ -49,25 +44,18 @@
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
 
-        <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
-            <div class="panel-body" id="text_content">
+        <div class="panel-body" id="text_content">
+            <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
                 <h3>{{ form.title.vars.value }}</h3>
-                <label class="control-label col-md-4">{{ 'simupoll_question_add'|trans({}, 'resource') }}</label>
-                <ul class="groupquestion"
-                    data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
-                    {# Add already saved questions #}
-                    {% for question in form.questions %}
-                        <li class="question">{{ _self.question_prototype(question) }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+                <label class="control-label col-md-4">Indiquez les questions associées à ce Simupoll</label>
+                <ul class="groupquestion" data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}"></ul>
+            </form>
+        </div>
 
-            <div class="panel-footer">
-                <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
-                <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
-            </div>
-        </form>
-
+        <div class="panel-footer">
+            <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
+            <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
+        </div>
     </div>
 {% endblock %}
 
@@ -79,12 +67,10 @@
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollCreate.js') }}'></script>
-    {#
+    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script>
     <script type="text/javascript">
         $(document).ready(function() {
 
         });
     </script>
-    #}
 {% endblock %}

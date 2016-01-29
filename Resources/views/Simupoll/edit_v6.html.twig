@@ -1,0 +1,290 @@
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% if isDesktop() %}
+    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+{% else %}
+    {% set workspace = _resource.getResourceNode().getWorkspace() %}
+{% endif %}
+
+{% extends layout %}
+
+{% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
+
+{% block section_content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
+        </div>
+
+        <div class="panel-body" id="text_content">
+            <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+                <h3>{{ form.title.vars.value }}</h3>
+                <label class="control-label col-md-4">Indiquez les questions associées à ce Simupoll</label>
+
+                <ul id="groupquestion" data-prototype="{{ form_widget(form.questions.vars.prototype)|e }}">
+                    {# iterate over each existing question and render its fields #}
+                    {% for question in form.questions %}
+                    <li class="question" id="liquestion{{ loop.index }}" data-id="{{ loop.index }}">
+                        <table class="table">
+                            <tr>
+                                <td class="question_label">{{ form_label(question.title) }}</td>
+                                <td class="question_widget">{{ form_widget(question.title) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="question_label">{{ form_label(question.category) }}</td>
+                                <td class="question_widget">{{ form_widget(question.category) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="question_label">{{ form_label(question.propositions) }}</td>
+                                <td class="question_widget">
+                                    <ul id="groupproposition"
+                                        data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}"
+                                    >
+                                        {%for proposition in question.propositions %}
+                                            <li>{{ form_row(proposition) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            <tr>
+                        </table>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> Ajouter une question</a>
+            </form>
+        </div>
+
+        <div class="panel-footer">
+            <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
+            <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {# Claroline JS #}
+    {{ parent() }}
+{#    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            function FormCollection(div_id)
+            {
+                // keep reference to self in all child functions
+                var self=this;
+
+                self.construct = function () {
+                    // set some shortcuts
+                    self.div = $('#'+div_id);
+                    self.div.data('index', self.div.find(':input').length);
+console.log(self.div);
+                    // add delete link to existing children
+                    self.div.children().each(function() {
+                        self.addDeleteLink($(this));
+                    });
+
+                    // add click event to the Add new button
+                    self.div.next().on('click', function(e) {
+                        // prevent the link from creating a "#" on the URL
+                        e.preventDefault();
+
+                        // add a new tag form (see next code block)
+                        self.addNew();
+                    });
+                };
+
+                /**
+                 * onClick event handler -- adds a new input
+                 */
+                self.addNew = function () {
+                    // Get the data-prototype explained earlier
+                    var prototype = self.div.data('prototype');
+
+                    // get the new index
+                    var index = self.div.data('index');
+
+                    // Replace '__name__' in the prototype's HTML to
+                    // instead be a number based on how many items we have
+                    var newForm = prototype.replace(/__name__/g, index);
+
+                    // increase the index with one for the next item
+                    self.div.data('index', index + 1);
+
+                    // Display the form in the page in an li, before the "Add a tag" link li
+                    self.div.append($(newForm));
+
+                    // add a delete link to the new form
+                    self.addDeleteLink( $(self.div.children(':last-child')[0]) );
+
+                    // not a very nice intergration.. but when creating stuff that has help icons,
+                    // the popovers will not automatically be instantiated
+                    //initHelpPopovers();
+
+                    return $(newForm);
+                };
+
+                /**
+                 * add Delete icon after input
+                 * @param Element row
+                 */
+                self.addDeleteLink = function (row) {
+                    var $removeFormA = $('<a href="#" class="btn btn-danger" tabindex="-1"><i class="entypo-trash"></i></a>');
+                    $(row).find('select').after($removeFormA);
+                    row.append($removeFormA);
+                    $removeFormA.on('click', function(e) {
+                        // prevent the link from creating a "#" on the URL
+                        e.preventDefault();
+
+                        // remove the li for the tag form
+                        row.remove();
+                    });
+                };
+
+                self.construct();
+            }
+
+            $('.add_question_link').on('click', function(e){
+                e.preventDefault();
+                new FormCollection('groupquestion');
+                new FormCollection('groupproposition');
+            });
+
+            /**
+
+
+            //question management
+            var $collectionQuestionHolder = $('ul.groupquestion');
+            var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> Ajouter une question</a>');
+            var $newQuestionLink = $('<li></li>').append($addQuestionLink);
+
+            // add the "add a question" anchor and li to the tags ul
+            $collectionQuestionHolder.append($newQuestionLink);
+
+            // count the current form inputs we have (e.g. 2), use that as the new
+            // index when inserting a new question (e.g. 2)
+            $collectionQuestionHolder.data('index', $collectionQuestionHolder.find(':input').length);
+
+            //add a new question
+            $collectionQuestionHolder.on('click', '.add_question_link', function(e) {
+                // prevent the link from creating a "#" on the URL
+                e.preventDefault();
+console.log('inside Question');
+                // add a new proposition form
+                addQuestionForm($collectionQuestionHolder, $newQuestionLink);
+
+                //index of question
+                var indexQ = $collectionQuestionHolder.data('index');
+console.log('indexQ='+indexQ);
+                //Proposition management
+                var $collectionPropositionHolder = $('#liquestion'+indexQ).find('.groupproposition');
+console.log($('.groupquestion'));
+console.log($('#liquestion'+indexQ));
+console.log($('#liquestion'+indexQ).find('.groupproposition'));
+                var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> Ajouter une proposition</a>');
+                var $newPropositionLink = $('<li></li>').append($addPropositionLink);
+
+                // add the "add a proposition" anchor and li to the tags ul
+                $collectionPropositionHolder.append($newPropositionLink);
+
+                //add a new proposition
+                $addPropositionLink.on('click', function(e) {
+                    // prevent the link from creating a "#" on the URL
+                    e.preventDefault();
+
+                    // add a new proposition form
+                    addPropositionForm($collectionPropositionHolder, $newPropositionLink);
+                });
+
+            });
+
+            // add a delete link to all of the existing question form li elements
+            $collectionQuestionHolder.find('li.question').each(function() {
+                addQuestionFormDeleteLink(this);
+            });
+
+            function addQuestionForm($collectionQuestionHolder, $newQuestionLink) {
+                //1 - Get the data-prototype
+                var prototype = $collectionQuestionHolder.data('prototype');
+
+                //2 - get the new index
+                var index = $collectionQuestionHolder.data('index');
+
+                //3 - Replace '$$name$$' in the prototype's HTML to
+                // instead be a number based on how many propositions we have
+                var newForm = prototype.replace(/__name__/g, index);
+
+                //4 - increase the index with one for the next queston
+                $collectionQuestionHolder.data('index', index + 1);
+
+                // Display the form in the page in an li, before the "Add a Proposition" link li
+                var $newQuestionFormLi = $('<li class="question" id="liquestion'+index+'"></li>').append(newForm);
+
+                // also add a remove button, just for this example
+                //$newQuestionFormLi.append('<a href="#" class="remove-question btn btn-danger">x</a>');
+
+                $newQuestionLink.before($newQuestionFormLi);
+
+                // add a delete link to the new form
+                addQuestionFormDeleteLink($newQuestionFormLi);
+
+                // handle the removal
+                $('.remove-question').click(function(e) {
+                    e.preventDefault();
+                    $(this).parent().remove();
+                    return false;
+                });
+            }
+
+            function addQuestionFormDeleteLink($questionFormLi) {
+                var $removeFormA = $('<p><a href="#" class="remove-question btn btn-danger"><span class="fa fa-trash"></span> Remove this question</a></p>');
+                $removeFormA.appendTo($questionFormLi);
+
+                $($removeFormA).find("a").on('click', function(e) {
+                    // prevent the link from creating a "#" on the URL
+                    e.preventDefault();
+                    // remove the li for the tag form
+                    $questionFormLi.remove();
+                });
+            }
+
+            function addPropositionForm($collectionPropositionHolder, $newPropositionLink) {
+                // Get the data-prototype
+                var prototype = $collectionPropositionHolder.data('prototype');
+
+                // get the new index
+                var index = $collectionPropositionHolder.data('index');
+
+                // Replace '$$name$$' in the prototype's HTML to
+                // instead be a number based on how many propositions we have
+                var newForm = prototype.replace(/__name__/g, index);
+
+                // increase the index with one for the next proposition
+                $collectionPropositionHolder.data('index', index + 1);
+
+                // Display the form in the page in an li, before the "Add a Proposition" link li
+                var $newPropositionFormLi = $('<li class="proposition"></li>').append(newForm);
+
+                // also add a remove button, just for this example
+                //$newPropositionFormLi.append('<a href="#" class="remove-item btn btn-danger">x</a>');
+
+                $newPropositionLink.before($newPropositionFormLi);
+
+                // add a delete link to the new form
+                addPropositionFormDeleteLink($newPropositionFormLi);
+
+                // handle the removal
+                $('.remove-proposition').click(function(e) {
+                    e.preventDefault();
+                    $(this).parent().remove();
+                    return false;
+                });
+            }
+            */
+        });
+    </script>
+{% endblock %}

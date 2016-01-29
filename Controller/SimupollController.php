@@ -54,34 +54,50 @@ class SimupollController extends Controller
         if ($simupollAdmin === true)
         {
             $em = $this->getDoctrine()->getManager();
+
+            // Create an array of the current Question objects in the database
+            $originalQuestions = array();
+            foreach ($simupoll->getQuestions() as $question) {
+                $originalQuestions[] = $question;
+            }
+
             $form = $this->get('form.factory')
                 ->create(new SimupollType(), $simupoll);
 
-//echo '<pre>';var_dump($form);echo '</pre>';
             $form->handleRequest($request);
             if ($form->isValid()) {
-                $em->persist($simupoll);
-
-               /* foreach ($form->get('question')->getData() as $question)
-                {
-                    $question->setSimupoll($simupoll);
-                    foreach($question->getProposition() as $proposition)
-                    {
-                        $proposition->setQuestion($question);
+/*
+                // filter $originalQuestions to contain question no longer present
+                foreach ($simupoll->getQuestions() as $question) {
+                    foreach ($originalQuestions as $key => $toDel) {
+                        if ($toDel->getId() === $question->getId()) {
+                            unset($originalQuestions[$key]);
+                        }
                     }
-                }*/
+                }
+*/
+                // remove the relationship between the question and the Simupoll
+                foreach ($originalQuestions as $question) {
+                    if (false === $simupoll->getQuestions()->contains($question)) {
+                        // remove the Simupoll from the question
+                        //$question->getSimupoll()->removeElement($simupoll);
 
+                        // in a a ManyToOne relationship, remove the relationship
+                        $question->setSimupoll(null);
+                        $em->persist($question);
+
+                        // to delete the question entirely, you can also do that
+                        $em->remove($question);
+                    }
+                }
+
+                $em->persist($simupoll);
                 $em->flush();
                 $this->get('session')->getFlashBag()->add('info', 'Simupoll mis à jour');
             }
-            //http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection-of-forms-in-symfony2
-//echo '<pre>';var_dump($form->createView());echo '</pre>';
-//die();
             return array(
                 '_resource'     => $simupoll,
                 'form'          => $form->createView(),
-  //              'cv'    => $cv,
-//http://stackoverflow.com/questions/29187899/the-forms-view-data-is-expected-to-be-an-instance-of-class-my-but-is-an
             );
         }
         //If not admin, open

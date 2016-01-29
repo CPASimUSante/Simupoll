@@ -24,31 +24,30 @@ class QuestionType extends AbstractType
             )
             ->add('category', 'entity', array(
                     'class' => 'CPASimUSante\\SimupollBundle\\Entity\\Category',
-                    'label' => 'category_value',
+                    'label' => 'category_choice',
                     'required' => true,
-                    'empty_value' => 'choose_category',
+                    'empty_value' => 'category_choice',
                     'choice_label' => 'indentedName',   //the formated name
                     'query_builder' => function (NestedTreeRepository $cr)  {
                         //https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#repository-methods-all-strategies
                         //node (null = all nodes), direct (true or null), sortByField, direction, includeNode (true/false)
                         return $cr->getChildrenQueryBuilder(null, null, 'lft', 'asc', false);
                     },
-                    /*'query_builder' => function (CategoryRepository $cr)  {
-                        return $cr->createQueryBuilder('c')
-                            ->orderBy('c.root', 'ASC')
-                            ->addOrderBy('c.lft', 'ASC');
-                    },*/
                 )
             )
             ->add(
                 'propositions', 'collection', array(
                     'type'              => new PropositionType(),
-                    'label'             => 'propositions_value',
+                    'label'             => 'proposition_value',
                     'by_reference'      => false,
                     'prototype'         => true,
                     'prototype_name'    => '__proposition_proto__',
                     'allow_add'         => true,
                     'allow_delete'      => true,
+                )
+            )
+            ->add('orderq', 'hidden', array(
+                    'data'              => 0    //to avoid null
                 )
             )
         ;
