@@ -3,6 +3,7 @@ cpasimusante_simupoll: Simupoll
 category_name: Nom de la catégorie
 category_choice: Choisissez une catégorie
 category_delete: Supprimer la catégorie
+category_delete_confirm: Souhaitez vous supprimer cette catégorie
 category_add: Ajouter une catégorie
 
 date_end: Fin

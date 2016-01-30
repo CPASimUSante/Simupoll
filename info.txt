@@ -13,6 +13,8 @@ https://gist.github.com/havvg/31ab826a5dc68877462c
 
 http://jsfiddle.net/w9usmhwL/1/
 
+https://github.com/Atlantic18/DoctrineExtensions/blob/master/doc/transaction-safety.md
+
 TODO :
 Simupoll creation :
 - translation in js not working

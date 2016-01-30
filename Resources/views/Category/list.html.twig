@@ -24,6 +24,16 @@
             {% if (tree != '') %}
                 {{ tree |raw }}
             {% else %}
+                <a href="#" class="delete"
+                   data-confirm-title="{{ 'portfolio_deletion_confirm_title'|trans({}, 'icap_portfolio') }}"
+                   data-confirm-message="{{ 'portfolio_deletion_confirm_message'|trans({'%portfolioName%': portfolio.title}, 'icap_portfolio') }}"
+                   data-confirm-ok="{{ 'delete'|trans({}, 'platform') }}"
+                   data-confirm-cancel="{{ 'cancel'|trans({}, 'platform') }}">
+                    <span class="fa fa-trash-o"></span> {{ 'delete'|trans({}, 'platform') }}
+                </a>
+
+
+
                 <a class="btn btn-primary btn-sm category-add-btn" data-id="0" href="#"><i class="fa fa-plus"></i> Ajouter une catégorie</a>
             {% endif %}
         </div>

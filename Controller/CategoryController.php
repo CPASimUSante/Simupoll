@@ -29,10 +29,8 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  */
 class CategoryController extends Controller
 {
-    //https://github.com/Atlantic18/DoctrineExtensions/blob/master/doc/transaction-safety.md
-
     /**
-     * Lists all Categories.
+     * Lists all Categories
      *
      * @EXT\Route(
      *      "/categories/{id}",
