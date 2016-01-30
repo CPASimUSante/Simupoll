@@ -53,39 +53,6 @@ class CategoryController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
 
-
-/*
-         $user = $this->container
-            ->get('security.token_storage')
-            ->getToken()->getUser();
-        $cat1 = new Category();
-        $cat1->setName('u1.cat1');
-        $cat1->setUser($user);
-
-        $cat2 = new Category();
-        $cat2->setName('u1.cat2');
-        $cat2->setParent($cat1);
-        $cat2->setUser($user);
-
-        $cat3 = new Category();
-        $cat3->setName('u1.cat3');
-        $cat3->setParent($cat1);
-        $cat3->setUser($user);
-
-        $cat4 = new Category();
-        $cat4->setName('u1.cat4');
-        $cat4->setParent($cat2);
-        $cat4->setUser($user);
-
-        $em->persist($cat1);
-        $em->persist($cat2);
-        $em->persist($cat3);
-        $em->persist($cat4);
-        $em->flush();
-*/
-
-        //https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#create-html-tree
-        //http://stackoverflow.com/questions/25090919/create-tree-nested-select-option
         $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
         $options = array(
             'decorate' => true,
@@ -105,22 +72,9 @@ class CategoryController extends Controller
             $options
         );
 
-        $options2 = array(
-            'decorate' => false,/*,
-            'nodeDecorator' => function($node) {
-                return '<a href="/page/'.$node['slug'].'">'.$node[$field].'</a>';
-            }*/
-        );
-
-        $nakedtree = $repo->childrenHierarchy(
-            null, /* starting from root nodes */
-            false, /* true: load all children, false: only direct */
-            $options2
-        );
         return array(
             '_resource' => $simupoll,
             'tree' => $htmlTree,
-            'tree2' => $nakedtree
         );
     }
 
@@ -129,7 +83,7 @@ class CategoryController extends Controller
      *
      * @EXT\Route(
      *     "/add/form/{idcategory}",
-     *     name="simupoll_category_add_form",
+     *     name="cpasimusante_simupoll_category_add_form",
      *     options = {"expose"=true}
      * )
      * @EXT\Template("CPASimUSanteSimupollBundle:Category:addCategory.html.twig")
@@ -149,7 +103,7 @@ class CategoryController extends Controller
      *
      * @EXT\Route(
      *     "/add/{idcategory}",
-     *     name="simupoll_category_add",
+     *     name="cpasimusante_simupoll_category_add",
      *     options = {"expose"=true}
      * )
      * @EXT\Method("POST")
@@ -197,7 +151,7 @@ class CategoryController extends Controller
      *
      * @EXT\Route(
      *     "/delete/{idcategory}",
-     *     name="simupoll_category_delete_form",
+     *     name="cpasimusante_simupoll_category_delete_form",
      *     options = {"expose"=true}
      * )
      * @EXT\Template("CPASimUSanteSimupollBundle:Category:deleteCategory.html.twig")

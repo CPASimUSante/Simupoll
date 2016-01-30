@@ -39,6 +39,13 @@ class Proposition
     private $choice;
 
     /**
+     * @var float $mark
+     *
+     * @ORM\Column(name="mark", type="float")
+     */
+    private $mark;
+
+    /**
      * Get id
      *
      * @return integer
@@ -90,5 +97,28 @@ class Proposition
         $this->choice = $choice;
 
         return $this;
+    }
+
+    /**
+     * Set mark
+     *
+     * @param float $mark
+     * @return Question
+     */
+    public function setMark($mark)
+    {
+        $this->mark = $mark;
+
+        return $this;
+    }
+
+    /**
+     * Get mark
+     *
+     * @return integer
+     */
+    public function getMark()
+    {
+        return $this->mark;
     }
 }

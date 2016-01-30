@@ -70,7 +70,7 @@ class SimupollResourceListener extends ContainerAware
         $route = $this->container
             ->get('router')
             ->generate(
-                'cpasimusante_opensimupoll',
+                'cpasimusante_simupoll_open',
                 array(
                     'id' => $event->getResource()->getId()
                 )

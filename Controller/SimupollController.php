@@ -34,7 +34,7 @@ class SimupollController extends Controller
 {
     /**
      *
-     * @EXT\Route("/edit/{id}", name="cpasimusante_editsimupoll", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\Route("/edit/{id}", name="cpasimusante_simupoll_edit", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:edit.html.twig")
      * @param Request $request
@@ -109,7 +109,7 @@ class SimupollController extends Controller
 
     /**
      *
-     * @EXT\Route("/open/{id}", name="cpasimusante_opensimupoll", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\Route("/open/{id}", name="cpasimusante_simupoll_open", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:open.html.twig")
      * @param Simupoll $simupoll
@@ -147,65 +147,6 @@ class SimupollController extends Controller
         );
     }
 
-    /**
-     * Manage Categories entity
-     *
-     * @EXT\Route(
-     *      "/managecategories",
-     *      name="cpasimusante_managecategories",
-     *      requirements={},
-     *      options={"expose"=true}
-     * )
-     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:categories.html.twig")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function manageCategoriesAction()
-    {
-
-    }
-
-    /**
-     * Manage Categories entity
-     *
-     * @EXT\Route(
-     *      "/managetags",
-     *      name="cpasimusante_managetags",
-     *      requirements={},
-     *      options={"expose"=true}
-     * )
-     * @EXT\Template("CPASimUSanteSimupollBundle::tag.html.twig")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function manageTagsAction()
-    {
-        $em = $this->getDoctrine()->getManager();
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-        $rootTags = $em->getRepository("CPASimUSanteSimupollBundle:Tag")
-            ->findBy(
-                array(
-                    'parent' => null,
-                    'user'=>$user->getId()
-                ),
-                array('parent' => 'ASC')
-            );
-
-        $collection = new ArrayCollection($rootTags);
-        $tag_iterator = new RecursiveTagIterator($collection);
-        $recursive_iterator = new \RecursiveIteratorIterator($tag_iterator, \RecursiveIteratorIterator::SELF_FIRST);
-
-        $select = '';
-        foreach ($recursive_iterator as $index => $child_tag)
-        {
-            $select .= '<option value="' . $child_tag->getId() . '">' . str_repeat('&nbsp;&nbsp;', $recursive_iterator->getDepth()) . $child_tag->getName() . '</option>';
-        }
-
-        return array(
-            'tags' => $recursive_iterator,
-            'select' => $select
-        );
-    }
     /**
      * Finds and displays a Question entity to this Simupoll
      *

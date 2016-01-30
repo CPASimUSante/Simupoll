@@ -3,8 +3,7 @@ namespace CPASimUSante\SimupollBundle\Controller;
 
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
-use CPASimUSante\SimupollBundle\Form\CategoryType;
-use CPASimUSante\SimupollBundle\Form\SimupollType;
+use CPASimUSante\SimupollBundle\Entity\Paper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
@@ -24,18 +23,75 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  * @link       http://simusante.com
  *
  * @EXT\Route(
- *      "/paper",
- *      name    = "cpasimusante_paper",
+ *      "/",
+ *      name    = "cpasimusante_simupoll_paper",
  * )
  */
 class PaperController extends Controller
 {
     /**
+     * @EXT\Route(
+     *      "/open/{id}/{page}/{all}",
+     *      name="cpasimusante_simupoll_paper",
+     *      defaults={ "page" = 1, "all" = 0 },
+     *      requirements={},
+     *      options={"expose"=true}
+     * )
+     * @EXT\Template("CPASimUSanteSimupollBundle:Paper:open.html.twig")
+     */
+     public function openAction(Simupoll $simupoll)
+     {
+         $workspace = $simupoll->getResourceNode()->getWorkspace();
+         $user = $this->container->get('security.token_storage')
+             ->getToken()->getUser();
+         $uid = $user->getId();
+
+         $session = $session = $this->container->get('session');
+
+         $em = $this->getDoctrine()->getManager();
+         $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+             ->findBySimupoll($simupoll);
+/*
+         //Verify if it exists a not finished paper
+         $paper = $this->getDoctrine()
+             ->getManager()
+             ->getRepository('UJMExoBundle:Paper')
+             ->getPaper($uid, $simupoll);
+
+
+         //if simupoll closed : redirect
+         //if () {
+         //    return $this->redirect($this->generateUrl('ujm_paper_list', array('exoID' => $id)));
+         //}
+
+         //if the paper doesn't exist or not finished
+         if (count($paper) == 0) {
+             $paper = new Paper();
+             $paper->setSimupoll($simupoll);
+             $paper->setUser($user);
+             $paper->setStart(new \Datetime());
+
+         } else {
+             $paper = $paper[0];
+         }
+
+         $session->save('paper', $paper->getId());
+         $session->save('exerciseID', $simupoll->getId());
+*/
+         return array(
+             'questions'        => $questions,
+             'workspace'        => $workspace,
+             '_resource'        => $simupoll
+         );
+     }
+
+
+    /**
      * Lists all Paper entities.
      *
      * @EXT\Route(
      *      "/papers/{id}/{page}/{all}",
-     *      name="cpasimusante_papers",
+     *      name="cpasimusante_simupoll_results",
      *      defaults={ "page" = 1, "all" = 0 },
      *      requirements={},
      *      options={"expose"=true}

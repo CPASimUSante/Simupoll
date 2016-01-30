@@ -17,31 +17,24 @@
         </div>
 
         <div class="panel-body" id="text_content">
+
+            {% if is_granted('ADMINISTRATE', _resource) %}
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}">
+                    <i class="fa fa-pencil"></i> {{ 'manage_categories' | trans }}
+                </a>
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_edit', { 'id': _resource.id }) }}">
+                    <i class="fa fa-pencil"></i> {{ 'edit_simupoll' | trans }}
+                </a>
+            {% endif %}
+
             {% if allowToCompose == 1 %}
-                <a class="btn btn-primary" href="{{ path('ujm_exercise_paper', { 'id': _resource.id }) }}">
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_paper', { 'id': _resource.id }) }}">
                     <i class="fa fa-check-square-o"></i> {{ 'compose' | trans }}
                 </a>
             {% endif %}
 
-            {% if is_granted('ADMINISTRATE', _resource) %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_editsimupoll', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'edit_simupoll' | trans }}
-                </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'manage_categories' | trans }}
-                </a>
-                {#
-                <a class="btn btn-primary" href="{{ path('cpasimusante_managetags', { 'id': _resource.id }) }}">
-                      <i class="fa fa-pencil"></i> {{ 'manage_tags' | trans }}
-                  </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_question_manage', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'manage_questions' | trans }}
-                </a>
-                #}
-            {% endif %}
-
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_papers', { 'id': _resource.id }) }}">
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_results', { 'id': _resource.id }) }}">
                     <i class="fa fa-list"></i> {{ 'results' | trans }}
                 </a>
             {% endif %}

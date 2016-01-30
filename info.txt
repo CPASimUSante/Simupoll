@@ -1,6 +1,6 @@
 get categories
 http://stackoverflow.com/questions/25090919/create-tree-nested-select-option
-
+https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#create-html-tree
 
 Nested forms
 http://stackoverflow.com/questions/31021507/symfony2-nested-collections-and-the-prototype

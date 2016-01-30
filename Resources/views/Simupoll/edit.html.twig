@@ -14,6 +14,7 @@
     <table class="table">
         <tr>
             <td class="proposition_widget">{{ form_widget(form.choice) }}</td>
+            <td class="proposition_widget">{{ form_widget(form.mark) }}</td>
         </tr>
     </table>
 {% endmacro %}
@@ -49,8 +50,13 @@
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
 
-        <form action="{{ path('cpasimusante_editsimupoll', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
+        <form action="{{ path('cpasimusante_simupoll_edit', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
             <div class="panel-body" id="text_content">
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
+                    <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                </a>
+                <hr>
+
                 <h3>{{ form.title.vars.value }}</h3>
                 <label class="control-label col-md-4">{{ 'simupoll_question_add'|trans({}, 'resource') }}</label>
                 <ul class="groupquestion"

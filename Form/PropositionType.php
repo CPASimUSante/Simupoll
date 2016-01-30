@@ -24,6 +24,13 @@ class PropositionType extends AbstractType
                     'required' => true,
                     'label' => 'proposition_choice'
                 )
+            )
+            ->add(
+                'mark', 'text', array(
+                    'required' => true,
+                    'label' => 'proposition_mark',
+                    'attr'=> array('class' => 'small')
+                )
             );
     }
 
