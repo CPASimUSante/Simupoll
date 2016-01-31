@@ -6,7 +6,6 @@ use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use Doctrine\Common\Collections\ArrayCollection;
-use CPASimUSante\SimupollBundle\Tag\RecursiveTagIterator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
@@ -108,6 +107,7 @@ class SimupollController extends Controller
     }
 
     /**
+     * When opening the Simupoll resource
      *
      * @EXT\Route("/open/{id}", name="cpasimusante_simupoll_open", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
@@ -145,6 +145,84 @@ class SimupollController extends Controller
             'allowToCompose'    => $allowToCompose,
            // 'nbQuestion'        => $nbQuestions['nbq'],
         );
+    }
+
+    /**
+     * Organizing the Simupoll resource
+     *
+     * @EXT\Route("/organize/{id}", name="cpasimusante_simupoll_organize", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:organize.html.twig")
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function organizeAction($simupoll)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+
+        //can user access ?
+        $this->checkAccess($simupoll);
+
+        //can user edit ?
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isSimupollAdmin($simupoll);
+
+        //can user manage exercise
+        $allowToCompose = 0;
+        if (is_object($user) && ($simupollAdmin === true) )
+        {
+            $allowToCompose = 1;
+
+            return array(
+                'allowToCompose'    => $allowToCompose,
+                '_resource'         => $simupoll,
+            );
+        } else {
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+        }
+    }
+
+    /**
+     * Organizing the Simupoll resource
+     *
+     * @EXT\Route("/result/{id}", name="cpasimusante_simupoll_results", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:results.html.twig")
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function resultsAction($simupoll)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+
+        //can user access ?
+        $this->checkAccess($simupoll);
+
+        //can user edit ?
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isSimupollAdmin($simupoll);
+
+        //can user manage exercise
+        $allowToCompose = 0;
+        if (is_object($user) && ($simupollAdmin === true) )
+        {
+            $allowToCompose = 1;
+
+            return array(
+                'allowToCompose'    => $allowToCompose,
+                '_resource'         => $simupoll,
+            );
+        } else {
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+        }
     }
 
     /**

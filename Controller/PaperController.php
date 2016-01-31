@@ -91,7 +91,7 @@ class PaperController extends Controller
      *
      * @EXT\Route(
      *      "/papers/{id}/{page}/{all}",
-     *      name="cpasimusante_simupoll_results",
+     *      name="cpasimusante_simupoll_results_show",
      *      defaults={ "page" = 1, "all" = 0 },
      *      requirements={},
      *      options={"expose"=true}

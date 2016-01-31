@@ -1,6 +1,10 @@
+compose: Compose
+cpasimusante_papers: Manage papers
 edit_simupoll: Edit Simupoll
+export_csv_simupoll: Export results
 manage_categories: Manage categories
 manage_questions: Manage questions
-cpasimusante_papers: Manage papers
-compose: Compose
+organize_simupoll: Organize Simupoll
 results: Results
+show_graphics_simupoll: Show graphic results
+display_results_simupoll: Show results
