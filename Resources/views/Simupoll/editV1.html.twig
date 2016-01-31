@@ -32,7 +32,8 @@
         <tr>
             <td class="question_label">{{ form_label(form.propositions) }}</td>
             <td class="question_widget">
-                <ul class="propositiongroup">
+                <ul class="groupproposition"
+                    data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}">
                     {# Add already saved propositions #}
                     {% for proposition in form.propositions %}
                         <li class="proposition">{{ _self.proposition_prototype(proposition) }}</li>
@@ -57,13 +58,8 @@
                 <hr>
 
                 <h3>{{ 'simupoll_question_add'|trans({}, 'resource') }}</h3>
-                <div class="questionholder"
-                     data-questionprototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
-                </div>
-                <div class="propositionholder"
-                     data-propositionprototype="{{ _self.proposition_prototype(form.questions.vars.prototype.propositions.vars.prototype)|e }}">
-                </div>
-                <ul class="questiongroup">
+                <ul class="groupquestion"
+                    data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
                     {# Add already saved questions #}
                     {% for question in form.questions %}
                         <li class="question" id="liquestion{{ loop.index -1 }}">{{ _self.question_prototype(question) }}</li>
@@ -89,4 +85,11 @@
     {# Claroline JS #}
     {{ parent() }}
     <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollCreate.js') }}'></script>
+    {#
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    #}
 {% endblock %}

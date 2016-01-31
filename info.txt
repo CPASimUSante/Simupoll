@@ -7,6 +7,15 @@ http://stackoverflow.com/questions/31021507/symfony2-nested-collections-and-the-
 http://stackoverflow.com/questions/16487129/symfony2-multiple-nested-forms-prototype
 http://stackoverflow.com/questions/26095864/symfony-2-how-to-handle-nested-collections-in-forms
 http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection-of-forms-in-symfony2
+http://stackoverflow.com/questions/13054442/symfony2-nested-forms-and-manytomany-relations
+
+
+Customize collection
+https://gist.github.com/cowlby/1294186
+
+How to include prototypes :
+http://stackoverflow.com/questions/7555702/how-to-customize-the-data-prototype-attribute-in-symfony-2-forms
+
 
 
 https://gist.github.com/havvg/31ab826a5dc68877462c
@@ -15,8 +24,11 @@ http://jsfiddle.net/w9usmhwL/1/
 
 https://github.com/Atlantic18/DoctrineExtensions/blob/master/doc/transaction-safety.md
 
+
+Pb with nested data form save
+http://stackoverflow.com/questions/23238487/symfony2-save-embedding-collection-form
+
 TODO :
 Simupoll creation :
 - translation in js not working
 - add/delete not working in already saved proposition
-- persist not working : saves only the last question and the last proposition

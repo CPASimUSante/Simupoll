@@ -1,3 +1,3 @@
-.groupquestion , .groupproposition { list-style-type:none;padding: 0}
-.groupquestion td { border-top:0!important;}
+.questiongroup , .propositiongroup { list-style-type:none;padding: 0}
+.questiongroup td { border-top:0!important;}
 li.question{padding:0.5em 0;margin-bottom:0.5em;border-bottom: 3px solid #ddd}

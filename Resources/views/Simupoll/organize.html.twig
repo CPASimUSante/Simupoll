@@ -23,8 +23,29 @@
             <hr>
 
             {% if allowToCompose == 1 %}
+                <form action="#" method="post">
+                    <h2>How to display the questions</h2>
+                    <p>
+                        <input name="questdisp" type="radio" value="0"> All questions
+                    </p>
+                    <p>
+                        <input name="questdisp" type="radio" value="1"> Max number of question per page ?   <input type="text" name="max_question_per_page" value="0">
+                    </p>
+                    <p>
+                        <input name="questdisp" type="radio" value="2"> All question from a category (and its sub-categories)
 
-
+                        <select name="question_per_category_level">
+                            {% for level in 0..maxCategoryLevel %}
+                                <option value="{{ level }}">{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>
+                        <input name="questdisp" type="radio" value="3"> Create group of questions
+                    </p>
+                    <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
+                </form>
             {% endif %}
         </div>
     </div>

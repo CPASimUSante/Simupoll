@@ -9,11 +9,23 @@ use CPASimUSante\SimupollBundle\Repository\CategoryRepository;
 class SimupollType extends AbstractType
 {
     /**
+     * @var int the simupoll
+     */
+    private $simupoll;
+
+    public function __construct($simupoll)
+    {
+        $this->simupoll = $simupoll;
+    }
+
+    /**
      * @param FormBuilderInterface $builder
      * @param array $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $simupoll    = $this->simupoll;
+
         $builder
             ->add(
                 'name', 'hidden', array(
@@ -31,10 +43,10 @@ class SimupollType extends AbstractType
             $builder
                 ->add(
                     'questions', 'collection', array(
-                        'type'              => new QuestionType(),
+                        'type'              => new QuestionType($simupoll),
                         'by_reference'      => false,
                         'prototype'         => true,
-                        'prototype_name'    => '__simupoll_proto__',
+                        'prototype_name'    => '__question_proto__',
                         'allow_add'         => true,
                         'allow_delete'      => true,
                     )

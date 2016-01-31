@@ -50,29 +50,45 @@ class CategoryController extends Controller
     public function indexAction(Simupoll $simupoll)
     {
         $em = $this->getDoctrine()->getManager();
+        $sid = $simupoll->getId();
+
+        //Custom query to display only tree from this resource
+        $query = $em
+            ->createQueryBuilder()
+            ->select('node')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
+            ->orderBy('node.root, node.lft', 'ASC')
+            ->where('node.simupoll = ?1')
+            ->setParameters(array(1 => $simupoll))
+            ->getQuery()
+        ;
 
         $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
+        //options for the tree display
         $options = array(
             'decorate' => true,
             'rootOpen' => '<ul>',
             'rootClose' => '</ul>',
             'childOpen' => '<li>',
             'childClose' => '</li>',
-            'nodeDecorator' => function($node) {
-                $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" href="#"><i class="fa fa-plus"></i></a>';
-                $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" href="#"><i class="fa fa-trash"></i></a>';
+            'nodeDecorator' => function($node) use ($sid) {
+                $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-plus"></i></a>';
+                $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-trash"></i></a>';
                 return $node['name'].$add.$delete;
             }
         );
-        $htmlTree = $repo->childrenHierarchy(
-            null, /* starting from root nodes */
-            false, /* true: load all children, false: only direct */
+     /*   $htmlTree = $repo->childrenHierarchy(
+            null, // starting from root node
+            false, // true: load all children, false: only direct
             $options
         );
+*/
+        $tree2 = $repo->buildTree($query->getArrayResult(), $options);
 
         return array(
             '_resource' => $simupoll,
-            'tree' => $htmlTree,
+            //'tree' => $htmlTree,
+            'tree2' => $tree2,
         );
     }
 
@@ -80,19 +96,20 @@ class CategoryController extends Controller
      * Data for modal form for category add
      *
      * @EXT\Route(
-     *     "/add/form/{idcategory}",
+     *     "/add/form/{idcategory}/{idsimupoll}",
      *     name="cpasimusante_simupoll_category_add_form",
      *     options = {"expose"=true}
      * )
      * @EXT\Template("CPASimUSanteSimupollBundle:Category:addCategory.html.twig")
      */
-    public function categoryAddFormAction($idcategory)
+    public function categoryAddFormAction($idcategory, $idsimupoll)
     {
         $form = $this->get('form.factory')
             ->create(new CategoryType());
         return array(
             'form' => $form->createView(),
-            'parent' => $idcategory
+            'parent' => $idcategory,
+            'idsimupoll' => $idsimupoll
         );
     }
 
@@ -100,14 +117,14 @@ class CategoryController extends Controller
      * Process category add
      *
      * @EXT\Route(
-     *     "/add/{idcategory}",
+     *     "/add/{idcategory}/{idsimupoll}",
      *     name="cpasimusante_simupoll_category_add",
      *     options = {"expose"=true}
      * )
      * @EXT\Method("POST")
      * @EXT\Template("CPASimUSanteSimupollBundle:Category:addCategory.html.twig")
      */
-    public function categoryAddAction(Request $request, $idcategory)
+    public function categoryAddAction(Request $request, $idcategory, $idsimupoll)
     {
         $form = $this->get('form.factory')
             ->create(new CategoryType());
@@ -119,8 +136,12 @@ class CategoryController extends Controller
                 ->getToken()->getUser();
 
             $em = $this->getDoctrine()->getManager();
-
+            $simupoll = $em->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+                ->findOneById($idsimupoll);
             $newcat = $form->getData();
+            //Add simupoll info
+            $newcat->setSimupoll($simupoll);
+            //add user info, for security
             $newcat->setUser($user);
             if ($idcategory != 0) {
                 $category = $em->getRepository('CPASimUSanteSimupollBundle:Category')

@@ -71,13 +71,14 @@ class Simupoll extends AbstractResource
      */
     public function addQuestion(\CPASimUSante\SimupollBundle\Entity\Question $question)
     {
-        /*       $this->items[] = $item;
-               //$item->setItemselector($this);
-               return $this;
-       */
+        $this->questions[] = $question;
         $question->setSimupoll($this);
+        return $this;
 
+        /*
+        $question->setSimupoll($this);
         $this->questions->add($question);
+        */
     }
 
     /**

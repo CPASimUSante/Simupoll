@@ -5,6 +5,7 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use CPASimUSante\SimupollBundle\Entity\Question;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Proposition
@@ -41,7 +42,11 @@ class Proposition
     /**
      * @var float $mark
      *
-     * @ORM\Column(name="mark", type="float")
+     * @ORM\Column(name="mark", type="float", options={"default" = 0})
+     * @Assert\Type(type = "numeric")
+     * @Assert\NotBlank(
+     *   message = "The mark should not be blank and be a number"
+     * )
      */
     private $mark;
 

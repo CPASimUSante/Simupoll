@@ -4,24 +4,23 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\User;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
-/**
+/*
  * Simupoll categories
  *
  * @ORM\Entity(repositoryClass="Gedmo\Tree\Entity\Repository\NestedTreeRepository")
  * @ORM\Table(
- *      name="cpasimusante__simupoll_category",
+ *      name="cpasimusante__simupoll_category_v1",
  *      uniqueConstraints={
- *          @ORM\UniqueConstraint(name="category_unique_name_and_simupoll", columns={"simupoll_id", "user_id", "name"})
+ *          @ORM\UniqueConstraint(name="category_unique_name_and_user", columns={"user_id", "name"})
  *      }
  * )
- * @DoctrineAssert\UniqueEntity({"name", "simupoll", "user"})
+ * @DoctrineAssert\UniqueEntity({"name", "user"})
  * @Gedmo\Tree(type="nested")
  */
-class Category
+class CategoryV1
 {
     /**
      * @ORM\Id
@@ -76,11 +75,6 @@ class Category
      * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\User")
      */
     private $user;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Simupoll")
-     */
-    private $simupoll;
 
     /**
      * @ORM\OneToMany(
@@ -172,16 +166,6 @@ class Category
         return $this->lvl;
     }
 
-    public function getSimupoll()
-    {
-        return $this->simupoll;
-    }
-
-    public function setSimupoll(Simupoll $simupoll)
-    {
-        $this->simupoll = $simupoll;
-    }
-
     public function getUser()
     {
         return $this->user;
@@ -191,6 +175,7 @@ class Category
     {
         $this->user = $user;
     }
+
     /**
      * allows hierachy display
      * @return string

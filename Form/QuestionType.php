@@ -11,11 +11,23 @@ use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 class QuestionType extends AbstractType
 {
     /**
+     * @var int the simupoll
+     */
+    private $simupoll;
+
+    public function __construct($simupoll)
+    {
+        $this->simupoll = $simupoll;
+    }
+
+    /**
      * @param FormBuilderInterface $builder
      * @param array $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $simupoll    = $this->simupoll;
+
         $builder
             ->add('title', 'text', array(
                     'label' => 'question_title',
@@ -28,10 +40,17 @@ class QuestionType extends AbstractType
                     'required' => true,
                     'empty_value' => 'category_choice',
                     'choice_label' => 'indentedName',   //the formated name
-                    'query_builder' => function (NestedTreeRepository $cr)  {
+                    'query_builder' => function (NestedTreeRepository $cr) use ($simupoll) {
                         //https://github.com/l3pp4rd/DoctrineExtensions/blob/master/doc/tree.md#repository-methods-all-strategies
                         //node (null = all nodes), direct (true or null), sortByField, direction, includeNode (true/false)
-                        return $cr->getChildrenQueryBuilder(null, null, 'lft', 'asc', false);
+                        //return $cr->getChildrenQueryBuilder(null, null, 'lft', 'asc', false);
+
+                        //use custom QB, because can't use custom field (simupoll) with getChildrenQueryBuilder
+                        $qb = $cr->createQueryBuilder('c')
+                            ->where('c.simupoll = :simupoll')
+                            ->setParameter('simupoll', $simupoll);
+                        $qb->orderBy('c.lft', 'ASC');
+                        return $qb;
                     },
                 )
             )

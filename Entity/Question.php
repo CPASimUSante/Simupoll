@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\Resource\AbstractResource;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Table(name="cpasimusante__simupoll_question")
@@ -42,7 +43,11 @@ class Question
     /**
      * @var integer $orderq
      *
-     * @ORM\Column(name="orderq", type="integer")
+     * @ORM\Column(name="orderq", type="integer", options={"default" = 0})
+     * @Assert\Type(type = "numeric")
+     * @Assert\NotBlank(
+     *   message = "The order should not be blank and be a number"
+     * )
      */
     private $orderq;
 
@@ -74,7 +79,6 @@ class Question
     public function __construct()
     {
         $this->propositions = new ArrayCollection();
-        $this->orderq = 0;
     }
 
     /**
@@ -165,13 +169,13 @@ class Question
      */
     public function addProposition(\CPASimUSante\SimupollBundle\Entity\Proposition $proposition)
     {
-        /*       $this->items[] = $item;
-               //$item->setItemselector($this);
-               return $this;
-       */
+        $this->propositions[] = $proposition;
         $proposition->setQuestion($this);
-
+        return $this;
+       /*
+        $proposition->setQuestion($this);
         $this->propositions->add($proposition);
+        */
     }
 
     /**
