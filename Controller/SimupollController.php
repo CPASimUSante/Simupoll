@@ -66,19 +66,6 @@ class SimupollController extends Controller
 
             $form->handleRequest($request);
             if ($form->isValid()) {
-/*
-                echo 'Before :'.$simupoll->getQuestions()->count().'<br>';
-                foreach($simupoll->getQuestions() as $q)
-                {
-                    echo 'Question : '.$q->getTitle().'<br>';
-                    foreach($q->getPropositions() as $p)
-                    {
-                        echo 'Propo : '.$p->getChoice().'<br>';
-                        // echo '<pre>';var_dump($p->getChoice());echo '</pre>';
-                    }
-                    echo '<br>';
-                }
-*/
 
                 // remove the relationship between the question and the Simupoll
                 foreach ($originalQuestions as $question) {
@@ -182,11 +169,10 @@ class SimupollController extends Controller
         {
             $allowToCompose = 1;
             //retrieve max level of category
-/*            $maxCategoryLevel = $em->getRepository('CPASimUSanteSimupollBundle:Category')
-                ->getMaxLevel($simupoll);
-*/
+            $maxCategoryLevel = $em->getRepository('CPASimUSanteSimupollBundle:Category')->getMaxLevel($simupoll);
+
             return array(
-                'maxCategoryLevel'  => 4,
+                'maxCategoryLevel'  => $maxCategoryLevel['maxlevel'],
                 'allowToCompose'    => $allowToCompose,
                 '_resource'         => $simupoll,
             );

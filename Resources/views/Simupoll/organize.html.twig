@@ -26,19 +26,20 @@
                 <form action="#" method="post">
                     <h2>How to display the questions</h2>
                     <p>
-                        <input name="questdisp" type="radio" value="0"> All questions
+                        <input name="questdisp" type="radio" value="0" checked> All questions
                     </p>
                     <p>
                         <input name="questdisp" type="radio" value="1"> Max number of question per page ?   <input type="text" name="max_question_per_page" value="0">
                     </p>
                     <p>
-                        <input name="questdisp" type="radio" value="2"> All question from a category (and its sub-categories)
+                        <input name="questdisp" type="radio" value="2"> All question from category level
 
                         <select name="question_per_category_level">
                             {% for level in 0..maxCategoryLevel %}
                                 <option value="{{ level }}">{{ level }}</option>
                             {% endfor %}
                         </select>
+                        (= and its sub-categories)
                     </p>
                     <p>
                         <input name="questdisp" type="radio" value="3"> Create group of questions

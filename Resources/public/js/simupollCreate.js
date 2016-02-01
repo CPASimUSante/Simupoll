@@ -1,61 +1,73 @@
 (function () {
     'use strict';
-
+    var translation= window.Translator;
     //question management
-    var $collectionQuestionHolder = $('.questionholder');
-    var $collectionQuestion = $('.questiongroup');
-    var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> '+Translator.trans('question_add', {}, 'resource') +'</a>');
+    var $collectionQuestionHolder = $('ul.questiongroup');
+    var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span>x '+translation.trans('question_add', {}, 'resource') +'</a>');
     var $newQuestionLink = $('<li></li>').append($addQuestionLink);
 
-    //Proposition management
-    var $collectionPropositionHolder = $('.propositionholder');
-    var $collectionProposition = $('.propositiongroup');
-    var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> '+Translator.trans('proposition_add', {}, 'resource')+'</a>');
-    var $newPropositionLink = $('<li></li>').append($addPropositionLink);
-
     // add the "add a question" anchor and li to the tags ul
-    $collectionQuestion.append($newQuestionLink);
+    $collectionQuestionHolder.append($newQuestionLink);
 
     // count the current form inputs we have (e.g. 2), use that as the new
     // index when inserting a new question (e.g. 2)
     $collectionQuestionHolder.data('index', $collectionQuestionHolder.find(':input').length);
 
     //add a new question
-    $collectionQuestion.on('click', '.add_question_link', function(e) {
+    $collectionQuestionHolder.on('click', '.add_question_link', function(e) {
         // prevent the link from creating a "#" on the URL
         e.preventDefault();
 
         // add a new proposition form
         var indexQ = addQuestionForm($collectionQuestionHolder, $newQuestionLink);
 
-    });
+        //Proposition management
+        var $collectionPropositionHolder = $('#liquestion'+indexQ).find('.propositiongroup');
+        var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('proposition_add', {}, 'resource')+'</a>');
+        var $newPropositionLink = $('<li></li>').append($addPropositionLink);
 
-    // add a delete link to all of the existing questions form li elements
-    $collectionQuestion.find('li.question').each(function() {
+        // add the "add a proposition" anchor and li to the tags ul
+        $collectionPropositionHolder.append($newPropositionLink);
+
+        //add a new proposition
+        $addPropositionLink.on('click', function(e) {
+            // prevent the link from creating a "#" on the URL
+            e.preventDefault();
+
+            // add a new proposition form
+            addPropositionForm($collectionPropositionHolder, $newPropositionLink);
+        });
+
+    });
+    //Existing elements :
+    // add a delete link for questions
+    $collectionQuestionHolder.find('li.question').each(function() {
         addQuestionFormDeleteLink(this);
     });
 
-    // add the "add a proposition" anchor and li to the tags ul
-    $collectionProposition.append($newPropositionLink);
-
-    //add a new proposition
-    $collectionProposition.on('click', $addPropositionLink, function(e) {
-        // prevent the link from creating a "#" on the URL
-        e.preventDefault();
-
-        // add a new proposition form
-        addPropositionForm($collectionPropositionHolder, $newPropositionLink);
-    });
-
-    // add a delete link to all of the existing questions form li elements
-    $collectionProposition.find('li.proposition').each(function() {
+    // add a delete link for propositions
+    $('.propositiongroup').find('li.proposition').each(function() {
         addPropositionFormDeleteLink(this);
     });
 
+    $('.propositiongroup').each(function() {
+        var propositionGroup = $(this);
+        var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('proposition_add', {}, 'resource')+'</a>');
+        var $newPropositionLink = $('<li></li>').append($addPropositionLink);
+        propositionGroup.append($newPropositionLink);
+        //add a new proposition
+        $addPropositionLink.on('click', function(e) {
+            // prevent the link from creating a "#" on the URL
+            e.preventDefault();
+
+            // add a new proposition form
+            addPropositionForm(propositionGroup, $newPropositionLink);
+        });
+    });
     //add question button
     function addQuestionForm($collectionQuestionHolder, $newQuestionLink) {
         //1 - Get the data-prototype
-        var prototype = $collectionQuestionHolder.data('questionprototype');
+        var prototype = $collectionQuestionHolder.data('prototype');
 
         //2 - get the new index
         var indexQ = $collectionQuestionHolder.data('index');
@@ -89,7 +101,7 @@ console.log('indexQ='+indexQ);
 
     //remove question button
     function addQuestionFormDeleteLink($questionFormLi) {
-        var $removeFormA = $('<p><a href="#" class="remove-question btn btn-danger"><span class="fa fa-trash"></span> '+ Translator.trans('question_delete', {}, 'resource')+'</a></p>');
+        var $removeFormA = $('<p><a href="#" class="remove-question btn btn-danger"><span class="fa fa-trash"></span> '+ translation.trans('question_delete', {}, 'resource')+'</a></p>');
         $removeFormA.appendTo($questionFormLi);
 
         $($removeFormA).find("a").on('click', function(e) {
@@ -103,7 +115,7 @@ console.log('indexQ='+indexQ);
     //add proposition button
     function addPropositionForm($collectionPropositionHolder, $newPropositionLink) {
         // Get the data-prototype
-        var prototype = $collectionPropositionHolder.data('propositionprototype');
+        var prototype = $collectionPropositionHolder.data('prototype');
 
         // get the new index
         var indexP = $collectionPropositionHolder.data('index');
@@ -134,7 +146,7 @@ console.log(prototype);
 
     //remove proposition button
     function addPropositionFormDeleteLink($propositionFormLi) {
-        var $removeFormA = $('<td><a href="#" class="remove-proposition btn btn-danger" title="'+ Translator.trans('proposition_delete', {}, 'resource')+'"><span class="fa fa-trash"></span></a></td>');
+        var $removeFormA = $('<td><a href="#" class="remove-proposition btn btn-danger" title="'+ translation.trans('proposition_delete', {}, 'resource')+'"><span class="fa fa-trash"></span></a></td>');
         $($propositionFormLi).find("tr").append($removeFormA);
 
         $($removeFormA).find("a").on('click', function(e) {

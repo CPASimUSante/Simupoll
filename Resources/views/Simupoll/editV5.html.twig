@@ -32,8 +32,7 @@
         <tr>
             <td class="question_label">{{ form_label(form.propositions) }}</td>
             <td class="question_widget">
-                <ul class="propositiongroup"
-                    data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}">
+                <ul class="propositiongroup">
                     {# Add already saved propositions #}
                     {% for proposition in form.propositions %}
                         <li class="proposition">{{ _self.proposition_prototype(proposition) }}</li>
@@ -58,13 +57,33 @@
                 <hr>
 
                 <h3>{{ 'simupoll_question_add'|trans({}, 'resource') }}</h3>
-                <ul class="questiongroup"
-                    data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
+                
+                {#
+                <div class="questionholder"
+                     data-questionprototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
+                </div>
+                <div class="propositionholder"
+                     data-propositionprototype="{{ _self.proposition_prototype(form.questions.vars.prototype.propositions.vars.prototype)|e }}">
+                </div>
+                #}
+
+                <ul class="questiongroup" id="questiongroup" data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
                     {# Add already saved questions #}
                     {% for question in form.questions %}
-                        <li class="question" id="liquestion{{ loop.index -1 }}">{{ _self.question_prototype(question) }}</li>
+                        <li class="question" id="liquestion{{ loop.index -1 }}">
+                            {{ _self.question_prototype(question) }}
+                            <ul class="propositiongroup" id="propositiongroup" data-prototype="{{ _self.proposition_prototype(form.questions.vars.prototype.propositions.vars.prototype)|e }}">
+                                {# Add already saved propositions #}
+                                {% for proposition in question.propositions %}
+                                    <li class="proposition" id="liproposition{{ loop.index -1 }}">
+                                        {{ _self.proposition_prototype(proposition) }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
                     {% endfor %}
                 </ul>
+
             </div>
 
             <div class="panel-footer">
@@ -85,11 +104,4 @@
     {# Claroline JS #}
     {{ parent() }}
     <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollCreate.js') }}'></script>
-    {#
-    <script type="text/javascript">
-        $(document).ready(function() {
-
-        });
-    </script>
-    #}
 {% endblock %}

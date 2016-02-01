@@ -11,7 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 /**
  * Simupoll categories
  *
- * @ORM\Entity(repositoryClass="Gedmo\Tree\Entity\Repository\NestedTreeRepository")
+ * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\CategoryRepository")
  * @ORM\Table(
  *      name="cpasimusante__simupoll_category",
  *      uniqueConstraints={
