@@ -60,12 +60,11 @@ class CategoryController extends Controller
             ->orderBy('node.root, node.lft', 'ASC')
             ->where('node.simupoll = ?1')
             ->setParameters(array(1 => $simupoll))
-            ->getQuery()
-        ;
+            ->getQuery();
 
         $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
         //options for the tree display
-
+/*
         $options = array(
             'decorate' => true,
             'rootOpen' => '<ul>',
@@ -78,8 +77,8 @@ class CategoryController extends Controller
                 return $node['name'].$add.$delete;
             }
         );
+*/
 
-/*
          $options = array(
             'decorate' => true,
             'rootOpen' => '',
@@ -89,10 +88,10 @@ class CategoryController extends Controller
             'nodeDecorator' => function($node) use ($sid) {
                 $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-plus"></i></a>';
                 $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-trash"></i></a>';
-                return '<td>'.$node['name'].'</td><td class="col-md-1">'.$add.'</td><td class="col-md-1">'.$delete.'</td>';
+                return '<td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td><td class="col-md-1">'.$add.'</td><td class="col-md-1">'.$delete.'</td>';
             }
         );
-*/
+
      /*   $htmlTree = $repo->childrenHierarchy(
             null, // starting from root node
             false, // true: load all children, false: only direct

@@ -19,4 +19,12 @@ proposition_add: Ajouter une proposition
 proposition_delete: Supprimer la proposition
 proposition_value: Les propositions
 
+question_count: Nombre de questions
+question_group: Créer des groupes de questions
+question_all_from_lvl: Toute les questions par niveau de catégorie
+question_max_par_page: Nombre max. de question par page ?
+question_all: Toutes les questions
+question_display_method: Comment afficher les questions
+question_subcategories: = et ses sous-catégories
+
 simupoll_question_add: Indiquez les questions associées à ce Simupoll

@@ -168,10 +168,36 @@ class SimupollController extends Controller
         if (is_object($user) && ($simupollAdmin === true) )
         {
             $allowToCompose = 1;
+            $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
             //retrieve max level of category
-            $maxCategoryLevel = $em->getRepository('CPASimUSanteSimupollBundle:Category')->getMaxLevel($simupoll);
+            $maxCategoryLevel = $repo->getMaxLevel($simupoll);
+
+            //display tree of categories for group
+            $query = $em->createQueryBuilder()
+                ->select('node')
+                ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
+                ->orderBy('node.root, node.lft', 'ASC')
+                ->where('node.simupoll = ?1')
+                ->setParameters(array(1 => $simupoll))
+                ->getQuery();
+            $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Question');
+
+            $options = array(
+                'decorate' => true,
+                'rootOpen' => '',
+                'rootClose' => '',
+                'childOpen' => '<tr>',
+                'childClose' => '</tr>',
+                'nodeDecorator' => function($node) use ($repoCat) {
+                    $qcount = $repoCat->getQuestionCount($node['id']);
+                    $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]">';
+                    return '<td class="col-md-1">'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+                }
+            );
+            $tree = $repo->buildTree($query->getArrayResult(), $options);
 
             return array(
+                'tree'              => $tree,
                 'maxCategoryLevel'  => $maxCategoryLevel['maxlevel'],
                 'allowToCompose'    => $allowToCompose,
                 '_resource'         => $simupoll,

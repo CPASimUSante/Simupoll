@@ -24,7 +24,24 @@
             <hr>
 
             <form action="#" method="post" name="formResponse" id="formResponse">
-                <ul>
+                {% for category in categories %}
+                    <h{{ category.lvl + 1 }}>{{ category.name }}</h{{ category.lvl + 1 }}><br>
+                    {% for question in questions %}
+                        {% if question.category.id == category.id %}
+                            <p><span>{{ question.title }}</span>
+                            <ul>
+                            {% for proposition in question.propositions %}
+                                <li>
+                                    <input type="radio" name="q{{ question.id }}" value="p{{ proposition.id }}">
+                                    <label>{{ proposition.choice }}</label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                    {#
                     {% for question in _resource.questions %}
                         <li><b>{{ question.category.name }}</b>
                             <table class="table">
@@ -41,6 +58,7 @@
                             </table>
                         </li>
                     {% endfor %}
+                    #}
                 </ul>
                 <input class="form-control" type="hidden" name="somehidden" value="something"/>
                 <input type="button" value="{{ "next" | trans }}" class="btn btn-primary" id="nextpage" />

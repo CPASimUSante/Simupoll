@@ -30,5 +30,6 @@ http://stackoverflow.com/questions/23238487/symfony2-save-embedding-collection-f
 
 TODO :
 Simupoll creation :
-- translation in js not working
-- add/delete not working in already saved proposition
+
+Category :
+Dragn drop + change order

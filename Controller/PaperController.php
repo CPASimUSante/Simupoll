@@ -2,6 +2,7 @@
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
+use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Paper;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,13 +45,20 @@ class PaperController extends Controller
          $workspace = $simupoll->getResourceNode()->getWorkspace();
          $user = $this->container->get('security.token_storage')
              ->getToken()->getUser();
-         $uid = $user->getId();
-
-         $session = $session = $this->container->get('session');
+             $uid = $user->getId();
 
          $em = $this->getDoctrine()->getManager();
+         $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
+             ->findBy(
+                 array('simupoll' => $simupoll),
+                 array('root' => 'ASC', 'lvl' => 'ASC')
+             );
          $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-             ->findBySimupoll($simupoll);
+             ->findBy(array('simupoll' => $simupoll));
+         /*
+          $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+             ->findBy(array('simupoll',$simupoll));
+         */
 /*
          //Verify if it exists a not finished paper
          $paper = $this->getDoctrine()
@@ -79,6 +87,7 @@ class PaperController extends Controller
          $session->save('exerciseID', $simupoll->getId());
 */
          return array(
+             'categories'       => $categories,
              'questions'        => $questions,
              'workspace'        => $workspace,
              '_resource'        => $simupoll
@@ -118,25 +127,25 @@ class PaperController extends Controller
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
 
         $em = $this->getDoctrine()->getManager();
-        $exercise = $em->getRepository('UJMExoBundle:Exercise')->find($exoID);
-        $workspace = $exercise->getResourceNode()->getWorkspace();
 
-        $exoAdmin = $exerciseSer->isExerciseAdmin($exercise);
+        $workspace = $simupoll->getResourceNode()->getWorkspace();
 
-        $this->checkAccess($exercise);
+        $exoAdmin = $exerciseSer->isExerciseAdmin($simupoll);
+
+        $this->checkAccess($simupoll);
 
         if ($exoAdmin === true) {
             $paper = $this->getDoctrine()
                 ->getManager()
                 ->getRepository('UJMExoBundle:Paper')
-                ->getExerciseAllPapers($exoID);
+                ->getExerciseAllPapers($simupoll->getId());
             $nbUserPaper = $exerciseSer->getNbPaper($user->getId(),
-                $exercise->getId());
+                $simupoll->getId());
         } else {
             $paper = $this->getDoctrine()
                 ->getManager()
                 ->getRepository('UJMExoBundle:Paper')
-                ->getExerciseUserPapers($user->getId(), $exoID);
+                ->getExerciseUserPapers($user->getId(), $simupoll->getId());
             $nbUserPaper = count($paper);
         }
 
@@ -169,21 +178,21 @@ class PaperController extends Controller
             $arrayMarkPapers[$p->getId()] = $this->container->get('ujm.exercise_services')->getInfosPaper($p);
         }
 
-        if (($exerciseSer->controlDate($exoAdmin, $exercise) === true)
-            && ($exerciseSer->controlMaxAttemps($exercise, $user, $exoAdmin) === true)
-            && ( ($exercise->getPublished() === true) || ($exoAdmin == 1) )
+        if (($exerciseSer->controlDate($exoAdmin, $simupoll) === true)
+            && ($exerciseSer->controlMaxAttemps($simupoll, $user, $exoAdmin) === true)
+            && ( ($simupoll->getPublished() === true) || ($exoAdmin == 1) )
         ) {
             $retryButton = true;
         }
 
-        if ($exercise->getMaxAttempts() > 0) {
+        if ($simupoll->getMaxAttempts() > 0) {
             if ($exoAdmin === false) {
-                $nbAttemptAllowed = $exercise->getMaxAttempts() - count($paper);
+                $nbAttemptAllowed = $simupoll->getMaxAttempts() - count($paper);
             }
         }
 
         $badgesInfoUser = $exerciseSer->badgesInfoUser(
-            $user->getId(), $exercise->getResourceNode()->getId(),
+            $user->getId(), $simupoll->getResourceNode()->getId(),
             $this->container->getParameter('locale'));
 
         $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')
@@ -203,7 +212,7 @@ class PaperController extends Controller
                 'badgesInfoUser'   => $badgesInfoUser,
                 'nbUserPaper'      => $nbUserPaper,
                 'nbQuestions'      => $nbQuestions['nbq'],
-                '_resource'        => $exercise,
+                '_resource'        => $simupoll,
                 'arrayMarkPapers'  => $arrayMarkPapers
             )
         );

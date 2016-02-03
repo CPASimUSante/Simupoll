@@ -24,26 +24,31 @@
 
             {% if allowToCompose == 1 %}
                 <form action="#" method="post">
-                    <h2>How to display the questions</h2>
+                    <h2>{{ 'question_display_method'|trans({}, 'resource') }}</h2>
                     <p>
-                        <input name="questdisp" type="radio" value="0" checked> All questions
+                        <input name="questdisp" type="radio" value="0" checked> {{ 'question_all'|trans({}, 'resource') }}
                     </p>
                     <p>
-                        <input name="questdisp" type="radio" value="1"> Max number of question per page ?   <input type="text" name="max_question_per_page" value="0">
+                        <input name="questdisp" type="radio" value="1"> {{ 'question_max_par_page'|trans({}, 'resource') }}
+                        <input type="text" name="max_question_per_page" value="0">
                     </p>
                     <p>
-                        <input name="questdisp" type="radio" value="2"> All question from category level
+                        <input name="questdisp" type="radio" value="2"> {{ 'question_all_from_lvl'|trans({}, 'resource') }}
 
                         <select name="question_per_category_level">
                             {% for level in 0..maxCategoryLevel %}
                                 <option value="{{ level }}">{{ level }}</option>
                             {% endfor %}
                         </select>
-                        (= and its sub-categories)
+                        {{ 'question_subcategories'|trans({}, 'resource') }}
                     </p>
-                    <p>
-                        <input name="questdisp" type="radio" value="3"> Create group of questions
-                    </p>
+                    <div>
+                        <p><input name="questdisp" type="radio" value="3"> {{ 'question_group'|trans({}, 'resource') }}</p>
+                        <table class="table">
+                            <tr><th><input type="checkbox"></th><th>{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                            {{ tree |raw }}
+                        </table>
+                    </div>
                     <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
                     <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
                 </form>
