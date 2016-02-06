@@ -55,7 +55,7 @@ class Question
      * @var Simupoll
      *
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Simupoll", inversedBy="questions")
-     * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id",onDelete="CASCADE")
      */
     protected $simupoll;
 
@@ -63,6 +63,7 @@ class Question
      * Category of question
      *
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Category")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="id",onDelete="CASCADE")
      */
     private $category;
 

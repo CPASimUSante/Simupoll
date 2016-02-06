@@ -130,12 +130,9 @@ class SimupollController extends Controller
             $allowToCompose = 1;
         }
 
-      //  $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')->getCountQuestion($simupoll->getId());
-
         return array(
             '_resource'         => $simupoll,
-            'allowToCompose'    => $allowToCompose,
-           // 'nbQuestion'        => $nbQuestions['nbq'],
+            'allowToCompose'    => $allowToCompose
         );
     }
 
@@ -191,7 +188,7 @@ class SimupollController extends Controller
                 'nodeDecorator' => function($node) use ($repoCat) {
                     $qcount = $repoCat->getQuestionCount($node['id']);
                     $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]">';
-                    return '<td class="col-md-1">'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
                 }
             );
             $tree = $repo->buildTree($query->getArrayResult(), $options);

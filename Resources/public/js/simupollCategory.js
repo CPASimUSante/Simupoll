@@ -3,10 +3,22 @@
 
     var modal = window.Claroline.Modal;
 
+    //modify a category
+    $('#category_content').on('click', '.category-modify-btn', function () {
+        var idcategory = $(this).data('id');
+        var idsimupoll = $(this).data('sid');
+        modal.displayForm(
+            Routing.generate('cpasimusante_simupoll_category_modify', {'idcategory': idcategory, 'idsimupoll':idsimupoll}),
+            refreshPage,
+            function() {}
+        );
+    });
+
     //add a category
     $('#category_content').on('click', '.category-add-btn', function () {
         var idcategory = $(this).data('id');
         var idsimupoll = $(this).data('sid');
+
         modal.displayForm(
             Routing.generate('cpasimusante_simupoll_category_add_form', {'idcategory': idcategory, 'idsimupoll':idsimupoll}),
             refreshPage,

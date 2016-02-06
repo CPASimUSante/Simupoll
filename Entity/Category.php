@@ -79,6 +79,7 @@ class Category
 
     /**
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Simupoll")
+     * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $simupoll;
 

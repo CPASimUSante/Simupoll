@@ -45,7 +45,7 @@
                     <div>
                         <p><input name="questdisp" type="radio" value="3"> {{ 'question_group'|trans({}, 'resource') }}</p>
                         <table class="table">
-                            <tr><th><input type="checkbox"></th><th>{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                            <tr><th class="col-md-1"><input type="checkbox"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
                             {{ tree |raw }}
                         </table>
                     </div>

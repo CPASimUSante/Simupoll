@@ -5,12 +5,12 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Response
+ * Answer
  *
- * @ORM\Table(name="cpasimusante__simupoll_response")
- * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\ResponseRepository")
+ * @ORM\Table(name="cpasimusante__simupoll_answer")
+ * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\AnswerRepository")
  */
-class Response
+class Answer
 {
     /**
      * @var integer
@@ -31,9 +31,9 @@ class Response
     /**
      * @var string
      *
-     * @ORM\Column(name="response", type="text")
+     * @ORM\Column(name="answer", type="text")
      */
-    private $response;
+    private $answer;
 
     /**
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Paper")
@@ -86,21 +86,21 @@ class Response
      *
      * @return Response
      */
-    public function setResponse($response)
+    public function setAnswer($answer)
     {
-        $this->response = $response;
+        $this->answer = $answer;
 
         return $this;
     }
 
     /**
-     * Get response
+     * Get answer
      *
      * @return string
      */
-    public function getResponse()
+    public function getAnswer()
     {
-        return $this->response;
+        return $this->answer;
     }
 
     public function setPaper(\CPASimUSante\SimupollBundle\Entity\Paper $paper)

@@ -64,20 +64,6 @@ class CategoryController extends Controller
 
         $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
         //options for the tree display
-/*
-        $options = array(
-            'decorate' => true,
-            'rootOpen' => '<ul>',
-            'rootClose' => '</ul>',
-            'childOpen' => '<li>',
-            'childClose' => '</li>',
-            'nodeDecorator' => function($node) use ($sid) {
-                $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-plus"></i></a>';
-                $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-trash"></i></a>';
-                return $node['name'].$add.$delete;
-            }
-        );
-*/
 
          $options = array(
             'decorate' => true,
@@ -86,24 +72,19 @@ class CategoryController extends Controller
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
             'nodeDecorator' => function($node) use ($sid) {
+                $modify = ' <a class="btn btn-primary btn-sm category-modify-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-edit"></i></a>';
                 $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-plus"></i></a>';
                 $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-trash"></i></a>';
-                return '<td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td><td class="col-md-1">'.$add.'</td><td class="col-md-1">'.$delete.'</td>';
+                return '<td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td><td class="col-md-1">'.$modify.'</td><td class="col-md-1">'.$add.'</td><td class="col-md-1">'.$delete.'</td>';
             }
         );
 
-     /*   $htmlTree = $repo->childrenHierarchy(
-            null, // starting from root node
-            false, // true: load all children, false: only direct
-            $options
-        );
-*/
         $tree2 = $repo->buildTree($query->getArrayResult(), $options);
 
         return array(
             '_resource' => $simupoll,
-            //'tree' => $htmlTree,
-            'tree2' => $tree2,
+            'sid'       => $sid,
+            'tree2'     => $tree2
         );
     }
 
@@ -211,5 +192,44 @@ class CategoryController extends Controller
         {
             return array();
         }
+    }
+
+    /**
+     * Data for modal form for category modify
+     *
+     * @EXT\Route(
+     *     "/modify/form/{idcategory}/{idsimupoll}",
+     *     name="cpasimusante_simupoll_category_modify",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("CPASimUSanteSimupollBundle:Category:modifyCategory.html.twig")
+     */
+    public function categoryModifyAction(Request $request, $idcategory, $idsimupoll)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $user = $this->container
+            ->get('security.token_storage')
+            ->getToken()->getUser();
+        $category = $em->getRepository('CPASimUSanteSimupollBundle:Category')
+            ->findOneBy(
+                array(
+                    'id'=>$idcategory,
+                    'user'=>$user
+                ));
+        $form = $this->get('form.factory')
+            ->create(new CategoryType(), $category);
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            $em->persist($category);
+            $em->flush();
+            return new JsonResponse('success', 200);
+        }
+
+        return array(
+            'form' => $form->createView(),
+            'parent' => $idcategory,
+            'idsimupoll' => $idsimupoll
+        );
     }
 }

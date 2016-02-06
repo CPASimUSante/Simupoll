@@ -1,6 +1,7 @@
 <?php
 namespace CPASimUSante\SimupollBundle\Form;
 
+use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -13,7 +14,7 @@ class SimupollType extends AbstractType
      */
     private $simupoll;
 
-    public function __construct($simupoll)
+    public function __construct($simupoll = 0)
     {
         $this->simupoll = $simupoll;
     }

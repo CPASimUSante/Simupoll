@@ -10,4 +10,23 @@ namespace CPASimUSante\SimupollBundle\Repository;
  */
 class PaperRepository extends \Doctrine\ORM\EntityRepository
 {
+    /**
+     * Get unfinished paper for user
+     *
+     * @param $userID
+     * @param $simupollID
+     * @return array
+     */
+    public function getPaper($userID, $simupollID)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->join('p.user', 'u')
+            ->join('p.simupoll', 's')
+            ->where('u.id = :userid')
+            ->andWhere('s.id = :simupollid')
+            ->andWhere('p.end IS NULL')
+            ->setParameters(array('userid'=>$userID, 'simupollid' => $simupollID));
+
+        return $qb->getQuery()->getResult();
+    }
 }

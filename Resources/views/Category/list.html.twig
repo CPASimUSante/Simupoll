@@ -23,9 +23,8 @@
             <hr>
             {% if (tree2 != '') %}
                <table class="table"> {{ tree2 |raw }}</table>
-            {#{{ tree2 |raw }}#}
             {% else %}
-                <a class="btn btn-primary btn-sm category-add-btn" data-id="0" href="#"><i class="fa fa-plus"></i> Ajouter une catégorie</a>
+                <a class="btn btn-primary btn-sm category-add-btn" data-id="0" data-sid="{{ sid }}" href="#"><i class="fa fa-plus"></i> {{ 'category_root_add'|trans({}, 'resource') }}</a>
             {% endif %}
         </div>
     </div>

@@ -11,8 +11,9 @@
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
+    {% set token = csrf_token('') %}
     <div class="panel panel-default">
-
+        <form action="#" method="post" name="paperResponse" id="paperResponse">
         <div class="panel-heading">
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
@@ -22,60 +23,49 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-
-            <form action="#" method="post" name="formResponse" id="formResponse">
-                {% for category in categories %}
-                    <h{{ category.lvl + 1 }}>{{ category.name }}</h{{ category.lvl + 1 }}><br>
-                    {% for question in questions %}
-                        {% if question.category.id == category.id %}
-                            <p><span>{{ question.title }}</span>
-                            <ul>
-                            {% for proposition in question.propositions %}
-                                <li>
-                                    <input type="radio" name="q{{ question.id }}" value="p{{ proposition.id }}">
-                                    <label>{{ proposition.choice }}</label>
-                                </li>
-                            {% endfor %}
+{#http://knplabs.com/fr/blog/symfony-validators-standalone#}
+            <div id="errormsg"></div>
+            {% for category in categories %}
+                <h{{ category.lvl + 1 }}>{{ category.name }}</h{{ category.lvl + 1 }}><br>
+                {% for question in questions %}
+                    {% if question.category.id == category.id %}
+                        <p><span>{{ question.title }}</span>
+                        <ul class="simuproposition">
+                        {% for proposition in question.propositions %}
+                            {% set checked = "" %}
+                            {#
+                            {% if regexTwig('/' ~ choice.id ~ ';/', response) > 0 %}
+                                {% set checked = "checked" %}
+                            {% endif %}
+                            #}
+                            <li>
+                                <input type="radio" class="propositionchoice" name="choice[{{ question.id }}]" data-question="{{ question.id }}" id="choice[{{ question.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                <label>{{ proposition.choice }}</label>
+                            </li>
+                        {% endfor %}
                         </ul>
-                            </p>
-                        {% endif %}
-                    {% endfor %}
+                        </p>
+                    {% endif %}
                 {% endfor %}
-                    {#
-                    {% for question in _resource.questions %}
-                        <li><b>{{ question.category.name }}</b>
-                            <table class="table">
-                                <tr>
-                                    <td>{{ question.title }}</td>
-                                    {% for proposition in question.propositions %}
-                                    {% set checked = "" %}
-                                        <td>
-                                            <input type="radio" name="choice" value="{{ question.id }}-{{ proposition.id }}" {{ checked }}/>
-                                            {{ proposition.choice }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                            </table>
-                        </li>
-                    {% endfor %}
-                    #}
-                </ul>
-                <input class="form-control" type="hidden" name="somehidden" value="something"/>
-                <input type="button" value="{{ "next" | trans }}" class="btn btn-primary" id="nextpage" />
-                <input type="button" value="{{ "exit" | trans }}" class="btn btn-danger" id="exitpage" />
-            </form>
-
+            {% endfor %}
         </div>
 
         <div class="panel-footer">
-
+            <input class="form-control" type="hidden" name="questions" id="questions" value="{{ questions|length }}"/>
+            <input class="form-control" type="hidden" name="sid" id="sid" value="{{ _resource.getId() }}"/>
+            <input type="submit" value="{{ 'next' | trans }}" class="btn btn-primary" id="nextpage" />
+            <input type="button" value="{{ 'exit' | trans }}" class="btn btn-danger" id="exitpage" />
         </div>
+        </form>
     </div>
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
+    <style>
+        .simuproposition li{display: inline}
+    </style>
 {% endblock %}
 
 {% block javascripts %}
@@ -84,7 +74,32 @@
    {# <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
     <script type="text/javascript">
         $(document).ready(function() {
+            $('#paperResponse').on('submit', function(event){
+                event.preventDefault();
+                var $sid = $('#sid').val();
+                var choice = [];
+                $('input.propositionchoice:checked').each(function(){
+                    choice.push([$(this).data('question'), $(this).val()]);
+                });
 
+                if (choice.length != $('#questions').val()) {
+                    $('#errormsg').html('Attention');
+                } else {  }
+
+                var data ={};
+                data.choice = choice;
+
+                $.ajax({
+                    type:"POST",
+                    data:data,
+                    url: Routing.generate('cpasimusante_simupoll_paper_save', {sid: $sid}),
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { }
+                });
+
+            });
         });
     </script>
 {% endblock %}
