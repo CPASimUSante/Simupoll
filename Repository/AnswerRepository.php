@@ -10,4 +10,24 @@ namespace CPASimUSante\SimupollBundle\Repository;
  */
 class AnswerRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function getSimupollAllResponsesForAllUsersQuery($simupollId, $order)
+    {
+        return $this->getQuerySimupollAllResponsesForAllUsers($simupollId, $order)->getResult();
+    }
+    /**
+     *
+     * @return array
+     */
+    public function getQuerySimupollAllResponsesForAllUsers($simupollId, $order)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('a')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
+            ->join('a.paper', 'p')
+            ->join('p.simupoll', 's')
+            ->where('s.id = :sid')
+//            ->orderBy($order, 'ASC')
+            ->setParameters(array('sid' => $simupollId));
+        return $qb->getQuery();
+    }
 }
