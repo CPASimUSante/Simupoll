@@ -38,4 +38,18 @@ class QuestionRepository extends EntityRepository
             ->setParameter('simupoll', $sid);
         return $qb->getQuery()->getResult();
     }
+
+    public function getQuestionsWithAnswers($sid, $pid)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('q')
+            ->addSelect('a.id, a.answer')
+            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
+            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q')
+            ->where('q.simupoll = :simupoll')
+            ->andWhere('a.paper = :paper')
+            ->orderBy('q.id', 'ASC')
+            ->setParameters(array('simupoll'=>$sid, 'paper' =>$pid));
+        return $qb->getQuery()->getResult();
+    }
 }

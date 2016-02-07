@@ -24,30 +24,32 @@
             </a>
             <hr>
 {#http://knplabs.com/fr/blog/symfony-validators-standalone#}
-            <div id="errormsg"></div>
+            <div id="messagediv"></div>
+
             {% for category in categories %}
-                <h{{ category.lvl + 1 }}>{{ category.name }}</h{{ category.lvl + 1 }}><br>
+                <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
                 {% for question in questions %}
-                    {% if question.category.id == category.id %}
-                        <p><span>{{ question.title }}</span>
-                        <ul class="simuproposition">
-                        {% for proposition in question.propositions %}
-                            {% set checked = "" %}
-                            {#
-                            {% if regexTwig('/' ~ choice.id ~ ';/', response) > 0 %}
-                                {% set checked = "checked" %}
-                            {% endif %}
-                            #}
-                            <li>
-                                <input type="radio" class="propositionchoice" name="choice[{{ question.id }}]" data-question="{{ question.id }}" id="choice[{{ question.id }}]" value="{{ proposition.id }}" {{ checked }}/>
-                                <label>{{ proposition.choice }}</label>
-                            </li>
-                        {% endfor %}
-                        </ul>
-                        </p>
-                    {% endif %}
+                    {# needed because the query result are different whether there's an answer or not #}
+                    {% if paper != 0 %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
+                    {% if thequestion.category.id == category.id %}
+                            <p><span class="">{{ thequestion.title }}</span>
+                            <ul class="simuproposition">
+                                {% for proposition in thequestion.propositions %}
+                                    {% set checked = "" %}
+                                    {% if paper != 0 and regexTwig('/' ~ proposition.id ~ ';/', question.answer) > 0 %}
+                                        {% set checked = "checked" %}
+                                    {% endif %}
+                                    <li>
+                                        <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                        <label>{{ proposition.choice }}</label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            </p>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
+
         </div>
 
         <div class="panel-footer">
@@ -73,6 +75,7 @@
     {{ parent() }}
    {# <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
     <script type="text/javascript">
+        var translation= window.Translator;
         $(document).ready(function() {
             $('#paperResponse').on('submit', function(event){
                 event.preventDefault();
@@ -83,7 +86,7 @@
                 });
 
                 if (choice.length != $('#questions').val()) {
-                    $('#errormsg').html('Attention');
+                    $('#messagediv').html('Attention');
                 } else {  }
 
                 var data ={};
@@ -95,6 +98,7 @@
                     url: Routing.generate('cpasimusante_simupoll_paper_save', {sid: $sid}),
                     success: function(response) {
                         console.log(response);
+                        $('#messagediv').html(translation.trans('answer_saved', {}, 'resource'));
                     },
                     error: function(jqXHR, textStatus, errorThrown) { }
                 });

@@ -3,7 +3,7 @@
     var translation= window.Translator;
     //question management
     var $collectionQuestionHolder = $('ul.questiongroup');
-    var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span>x '+translation.trans('question_add', {}, 'resource') +'</a>');
+    var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('question_add', {}, 'resource') +'</a>');
     var $newQuestionLink = $('<li></li>').append($addQuestionLink);
 
     // add the "add a question" anchor and li to the tags ul
@@ -68,10 +68,10 @@
     function addQuestionForm($collectionQuestionHolder, $newQuestionLink) {
         //1 - Get the data-prototype
         var prototype = $collectionQuestionHolder.data('prototype');
-
+//console.log('addQuestionForm---------------');console.log(prototype);
         //2 - get the new index
         var indexQ = $collectionQuestionHolder.data('index');
-console.log($collectionQuestionHolder);
+console.log('indexQ='+indexQ);
         //3 - Replace '$$name$$' in the prototype's HTML to
         // instead be a number based on how many propositions we have
         var newForm = prototype.replace(/__question_proto__/g, indexQ);
@@ -86,8 +86,6 @@ console.log($collectionQuestionHolder);
 
         // add a delete link to the new form
         addQuestionFormDeleteLink($newQuestionFormLi);
-
-console.log('indexQ='+indexQ);
 
         // handle the removal
         $('.remove-question').click(function(e) {
@@ -116,11 +114,13 @@ console.log('indexQ='+indexQ);
     function addPropositionForm($collectionPropositionHolder, $newPropositionLink) {
         // Get the data-prototype
         var prototype = $collectionPropositionHolder.data('prototype');
-
+console.log('$collectionPropositionHolder');console.log($collectionPropositionHolder);
+console.log('addPropositionForm---------------');console.log(prototype);
         // get the new index
         var indexP = $collectionPropositionHolder.data('index');
-console.log('indexP='+indexP);
-console.log(prototype);
+        //if (typeof indexP == 'undefined'){indexP = 0;}
+console.log("\nindexP="+indexP);
+
         // Replace '$$name$$' in the prototype's HTML to
         // instead be a number based on how many propositions we have
         var newForm = prototype.replace(/__proposition_proto__/g, indexP);
@@ -142,6 +142,8 @@ console.log(prototype);
             $(this).parent().remove();
             return false;
         });
+
+        return indexP;
     }
 
     //remove proposition button

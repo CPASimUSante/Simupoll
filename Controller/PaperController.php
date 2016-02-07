@@ -37,6 +37,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class PaperController extends Controller
 {
     /**
+     * Prepare the data to display the paper
+     *
      * @EXT\Route(
      *      "/open/{id}/{page}/{all}",
      *      name="cpasimusante_simupoll_paper",
@@ -53,16 +55,27 @@ class PaperController extends Controller
              ->getToken()->getUser();
          $uid = $user->getId();
 
+         $session = $request->getSession();
+
          $em = $this->getDoctrine()->getManager();
          $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
              ->findBy(
                  array('simupoll' => $simupoll),
                  array('lft' => 'ASC')
              );
-         $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-             ->findBy(array('simupoll' => $simupoll));
 
-         //http://stackoverflow.com/questions/28704738/symfony2-simple-file-upload-edit-without-entity
+         if ($session->get('simupaper') != null) {
+             $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                 ->getQuestionsWithAnswers($simupoll->getId(), $session->get('simupaper'));
+             $paper = $session->get('simupaper');
+         }
+         else {
+             $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                 ->findBy(array('simupoll' => $simupoll));
+             $paper = 0;
+         }
+
+/*         //http://stackoverflow.com/questions/28704738/symfony2-simple-file-upload-edit-without-entity
          $model = array(
              'questions' => $questions,
              'categories' => $categories
@@ -72,11 +85,8 @@ class PaperController extends Controller
          $builder->add('questions', 'file');
          $builder->add('categories', 'file');
          $form = $builder->getForm();
-
-         $session = $request->getSession();
-
+*/
          //$form = $this->createForm(AnswerType::class, $answer);
-
 /*
          //Verify if it exists a not finished paper
          $paper = $this->getDoctrine()
@@ -89,23 +99,9 @@ class PaperController extends Controller
          //if () {
          //    return $this->redirect($this->generateUrl('ujm_paper_list', array('exoID' => $id)));
          //}
-
-         //if the paper doesn't exist or not finished
-         if (count($paper) == 0) {
-             $paper = new Paper();
-             $paper->setSimupoll($simupoll);
-             $paper->setUser($user);
-             $paper->setStart(new \Datetime());
-
-         } else {
-             $paper = $paper[0];
-         }
-//$session->get('simupaper'),
-         $session->save('simupaper', $paper->getId());
-         $session->save('exerciseID', $simupoll->getId());
 */
          return array(
-             'form'             => $form,
+             'paper'            => $paper,
              'categories'       => $categories,
              'questions'        => $questions,
              'workspace'        => $workspace,
@@ -114,7 +110,7 @@ class PaperController extends Controller
      }
 
     /**
-     * Lists all Paper entities.
+     * json request, save the paper data
      *
      * @EXT\Route(
      *      "/validate/{sid}/{page}/{all}",
@@ -176,7 +172,7 @@ class PaperController extends Controller
                     $answer = new Answer();
                     $answer->setPaper($paper);
                     $answer->setQuestion($proposition->getQuestion());
-                    $answer->setAnswer($proposition->getId());
+                    $answer->setAnswer($proposition->getId().';');
                     $answer->setMark($proposition->getMark());
                     $em->persist($answer);
                 }

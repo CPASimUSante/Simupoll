@@ -37,11 +37,13 @@ class Answer
 
     /**
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Paper")
+     * @ORM\JoinColumn(name="paper_id", referencedColumnName="id",onDelete="CASCADE")
      */
     private $paper;
 
     /**
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Question")
+     * @ORM\JoinColumn(name="question_id", referencedColumnName="id",onDelete="CASCADE")
      */
     private $question;
 

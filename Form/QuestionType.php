@@ -62,11 +62,11 @@ class QuestionType extends AbstractType
                     'prototype'         => true,
                     'prototype_name'    => '__proposition_proto__',
                     'allow_add'         => true,
-                    'allow_delete'      => true,
+                    'allow_delete'      => true
                 )
             )
             ->add('orderq', 'hidden', array(
-                    'data'              => 0    //to avoid null
+                    'data'              => 0    //to avoid null TODO: use this attribute
                 )
             )
         ;

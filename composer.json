@@ -14,7 +14,8 @@
     ],
     "require": {
         "php": ">=5.4.1",
-        "claroline/core-bundle": "~6.0"
+        "claroline/core-bundle": "~6.0",
+        "cpasimusante/chart-new-bundle": "dev-master"
     },
     "autoload": {
         "psr-0": { "CPASimUSante\\SimupollBundle": "" }

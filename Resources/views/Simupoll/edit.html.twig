@@ -52,6 +52,8 @@
 
         <form action="{{ path('cpasimusante_simupoll_edit', {'id': _resource.id}) }}" method="post" {{ form_enctype(form) }} id="form">
             <div class="panel-body" id="text_content">
+                {# display the messsages - macros in core #}
+                <div>{{ macros.flashBox() }}</div>
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
                     <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
                 </a>

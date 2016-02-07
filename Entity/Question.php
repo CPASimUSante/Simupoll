@@ -68,7 +68,7 @@ class Question
     private $category;
 
     /**
-     * @var Propositions[]
+     * @var propositions[]
      *
      * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\Proposition", mappedBy="question", cascade={"all"})
      */

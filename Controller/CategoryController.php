@@ -72,8 +72,8 @@ class CategoryController extends Controller
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
             'nodeDecorator' => function($node) use ($sid) {
-                $modify = ' <a class="btn btn-primary btn-sm category-modify-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-edit"></i></a>';
-                $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-plus"></i></a>';
+                $modify = ' <a class="btn btn-primary btn-sm category-modify-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#" title="Modifier la catégorie"><i class="fa fa-edit"></i></a>';
+                $add = ' <a class="btn btn-primary btn-sm category-add-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#" title="Créer une catégorie enfant"><i class="fa fa-plus"></i></a>';
                 $delete = ' <a class="btn btn-danger btn-sm category-delete-btn" data-id="'.$node['id'].'" data-sid="'.$sid.'" href="#"><i class="fa fa-trash"></i></a>';
                 return '<td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td><td class="col-md-1">'.$modify.'</td><td class="col-md-1">'.$add.'</td><td class="col-md-1">'.$delete.'</td>';
             }

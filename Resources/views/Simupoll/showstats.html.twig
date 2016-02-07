@@ -21,18 +21,7 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-
-            {% if allowToCompose == 1 %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_allhtml', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'display_results_simupoll' | trans }}
-                </a>
-                <a class="btn btn-primary" href="#">
-                    <i class="fa fa-download"></i> {{ 'export_csv_simupoll' | trans }}
-                </a>
-                <a class="btn btn-primary" href="#">
-                    <i class="fa fa-bar-chart"></i> {{ 'show_graphics_simupoll' | trans }}
-                </a>
-            {% endif %}
+            Stats
         </div>
     </div>
 {% endblock %}
@@ -45,5 +34,5 @@
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-{#    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
+    {#    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
 {% endblock %}
