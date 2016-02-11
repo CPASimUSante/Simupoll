@@ -5,12 +5,14 @@ use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
+use CPASimUSante\SimupollBundle\Form\StatmanageType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class SimupollController
@@ -246,6 +248,106 @@ class SimupollController extends Controller
     }
 
     /**
+     * Setup the statistics
+     *
+     * @EXT\Route("/statsetup/{id}", name="cpasimusante_simupoll_stat_setup", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:statSetup.html.twig")
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function statSetupAction(Request $request, $simupoll)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+
+        //can user access ?
+        $this->checkAccess($simupoll);
+
+        //can user edit ?
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isSimupollAdmin($simupoll);
+
+        $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
+        //display tree of categories for group
+        $query = $em->createQueryBuilder()
+            ->select('node')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
+            ->orderBy('node.root, node.lft', 'ASC')
+            ->where('node.simupoll = ?1')
+            ->setParameters(array(1 => $simupoll))
+            ->getQuery();
+        $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Question');
+
+        $options = array(
+            'decorate' => true,
+            'rootOpen' => '',
+            'rootClose' => '',
+            'childOpen' => '<tr>',
+            'childClose' => '</tr>',
+            'nodeDecorator' => function($node) use ($repoCat) {
+                $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'">';
+                return '<td>'.$input.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+            }
+        );
+        $tree = $repo->buildTree($query->getArrayResult(), $options);
+
+
+        $form = $this->get('form.factory')
+            ->create(new StatmanageType());
+
+        if ($request->isMethod('POST')) {
+            $uids = $request->request->get('simupoll_userlist');
+            $categories = $request->request->get('categorygroup');
+            $uid = $user->getId();
+            $sid = $simupoll->getId();
+        }
+
+        //can user manage exercise
+        $allowToCompose = 0;
+        if (is_object($user) && ($simupollAdmin === true) )
+        {
+            $allowToCompose = 1;
+
+            return array(
+                'form'              => $form,
+                'tree'              => $tree,
+                'allowToCompose'    => $allowToCompose,
+                '_resource'         => $simupoll,
+            );
+        } else {
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+        }
+    }
+
+    /**
+     * JSON list of users in WS
+     *
+     * @EXT\Route("/usersinws/{wslist}", name="cpasimusante_simupoll_get_user_in_ws", options={"expose"=true})
+     * @param string $wslist
+     * @return JsonResponse
+     */
+    public function getUsersInWorkspaceAction($wslist = '')
+    {
+        $ids = [];
+        if ($wslist !== '')
+        {
+            $ws = explode(',', $wslist);
+            $em = $this->getDoctrine()->getManager();
+            $listofuser = $em->getRepository('ClarolineCoreBundle:User')
+                ->findUsersByWorkspaces($ws);
+            foreach($listofuser as $user)
+            {
+                $ids[] = $user->getId();
+            }
+        }
+        return new JsonResponse($ids);
+    }
+
+    /**
      * To check the right to open or not
      *
      * @access private
@@ -261,7 +363,6 @@ class SimupollController extends Controller
             throw new AccessDeniedException($collection->getErrorsForDisplay());
         }
     }
-
 
     /**
      * General gathering of data to create statistics

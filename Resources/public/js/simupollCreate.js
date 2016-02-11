@@ -1,6 +1,7 @@
 (function () {
     'use strict';
     var translation= window.Translator;
+
     //question management
     var $collectionQuestionHolder = $('ul.questiongroup');
     var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('question_add', {}, 'resource') +'</a>');
@@ -119,7 +120,7 @@ console.log('addPropositionForm---------------');console.log(prototype);
         // get the new index
         var indexP = $collectionPropositionHolder.data('index');
         //if (typeof indexP == 'undefined'){indexP = 0;}
-console.log("\nindexP="+indexP);
+console.log("indexP="+indexP);
 
         // Replace '$$name$$' in the prototype's HTML to
         // instead be a number based on how many propositions we have

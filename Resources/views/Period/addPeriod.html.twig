@@ -1,0 +1,38 @@
+<div id="modal-period-add-form"
+         class="modal-dialog"
+         role="dialog"
+         aria-labelledby="modalLabel"
+         aria-hidden="true"
+    >
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </br>
+            </div>
+            <div class="modal-body">
+                <h3 class="panel-title">{{'period_add'|trans({}, 'resource')}}</h3>
+                <form id="period-add-form"
+                      action="{{ path('cpasimusante_simupoll_period_add', {'idperiod':idperiod, 'idsimupoll':idsimupoll}) }}"
+                      method="POST"
+                        {{ form_enctype(form) }}
+                >
+                    {{ form_row(form.start) }}
+                    {{ form_row(form.stop) }}
+                    {{ form_widget(form) }}
+                </form>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'cancel'|trans({}, 'platform') }}</button>
+                    <button type="submit" class="btn btn-primary" id="submit_period">{{ 'ok'|trans({}, 'platform') }}</button>
+                </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+    });
+</script>

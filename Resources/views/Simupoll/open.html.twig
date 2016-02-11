@@ -20,7 +20,10 @@
 
             {% if is_granted('ADMINISTRATE', _resource) %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'manage_categories' | trans }}
+                    <i class="fa fa-cogs"></i> {{ 'manage_categories' | trans }}
+                </a>
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_period_manage', { 'id': _resource.id }) }}">
+                    <i class="fa fa-cogs"></i> {{ 'manage_periods' | trans }}
                 </a>
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_edit', { 'id': _resource.id }) }}">
                     <i class="fa fa-pencil"></i> {{ 'edit_simupoll' | trans }}

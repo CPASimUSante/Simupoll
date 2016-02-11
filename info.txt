@@ -8,7 +8,7 @@ http://stackoverflow.com/questions/16487129/symfony2-multiple-nested-forms-proto
 http://stackoverflow.com/questions/26095864/symfony-2-how-to-handle-nested-collections-in-forms
 http://stackoverflow.com/questions/29277387/embedding-multiple-levels-collection-of-forms-in-symfony2
 http://stackoverflow.com/questions/13054442/symfony2-nested-forms-and-manytomany-relations
-
+http://ificouldfly.net/index.php/articles/angularjs-symfony2-forms-collections
 
 Customize collection
 https://gist.github.com/cowlby/1294186

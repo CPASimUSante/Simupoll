@@ -1,0 +1,100 @@
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% if isDesktop() %}
+    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+{% else %}
+    {% set workspace = _resource.getResourceNode().getWorkspace() %}
+{% endif %}
+
+{% extends layout %}
+
+{% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
+
+{% block section_content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
+        </div>
+
+        <div class="panel-body" id="text_content">
+            <form action="#" method="post">
+            <table class="table">
+                <tr id="pick-user-for-stats">
+{#                    <td class="isel_label">{{ form.userlist.vars.label|trans({}, 'resource') }}</td>#}
+                    <td class="isel_extra"><input type="text" name="simupoll_userlist" id="simupoll_userlist" /></td>
+                    <td class="isel_extra">
+                        <a class="btn btn-primary" id="pick-users-btn" title="{{ 'pick_users'|trans({}, 'resource') }}">
+                            <i class="fa fa-user-plus pointer-hand pull-right"
+                               data-placement="left"
+                            ></i></a>
+                    </td>
+                </tr>
+            </table>
+
+            Cochez les cases des catégories à regrouper (ne pas cocher les sous catégories d'une catégorie cochée)
+
+            <table class="table">
+                <tr><th class="col-md-1"></th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                {{ tree |raw }}
+            </table>
+                <input type="hidden" value="{{ _resource.getResourceNode().getWorkspace().id }}" name="wsn" id="wsn" />
+                <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
+                <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
+            </form>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {# Claroline JS #}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var su = $('#simupoll_userlist').val();
+            var wsn = $('#wsn').val();
+            var selectedUsers = (su === '') ? [] : su.split(',');
+
+            var allUsersInWS = [];
+            //get users of this WS
+            $.ajax({
+                url: Routing.generate('cpasimusante_simupoll_get_user_in_ws', {wslist:wsn}),
+                type: 'GET',
+                success: function (datas) {
+                    allUsersInWS = (datas !== null) ? datas : [];
+                }
+            });
+
+            //pick users
+            $('#pick-user-for-stats').on('click', '#pick-users-btn', function () {
+                var userPicker = new UserPicker();
+                var settings = {
+                    multiple: true,
+                    picker_name: 'simupolluser_picker',
+                    picker_title: Translator.trans('select_users_to_add_to_simupollgraph', {},'resource'),
+                    whitelist: allUsersInWS,
+                    return_datas: true,
+                    selected_users:selectedUsers
+                };
+                userPicker.configure(settings, addUsersToGraph);
+                userPicker.open();
+            });
+            //callback, add users to widget user field
+            var addUsersToGraph = function(users) {
+                var userIds = [];
+                if (users !== null) {
+                    for (var i= 0,tot=users.length;i<tot;i++) {
+                        userIds.push(users[i].id);
+                    }
+                }
+                $('#simupoll_userlist').val(userIds);
+            };
+        });
+    </script>
+{% endblock %}
