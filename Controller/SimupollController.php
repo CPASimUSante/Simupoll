@@ -3,6 +3,7 @@ namespace CPASimUSante\SimupollBundle\Controller;
 
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Statmanage;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use CPASimUSante\SimupollBundle\Form\StatmanageType;
@@ -259,6 +260,8 @@ class SimupollController extends Controller
     public function statSetupAction(Request $request, $simupoll)
     {
         $em = $this->getDoctrine()->getManager();
+        $categories = array();
+        $uids = '';
 
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
@@ -282,29 +285,49 @@ class SimupollController extends Controller
             ->getQuery();
         $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Question');
 
+        $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')->findBy(
+            array('user' => $user, 'simupoll' => $simupoll)
+        );
+        if ($statsmanage != array()) {
+            $uids = $statsmanage[0]->getUserList();
+            $cats = $statsmanage[0]->getCategoryList();
+            $categories = ($cats != '') ? explode(',', $cats) : array();
+        }
+
+        if ($request->isMethod('POST')) {
+            $uids = $request->request->get('simupoll_userlist');
+            $categories = $request->request->get('categorygroup');
+            $cats = ($categories != null) ? implode(',', $categories) : '';
+            if ($statsmanage == null)
+            {
+                $statsmanage = new Statmanage();
+                $statsmanage->setUser($user);
+                $statsmanage->setSimupoll($simupoll);
+                $statsmanage->setCategoryList($cats);
+                $statsmanage->setUserList($uids);
+                $em->persist($statsmanage);
+            } else {
+                $statsmanage[0]->setCategoryList($cats);
+                $statsmanage[0]->setUserList($uids);
+                $em->persist($statsmanage[0]);
+            }
+            $em->flush();
+        }
+
         $options = array(
             'decorate' => true,
             'rootOpen' => '',
             'rootClose' => '',
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
-            'nodeDecorator' => function($node) use ($repoCat) {
-                $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'">';
-                return '<td>'.$input.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+            'nodeDecorator' => function($node) use ($repoCat, $categories) {
+                $qcount = $repoCat->getQuestionCount($node['id']);
+                $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
+                $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'" '.$checked.'>';
+                return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
             }
         );
         $tree = $repo->buildTree($query->getArrayResult(), $options);
-
-
-        $form = $this->get('form.factory')
-            ->create(new StatmanageType());
-
-        if ($request->isMethod('POST')) {
-            $uids = $request->request->get('simupoll_userlist');
-            $categories = $request->request->get('categorygroup');
-            $uid = $user->getId();
-            $sid = $simupoll->getId();
-        }
 
         //can user manage exercise
         $allowToCompose = 0;
@@ -312,8 +335,10 @@ class SimupollController extends Controller
         {
             $allowToCompose = 1;
 
+            $cats = ($categories = array()) ? explode(',', $categories) : array();
             return array(
-                'form'              => $form,
+                'categories'        => $cats,
+                'userlist'          => $uids,
                 'tree'              => $tree,
                 'allowToCompose'    => $allowToCompose,
                 '_resource'         => $simupoll,

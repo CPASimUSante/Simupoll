@@ -17,11 +17,16 @@
         </div>
 
         <div class="panel-body" id="text_content">
+            <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
+                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+            </a>
+            <hr>
+
             <form action="#" method="post">
             <table class="table">
                 <tr id="pick-user-for-stats">
-{#                    <td class="isel_label">{{ form.userlist.vars.label|trans({}, 'resource') }}</td>#}
-                    <td class="isel_extra"><input type="text" name="simupoll_userlist" id="simupoll_userlist" /></td>
+                    <td class="isel_label">{{ 'pick_users'|trans({}, 'resource') }}</td>
+                    <td class="isel_extra"><input type="text" name="simupoll_userlist" id="simupoll_userlist" value="{{ userlist }}" readonly /></td>
                     <td class="isel_extra">
                         <a class="btn btn-primary" id="pick-users-btn" title="{{ 'pick_users'|trans({}, 'resource') }}">
                             <i class="fa fa-user-plus pointer-hand pull-right"
@@ -30,11 +35,9 @@
                     </td>
                 </tr>
             </table>
-
-            Cochez les cases des catégories à regrouper (ne pas cocher les sous catégories d'une catégorie cochée)
-
+                {{ 'stat_category_manage'|trans({}, 'resource') }}
             <table class="table">
-                <tr><th class="col-md-1"></th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                <tr><th class="col-md-1"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
                 {{ tree |raw }}
             </table>
                 <input type="hidden" value="{{ _resource.getResourceNode().getWorkspace().id }}" name="wsn" id="wsn" />
@@ -76,6 +79,7 @@
                 var userPicker = new UserPicker();
                 var settings = {
                     multiple: true,
+                    show_filters: false,
                     picker_name: 'simupolluser_picker',
                     picker_title: Translator.trans('select_users_to_add_to_simupollgraph', {},'resource'),
                     whitelist: allUsersInWS,
