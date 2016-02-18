@@ -8,6 +8,11 @@ use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 
 class CategoryRepository extends NestedTreeRepository
 {
+    /**
+     * @param $simupoll
+     * @return mixed
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function getMaxLevel($simupoll)
     {
         $dql = '
@@ -17,5 +22,19 @@ class CategoryRepository extends NestedTreeRepository
         $query = $this->_em->createQuery($dql);
         //$query->setParameter('simupoll', $id);
         return $query->getOneOrNullResult();
+    }
+    /**
+     * get root category for simupoll
+     *
+     */
+    public function getRoot($sid)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('partial c.{id}')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.lvl = 0')
+            ->andWhere('c.simupoll = :simupoll');
+        $qb->setParameters(array('simupoll'=>$sid));
+        return $qb->getQuery()->getResult();
     }
 }

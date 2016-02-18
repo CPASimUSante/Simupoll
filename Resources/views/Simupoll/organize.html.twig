@@ -23,27 +23,28 @@
             <hr>
 
             {% if allowToCompose == 1 %}
-                <form action="#" method="post">
+                <form action="{{ path('cpasimusante_simupoll_organize', {'id': _resource.id}) }}" method="post" id="form">
                     <h2>{{ 'question_display_method'|trans({}, 'resource') }}</h2>
                     <p>
-                        <input name="questdisp" type="radio" value="0" checked> {{ 'question_all'|trans({}, 'resource') }}
+                        <input name="questdisp" type="radio" value="0" {% if choice == 0 %}checked{% endif %}> {{ 'question_all'|trans({}, 'resource') }}
                     </p>
                     <p>
-                        <input name="questdisp" type="radio" value="1"> {{ 'question_max_par_page'|trans({}, 'resource') }}
-                        <input type="text" name="max_question_per_page" value="0">
+                        <input name="questdisp" type="radio" value="1" {% if choice == 1 %}checked{% endif %}> {{ 'question_max_par_page'|trans({}, 'resource') }}
+                        <input type="text" name="max_question_per_page" value="{% if choice == 1 %}{{ choiceData }}{% else %}0{% endif %}">
                     </p>
+                    {#
                     <p>
-                        <input name="questdisp" type="radio" value="2"> {{ 'question_all_from_lvl'|trans({}, 'resource') }}
-
+                        <input name="questdisp" type="radio" value="2" {% if choice == 2 %}checked{% endif %}> {{ 'question_all_from_lvl'|trans({}, 'resource') }}
                         <select name="question_per_category_level">
                             {% for level in 0..maxCategoryLevel %}
-                                <option value="{{ level }}">{{ level }}</option>
+                                <option value="{{ level }}" {% if choice == 2 and choiceData == level %}selected{% endif %}>{{ level }}</option>
                             {% endfor %}
                         </select>
                         {{ 'question_subcategories'|trans({}, 'resource') }}
                     </p>
+                    #}
                     <div>
-                        <p><input name="questdisp" type="radio" value="3"> {{ 'question_group'|trans({}, 'resource') }}</p>
+                        <p><input name="questdisp" type="radio" value="2" {% if choice == 2 %}checked{% endif %}> {{ 'question_group'|trans({}, 'resource') }}</p>
                         <table class="table">
                             <tr><th class="col-md-1"><input type="checkbox"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
                             {{ tree |raw }}

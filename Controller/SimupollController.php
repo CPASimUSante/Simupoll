@@ -2,6 +2,7 @@
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
+use CPASimUSante\SimupollBundle\Entity\Organization;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Statmanage;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
@@ -150,7 +151,7 @@ class SimupollController extends Controller
      * @param Simupoll $simupoll
      * @return array
      */
-    public function organizeAction($simupoll)
+    public function organizeAction(Request $request, $simupoll)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -170,9 +171,47 @@ class SimupollController extends Controller
         if (is_object($user) && ($simupollAdmin === true) )
         {
             $allowToCompose = 1;
-            $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
+            $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
             //retrieve max level of category
-            $maxCategoryLevel = $repo->getMaxLevel($simupoll);
+            $maxCategoryLevel = $repoCat->getMaxLevel($simupoll);
+
+            //retrieve saved organization
+            $orga = $em->getRepository('CPASimUSanteSimupollBundle:Organization')
+                ->findBySimupoll($simupoll);
+
+            $choice = '';
+            $choiceData = '';
+            if ($orga != null) {
+                $choice = $orga[0]->getChoice();
+                $choiceData = $orga[0]->getChoiceData();
+            }
+
+            if ($request->isMethod('POST')) {
+                $choice = $request->request->get('questdisp');
+                if ($choice == 0) {
+                    $choiceData = '';
+                } elseif ($choice == 1) {
+                    $choiceData = $request->request->get('max_question_per_page');
+                /*} elseif ($choice == 2) {
+                    $choiceData = $request->request->get('question_per_category_level');*/
+                } elseif ($choice == 2) {
+                    $choice_categorygroup = $request->request->get('categorygroup');
+                    $choiceData = ($choice_categorygroup != array()) ? implode(',', $choice_categorygroup) : '';
+                }
+//var_dump($choiceData);die();
+                if ($orga == null) {
+                    $orga = new Organization();
+                    $orga->setSimupoll($simupoll);
+                    $orga->setChoice($choice);
+                    $orga->setChoiceData($choiceData);
+                    $em->persist($orga);
+                } else {
+                    $orga[0]->setChoice($choice);
+                    $orga[0]->setChoiceData($choiceData);
+                    $em->persist($orga[0]);
+                }
+                $em->flush();
+            }
 
             //display tree of categories for group
             $query = $em->createQueryBuilder()
@@ -182,7 +221,7 @@ class SimupollController extends Controller
                 ->where('node.simupoll = ?1')
                 ->setParameters(array(1 => $simupoll))
                 ->getQuery();
-            $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Question');
+            $repoQuestion = $em->getRepository('CPASimUSanteSimupollBundle:Question');
 
             $options = array(
                 'decorate' => true,
@@ -190,15 +229,36 @@ class SimupollController extends Controller
                 'rootClose' => '',
                 'childOpen' => '<tr>',
                 'childClose' => '</tr>',
-                'nodeDecorator' => function($node) use ($repoCat) {
-                    $qcount = $repoCat->getQuestionCount($node['id']);
-                    $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]">';
-                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
-                }
             );
-            $tree = $repo->buildTree($query->getArrayResult(), $options);
+            if ($choice != 2){
+                $options['nodeDecorator'] = function($node) use ($repoQuestion) {
+                    $qcount = $repoQuestion->getQuestionCount($node['id']);
+                    if ($node['lvl']==0) {
+                        $extra = '<input type="hidden" name="categorygroup[]" value="'.$node['lvl'].'">';
+                        $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'" checked disabled>';
+                    } else {
+                        $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'">';
+                    }
+                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+                };
+            } else {
+                $choice_categorygroup = ($choiceData != array()) ? explode(',', $choiceData) : array();
+                $options['nodeDecorator'] = function($node) use ($repoQuestion, $choice_categorygroup) {
+                    $qcount = $repoQuestion->getQuestionCount($node['id']);
+                    $disabled = ($node['lvl']==0) ? " disabled" : "";
+                    $checked = (in_array($node['lft'], $choice_categorygroup) || $node['lvl']==0) ? " checked" : "";
+                    //root is mandatory
+                    $extra = ($node['lft']==0) ? '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">' : '';
+                    $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'"'.$checked.$disabled.'>';
+                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+                };
+            }
+
+            $tree = $repoCat->buildTree($query->getArrayResult(), $options);
 
             return array(
+                'choice'            => $choice,
+                'choiceData'        => $choiceData,
                 'tree'              => $tree,
                 'maxCategoryLevel'  => $maxCategoryLevel['maxlevel'],
                 'allowToCompose'    => $allowToCompose,
@@ -274,7 +334,7 @@ class SimupollController extends Controller
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isSimupollAdmin($simupoll);
 
-        $repo = $em->getRepository('CPASimUSanteSimupollBundle:Category');
+        $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
         //display tree of categories for group
         $query = $em->createQueryBuilder()
             ->select('node')
@@ -283,7 +343,7 @@ class SimupollController extends Controller
             ->where('node.simupoll = ?1')
             ->setParameters(array(1 => $simupoll))
             ->getQuery();
-        $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Question');
+        $repoQuestion = $em->getRepository('CPASimUSanteSimupollBundle:Question');
 
         $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')->findBy(
             array('user' => $user, 'simupoll' => $simupoll)
@@ -320,14 +380,14 @@ class SimupollController extends Controller
             'rootClose' => '',
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
-            'nodeDecorator' => function($node) use ($repoCat, $categories) {
-                $qcount = $repoCat->getQuestionCount($node['id']);
+            'nodeDecorator' => function($node) use ($repoQuestion, $categories) {
+                $qcount = $repoQuestion->getQuestionCount($node['id']);
                 $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
                 $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'" '.$checked.'>';
                 return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
             }
         );
-        $tree = $repo->buildTree($query->getArrayResult(), $options);
+        $tree = $repoCat->buildTree($query->getArrayResult(), $options);
 
         //can user manage exercise
         $allowToCompose = 0;

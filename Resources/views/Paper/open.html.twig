@@ -23,38 +23,43 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-{#http://knplabs.com/fr/blog/symfony-validators-standalone#}
-            <div id="messagediv"></div>
 
+            <div id="messagediv"></div>
+             simupaper : {{ app.session.get('simupaper') }} {##}
             {% for category in categories %}
                 <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
                 {% for question in questions %}
                     {# needed because the query result are different whether there's an answer or not #}
-                    {% if paper != 0 %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
+{#
+                    {% if pid != 0 %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
+   #}
+                    {% if question[0] is defined %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
+
                     {% if thequestion.category.id == category.id %}
-                            <p><span class="">{{ thequestion.title }}</span>
-                            <ul class="simuproposition">
-                                {% for proposition in thequestion.propositions %}
-                                    {% set checked = "" %}
-                                    {% if paper != 0 and regexTwig('/' ~ proposition.id ~ ';/', question.answer) > 0 %}
-                                        {% set checked = "checked" %}
-                                    {% endif %}
-                                    <li>
-                                        <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
-                                        <label>{{ proposition.choice }}</label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                            </p>
-                        {% endif %}
-                    {% endfor %}
+                        <p><span class="">{{ thequestion.title }}</span>
+                        <ul class="simuproposition">
+                        {% for proposition in thequestion.propositions %}
+                            {% set checked = "" %}
+                            {% if pid != 0 and regexTwig('/' ~ proposition.id ~ ';/', question.answer) > 0 %}
+                                {% set checked = "checked" %}
+                            {% endif %}
+                            <li>
+                                <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                <label>{{ proposition.choice }}</label>
+                            </li>
+                        {% endfor %}
+                    </ul></p>
+                    {% endif %}
                 {% endfor %}
+            {% endfor %}
 
         </div>
 
         <div class="panel-footer">
-            <input class="form-control" type="hidden" name="questions" id="questions" value="{{ questions|length }}"/>
-            <input class="form-control" type="hidden" name="sid" id="sid" value="{{ _resource.getId() }}"/>
+            <input class="form-control" type="hidden" name="next" id="next" value="{{ next }}" />
+            <input class="form-control" type="hidden" name="current" id="current" value="{{ current }}" />
+            <input class="form-control" type="hidden" name="questions" id="questions" value="{{ questions|length }}" />
+            <input class="form-control" type="hidden" name="sid" id="sid" value="{{ _resource.getId() }}" />
             <input type="submit" value="{{ 'next' | trans }}" class="btn btn-primary" id="nextpage" />
             <input type="button" value="{{ 'exit' | trans }}" class="btn btn-danger" id="exitpage" />
         </div>

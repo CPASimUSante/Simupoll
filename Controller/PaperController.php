@@ -56,37 +56,99 @@ class PaperController extends Controller
          $uid = $user->getId();
 
          $session = $request->getSession();
-
          $em = $this->getDoctrine()->getManager();
+
+         $current = -1;
+         $next = -1;
+         //1 - is the simupoll opened now ? = between start-stop in Period
+         //TODO : create manager, also used to show (or not) the answer button
+         $start = '';
+         $stop = '';
+         $openedPeriod = $em->getRepository('CPASimUSanteSimupollBundle:Period')
+             ->getOpenedPeriodForSimupoll($simupoll->getId());
+         if ($openedPeriod != null) {
+             $start = $openedPeriod[0]->getStart();
+             $stop = $openedPeriod[0]->getStop();
+         }
+
+         //retrieve the data to drive how the questions are displayed
+         $displayOrganization = $em->getRepository('CPASimUSanteSimupollBundle:Organization')
+             ->findOneBySimupoll($simupoll);
+         $choice = 0;
+         $choiceData = '';
+         if (isset($displayOrganization)) {
+             $choice = $displayOrganization->getChoice();
+             $choiceData = $displayOrganization->getChoiceData();
+         }
+
+         //get all categories (could be refined, but would need more request)
          $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
              ->findBy(
                  array('simupoll' => $simupoll),
                  array('lft' => 'ASC')
              );
 
+         //we have simupaper session
          if ($session->get('simupaper') != null) {
-             $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                 ->getQuestionsWithAnswers($simupoll->getId(), $session->get('simupaper'));
-             $paper = $session->get('simupaper');
+             echo 'A';
+             //display X questions per page
+             if ($choice == 1) {                        //OK
+                 $limit = (int)$choiceData;
+                 $offset = 0; //TODO
+                 $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                     ->getQuestionsWithAnswers($simupoll->getId(), $session->get('simupaper'), $limit, $offset);
+                 //display group of questions
+             } elseif ($choice == 2) {echo 'B';
+                 $data = $this->setQuestionDataForPaperInCategorylist($request, $simupoll, $session->get('simupaper'), $choiceData);
+                 $questions = $data['question'];
+                 $next = $data['next'];
+                 $current = $data['current'];
+             }
+             $pid = $session->get('simupaper');
+         //we don't have simupaper session
+         } else {echo 'C';
+             $paper = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
+                 ->getCurrentPaper($uid, $simupoll->getId(), $start, $stop);
+             // no simupaper session but a paper already exists
+             if ($paper != null) {echo 'D';
+                 $pid = $paper->getId();
+                 //display X questions per page
+                 if ($choice == 1) {      echo 'E';              //OK
+                     $limit = (int)$choiceData;
+                     $offset = 0; //TODO
+                     $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                         ->getQuestionsWithAnswers($simupoll->getId(), $pid, $limit, $offset);
+                 //display question from range of categories
+                 } elseif ($choice == 2) {echo 'F';
+                     $data = $this->setQuestionDataForPaperInCategorylist($request, $simupoll, $pid, $choiceData);
+                     $questions = $data['question'];
+                     $next = $data['next'];
+                     $current = $data['current'];
+                 }
+             // no simupaper session and no paper already exists
+             } else {echo 'G';
+                 $pid = 0;
+                 //display X questions per page
+                 if ($choice == 1) {    echo 'H';                //OK
+                     $limit = (int)$choiceData;
+                     $offset = 0; //TODO
+                     $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                         ->findBy(array('simupoll' => $simupoll), null, $limit, $offset);
+                 //display question from range of categories
+                 } elseif ($choice == 2) {echo 'I';
+                     //list of selected categories
+                     $data = $this->setQuestionDataForPaperInCategorylist($request, $simupoll, $pid, $choiceData);
+                     $questions = $data['question'];
+                     $next = $data['next'];
+                     $current = $data['current'];
+                 //all questions
+                 } else {     echo 'J';                          //OK
+                     $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                         ->findBy(array('simupoll' => $simupoll));
+                 }
+             }
          }
-         else {
-             $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                 ->findBy(array('simupoll' => $simupoll));
-             $paper = 0;
-         }
-
-/*         //http://stackoverflow.com/questions/28704738/symfony2-simple-file-upload-edit-without-entity
-         $model = array(
-             'questions' => $questions,
-             'categories' => $categories
-         );
-         $builder = $this->createFormBuilder();
-         $builder->setMethod('POST');
-         $builder->add('questions', 'file');
-         $builder->add('categories', 'file');
-         $form = $builder->getForm();
-*/
-         //$form = $this->createForm(AnswerType::class, $answer);
+ //        foreach ($questions as $question) {echo $question[0]->getName().'<br>';}die();
 /*
          //Verify if it exists a not finished paper
          $paper = $this->getDoctrine()
@@ -94,20 +156,72 @@ class PaperController extends Controller
              ->getRepository('UJMExoBundle:Paper')
              ->getPaper($uid, $simupoll);
 
-
          //if simupoll closed : redirect
          //if () {
          //    return $this->redirect($this->generateUrl('ujm_paper_list', array('exoID' => $id)));
          //}
 */
          return array(
-             'paper'            => $paper,
+             'pid'              => $pid,
              'categories'       => $categories,
              'questions'        => $questions,
+             'next'             => $next,
+             'current'          => $current,
              'workspace'        => $workspace,
              '_resource'        => $simupoll
          );
      }
+
+    private function setQuestionDataForPaperInCategorylist(Request $request, Simupoll $simupoll, $pid, $choiceData)
+    {
+        $session = $request->getSession();
+        $em = $this->getDoctrine()->getManager();
+
+        $current = -1;
+        $next = -1;
+        $categorybounds = explode(',', $choiceData);
+
+        //we have catpaper session
+        if ($session->get('catpaper') != null) {echo 'x1';
+            if (count($categorybounds) > 1) {echo 'x2';
+                $keys = array_keys($categorybounds);
+                //we didn't reach the end
+                $prev = $session->get('catpaper')['next'];
+                if (isset($keys[array_search($prev, $categorybounds)+1])) {echo 'x3';
+                    $next = $categorybounds[$keys[array_search($prev, $categorybounds)+1]];
+                    $current = $prev;
+                //last category
+                } else {echo 'x4';
+                    $next = -1;
+                    $current = $session->get('catpaper')['next'];  //finished
+                }
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, $prev, $next);
+            } else {echo 'x5';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->findBy(array('simupoll' => $simupoll));
+            }
+            //we don't have catpaper session : we don't know where we are
+        } else {     echo 'x6';                      //OK
+            //no bounds = Only root : get all questions !
+            if (count($categorybounds) == 1) {echo 'x7';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->findBy(array('simupoll' => $simupoll));
+                //bounds exist : get questions
+            } else {echo 'x8';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, 0, $categorybounds[1]);
+                $next = $categorybounds[1];
+                $current = 0;
+            }
+        }
+        echo 'xxx';
+        //foreach ($questions as $question) {echo $question[0]->getTitle().'<br>';}echo 'xxx';
+        //echo $questions;
+        //die();
+        //echo '<pre>';var_dump($questions);echo '</pre>';die();
+        return array('question'=> $questions, 'next' => $next, 'current' => $current);
+    }
 
     /**
      * json request, save the paper data
@@ -132,10 +246,12 @@ class PaperController extends Controller
         $em = $this->getDoctrine()->getManager();
         $session = $request->getSession();
         //$paper = $em->getRepository('UJMExoBundle:Paper')->find($session->get('paper'));
-
+//echo '<pre>';var_dump($session->get('simupaper'));echo '</pre>';die();
         if ($request->isMethod('POST')) {
-            $simupoll = $em->getRepository('CPASimUSanteSimupollBundle:Simupoll')->findOneById($sid);
-            $user = $this->container->get('security.token_storage')->getToken()->getUser();
+            $simupoll = $em->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+                ->findOneById($sid);
+            $user = $this->container->get('security.token_storage')
+                ->getToken()->getUser();
             $uid = $user->getId();
 
             //get NumPaper for the simupoll / user
@@ -152,6 +268,9 @@ class PaperController extends Controller
 
             //list of answers
             $choices = $request->request->get('choice');
+
+            $next = $request->request->get('next');
+            $prev = $request->request->get('prev');
 
             //if there is no paper
           //  if (count($paper) == 0) {
@@ -180,6 +299,8 @@ class PaperController extends Controller
 
                 //Set session
                 $session->set('simupaper', $paper->getId());
+
+//            $session->set('catpaper', array('next' =>$next, 'prev'=>$prev));
           /*  } else {
                 $paper = $paper[0];
             }*/

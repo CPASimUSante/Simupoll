@@ -11,6 +11,31 @@ namespace CPASimUSante\SimupollBundle\Repository;
 class PaperRepository extends \Doctrine\ORM\EntityRepository
 {
     /**
+     * Get paper for current timeframe
+     */
+    public function getCurrentPaper($userID, $simupollID, $start, $stop)
+    {
+        $now = new \DateTime();
+        $now->setTime(0, 0, 0);
+        $qb = $this->createQueryBuilder('p');
+        $qb->join('p.user', 'u')
+            ->join('p.simupoll', 's')
+            ->where('u.id = :userid')
+            ->andWhere('s.id = :simupollid')
+            ->andWhere('p.start >= :start')
+            ->setParameters(
+                array(
+                    'userid'=> $userID,
+                    'simupollid' => $simupollID,
+                    'start' => $start
+                )
+            );
+
+        return $qb->getQuery()->getOneOrNullResult();
+        //return $qb->getQuery()->getSQL();
+    }
+
+    /**
      * Get unfinished paper for user
      *
      * @param $userID

@@ -101,7 +101,7 @@ class Statmanage
      *
      * @return string
      */
-    public function getcategoryList()
+    public function getCategoryList()
     {
         return $this->categoryList;
     }

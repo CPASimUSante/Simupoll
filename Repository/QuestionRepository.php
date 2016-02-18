@@ -9,7 +9,7 @@ use CPASimUSante\SimupollBundle\Entity\Question;
 class QuestionRepository extends EntityRepository
 {
     /**
-     * count the number of question associated with a category
+     * Count the number of question associated with a category
      *
      * @param $cid
      * @return mixed
@@ -39,7 +39,16 @@ class QuestionRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function getQuestionsWithAnswers($sid, $pid)
+    /**
+     * Retrieve question already answered
+     *
+     * @param $sid integer Simupoll id
+     * @param $pid integer Paper id
+     * @param $limit integer number of question to display
+     * @param $offset integer offset of questions to start to
+     * @return array list of questions, with their answers
+     */
+    public function getQuestionsWithAnswers($sid, $pid, $limit=0, $offset=0)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q')
@@ -48,8 +57,49 @@ class QuestionRepository extends EntityRepository
             ->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q')
             ->where('q.simupoll = :simupoll')
             ->andWhere('a.paper = :paper')
-            ->orderBy('q.id', 'ASC')
-            ->setParameters(array('simupoll'=>$sid, 'paper' =>$pid));
+            ->orderBy('q.id', 'ASC');
+        if ($limit != 0) {
+            $qb->setMaxResults($limit);
+        }
+        if ($offset != 0) {
+            $qb->setFirstResult($offset);
+        }
+        $qb->setParameters(array('simupoll'=>$sid, 'paper'=>$pid));
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     *
+     * @param $sid
+     * @param $pid
+     * @param $current
+     * @param $next
+     * @return array
+     */
+    public function getQuestionsWithAnswersInCategories($sid, $pid, $current, $next)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('q')
+            ->addSelect('a.id, a.answer')
+            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
+            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q')
+            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Category', 'c', 'WITH', 'q.category = c')
+            ->where('q.simupoll = :simupoll');
+        if ($pid != 0) {
+            $qb->andWhere('a.paper = :paper');
+            $qb->setParameter('paper', $pid);
+        }
+        if ($current != -1) {
+            $qb->andWhere('c.lft >=:current');
+            $qb->setParameter('current', $current);
+        }
+        if ($next != -1) {
+            $qb->andWhere('c.lft <=:next');
+            $qb->setParameter('next', $next);
+        }
+        $qb->orderBy('q.id', 'ASC');
+        $qb->setParameter('simupoll', $sid);
+        //return $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 }
