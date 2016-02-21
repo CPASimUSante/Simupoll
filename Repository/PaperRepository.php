@@ -13,7 +13,7 @@ class PaperRepository extends \Doctrine\ORM\EntityRepository
     /**
      * Get paper for current timeframe
      */
-    public function getCurrentPaper($userID, $simupollID, $start, $stop)
+    public function getCurrentPaper($userID, $simupollID, $start, $stop='')
     {
         $now = new \DateTime();
         $now->setTime(0, 0, 0);

@@ -30,4 +30,39 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->setParameters(array('sid' => $simupollId));
         return $qb->getQuery();
     }
+
+    /**
+     *
+     * @param $sid
+     * @param $pid
+     * @param $current
+     * @param $next
+     * @return array
+     */
+    public function getAnswersForQuestions($sid, $pid, $current, $next)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('a.id, q.id as qid, a.answer')
+            ->from('CPASimUSante\SimupollBundle\Entity\Answer', 'a')
+            ->leftJoin('a.question', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('q.simupoll = :simupoll');
+        if ($pid != 0) {
+            $qb->andWhere('a.paper = :paper');
+            $qb->setParameter('paper', $pid);
+        }
+        if ($current != -1) {
+            $qb->andWhere('c.lft >=:current');
+            $qb->setParameter('current', $current);
+        }
+        if ($next != -1) {
+            $qb->andWhere('c.lft <=:next');
+            $qb->setParameter('next', $next);
+        }
+        $qb->orderBy('q.id', 'ASC');
+        $qb->setParameter('simupoll', $sid);
+        //die($qb->getQuery()->getSQL());
+        //return $qb->getQuery()->getSQL();
+        return $qb->getQuery()->getResult();
+    }
 }

@@ -183,6 +183,11 @@ class Category
         $this->simupoll = $simupoll;
     }
 
+    public function getLft()
+    {
+        return $this->lft;
+    }
+
     public function getUser()
     {
         return $this->user;

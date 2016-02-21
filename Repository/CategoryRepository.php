@@ -23,6 +23,7 @@ class CategoryRepository extends NestedTreeRepository
         //$query->setParameter('simupoll', $id);
         return $query->getOneOrNullResult();
     }
+
     /**
      * get root category for simupoll
      *
@@ -34,7 +35,31 @@ class CategoryRepository extends NestedTreeRepository
             ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
             ->where('c.lvl = 0')
             ->andWhere('c.simupoll = :simupoll');
-        $qb->setParameters(array('simupoll'=>$sid));
+        $qb->setParameter('simupoll', $sid);
         return $qb->getQuery()->getResult();
     }
+
+
+    /**
+     * get root category for simupoll
+     *
+     */
+    public function getCategoriesBetween($sid, $begin=-1, $end=-1)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = :simupoll');
+        if ($begin != -1) {
+            $qb->andWhere('c.lft >=:begin');
+            $qb->setParameter('begin', $begin);
+        }
+        if ($end != -1) {
+            $qb->andWhere('c.lft <=:end');
+            $qb->setParameter('end', $end);
+        }
+        $qb->setParameter('simupoll', $sid);
+        return $qb->getQuery()->getResult();
+    }
+
 }

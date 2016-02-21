@@ -136,8 +136,14 @@ class SimupollController extends Controller
             $allowToCompose = 1;
         }
 
+        //is there a period set or is this the right period to answer?
+        $isOpenedPeriod = $em->getRepository('CPASimUSanteSimupollBundle:Period')
+            ->isOpenedPeriodForSimupoll($simupoll->getId());
+        $opened = ($isOpenedPeriod > 0) ? true : false;
+
         return array(
             '_resource'         => $simupoll,
+            'opened'            => $opened,
             'allowToCompose'    => $allowToCompose
         );
     }

@@ -34,10 +34,12 @@
             {% endif %}
 
             {% if allowToCompose == 1 %}{% endif %}
+
+            {% if opened %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_paper', { 'id': _resource.id }) }}">
                     <i class="fa fa-check-square-o"></i> {{ 'compose' | trans }}
                 </a>
-
+            {% endif %}
 
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_results', { 'id': _resource.id }) }}">

@@ -11,24 +11,37 @@ class PeriodRepository extends EntityRepository
     /**
      * Get currently opened simupoll period
      *
-     * @param $simupollID
+     * @param $sid
      * @return array
      */
-    public function getOpenedPeriodForSimupoll($simupollID)
+    public function getOpenedPeriodForSimupoll($sid)
     {
         $now = new \DateTime();
         $now->setTime(0, 0, 0);
-        $qb = $this->createQueryBuilder('p');
-        $qb->join('p.simupoll', 's')
-            ->where('s.id = :simupollid')
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('p')
+            ->from('CPASimUSante\SimupollBundle\Entity\Period', 'p')
+            ->join('p.simupoll', 's')
+            ->where('s.id = :sid')
             ->andWhere('p.start <= :now')
             ->andWhere('p.stop >= :now')
-            ->setParameters(
-                array(
-                    'simupollid' => $simupollID,
-                    'now' => $now
-                )
-            );
+            ->setParameters(array('sid' => $sid, 'now' => $now));
         return $qb->getQuery()->getResult();
+    }
+
+    public function isOpenedPeriodForSimupoll($sid)
+    {
+        $now = new \DateTime();
+        $now->setTime(0, 0, 0);
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('COUNT(p.id) AS pcount')
+            ->from('CPASimUSante\SimupollBundle\Entity\Period', 'p')
+            ->join('p.simupoll', 's')
+            ->where('s.id = :sid')
+            ->andWhere('p.start <= :now')
+            ->andWhere('p.stop >= :now')
+            ->setParameters(array('sid' => $sid,'now' => $now));
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }

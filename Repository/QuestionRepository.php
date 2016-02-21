@@ -24,15 +24,44 @@ class QuestionRepository extends EntityRepository
         return $qb->getQuery()->getSingleScalarResult();
     }
 
-    public function getQuestionsWithCategories($sid)
+    public function getQuestionsWithinCategories($sid, $current=-1, $next=-1)
     {
         $qb = $this->_em->createQueryBuilder();
-        $qb->select('q.id, q.title, c.name, p.id, p.choice')
+        $qb->select('q.id')
+            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('c.simupoll = :simupoll');
+        if ($current != -1) {
+            $qb->andWhere('c.lft >=:current');
+            $qb->setParameter('current', $current);
+        }
+        if ($next != -1) {
+            $qb->andWhere('c.lft <=:next');
+            $qb->setParameter('next', $next);
+        }
+        $qb->orderBy('c.lft', 'ASC')
+            ->addOrderBy('q.id', 'ASC')
+            ->setParameter('simupoll', $sid);
+        return $qb->getQuery()->getArrayResult();
+    }
+
+    public function getQuestionsWithCategories($sid, $current=-1, $next=-1)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('q')
             ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
             ->leftJoin('CPASimUSante\SimupollBundle\Entity\Category', 'c', 'WITH', 'q.category = c')
-            ->join('CPASimUSante\SimupollBundle\Entity\Proposition', 'p')
-            ->where('c.simupoll = :simupoll')
-            ->orderBy('c.lft', 'ASC')
+            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Proposition', 'p')
+            ->where('c.simupoll = :simupoll');
+        if ($current != -1) {
+            $qb->andWhere('c.lft >=:current');
+            $qb->setParameter('current', $current);
+        }
+        if ($next != -1) {
+            $qb->andWhere('c.lft <=:next');
+            $qb->setParameter('next', $next);
+        }
+        $qb->orderBy('c.lft', 'ASC')
             ->addOrderBy('q.id', 'ASC')
             ->addOrderBy('p.id', 'ASC')
             ->setParameter('simupoll', $sid);
@@ -53,18 +82,23 @@ class QuestionRepository extends EntityRepository
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q')
             ->addSelect('a.id, a.answer')
-            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
-            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q')
-            ->where('q.simupoll = :simupoll')
-            ->andWhere('a.paper = :paper')
-            ->orderBy('q.id', 'ASC');
+            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q');
+        if ($pid != 0) {
+            $qb->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q');
+        }
+        $qb->where('q.simupoll = :simupoll');
+        if ($pid != 0) {
+            $qb->andWhere('a.paper = :paper');
+            $qb->setParameter('paper',$pid);
+        }
+        $qb->orderBy('q.id', 'ASC');
         if ($limit != 0) {
             $qb->setMaxResults($limit);
         }
         if ($offset != 0) {
             $qb->setFirstResult($offset);
         }
-        $qb->setParameters(array('simupoll'=>$sid, 'paper'=>$pid));
+        $qb->setParameter('simupoll',$sid);
         return $qb->getQuery()->getResult();
     }
 
@@ -99,6 +133,7 @@ class QuestionRepository extends EntityRepository
         }
         $qb->orderBy('q.id', 'ASC');
         $qb->setParameter('simupoll', $sid);
+        //die($qb->getQuery()->getSQL());
         //return $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
