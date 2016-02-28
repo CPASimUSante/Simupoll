@@ -187,6 +187,7 @@ class SimupollController extends Controller
 
             $choice = '';
             $choiceData = '';
+            $categoryList = '';
             if ($orga != null) {
                 $choice = $orga[0]->getChoice();
                 $choiceData = $orga[0]->getChoiceData();
@@ -203,6 +204,15 @@ class SimupollController extends Controller
                 } elseif ($choice == 2) {
                     $choice_categorygroup = $request->request->get('categorygroup');
                     $choiceData = ($choice_categorygroup != array()) ? implode(',', $choice_categorygroup) : '';
+                    //retrieve category list to avoid further request in results
+                    $cats = $repoCat->getCategoriesInLft($simupoll->getId(), $choice_categorygroup);
+                    if ($cats != null){
+                        $cl = array();
+                        foreach($cats as $c) {$cl[] = $c->getId();}
+                        if ($cl != array()) {
+                            $categoryList = implode(',', $cl);
+                        }
+                    }
                 }
 //var_dump($choiceData);die();
                 if ($orga == null) {
@@ -210,10 +220,12 @@ class SimupollController extends Controller
                     $orga->setSimupoll($simupoll);
                     $orga->setChoice($choice);
                     $orga->setChoiceData($choiceData);
+                    $orga->setCategoryList($categoryList);
                     $em->persist($orga);
                 } else {
                     $orga[0]->setChoice($choice);
                     $orga[0]->setChoiceData($choiceData);
+                    $orga[0]->setCategoryList($categoryList);
                     $em->persist($orga[0]);
                 }
                 $em->flush();
@@ -240,7 +252,7 @@ class SimupollController extends Controller
                 $options['nodeDecorator'] = function($node) use ($repoQuestion) {
                     $qcount = $repoQuestion->getQuestionCount($node['id']);
                     if ($node['lvl']==0) {
-                        $extra = '<input type="hidden" name="categorygroup[]" value="'.$node['lvl'].'">';
+                        $extra = '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">';
                         $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'" checked disabled>';
                     } else {
                         $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'">';
@@ -254,7 +266,7 @@ class SimupollController extends Controller
                     $disabled = ($node['lvl']==0) ? " disabled" : "";
                     $checked = (in_array($node['lft'], $choice_categorygroup) || $node['lvl']==0) ? " checked" : "";
                     //root is mandatory
-                    $extra = ($node['lft']==0) ? '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">' : '';
+                    $extra = ($node['lvl']==0) ? '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">' : '';
                     $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'"'.$checked.$disabled.'>';
                     return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
                 };

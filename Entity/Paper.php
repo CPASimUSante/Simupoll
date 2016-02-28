@@ -54,6 +54,12 @@ class Paper
     private $simupoll;
 
     /**
+     * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Period")
+     * @ORM\JoinColumn(name="period_id", referencedColumnName="id",onDelete="CASCADE")
+     */
+    private $period;
+
+    /**
      * Get id
      *
      * @return integer
@@ -153,6 +159,16 @@ class Paper
     public function setSimupoll(\CPASimUSante\SimupollBundle\Entity\Simupoll $simupoll)
     {
         $this->simupoll = $simupoll;
+    }
+
+    public function getPeriod()
+    {
+        return $this->period;
+    }
+
+    public function setPeriod(\CPASimUSante\SimupollBundle\Entity\Period $period)
+    {
+        $this->period = $period;
     }
 }
 

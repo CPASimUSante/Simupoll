@@ -41,10 +41,13 @@ class CategoryRepository extends NestedTreeRepository
 
 
     /**
-     * get root category for simupoll
-     *
+     * Categories between lft values
+     * @param $sid
+     * @param int $begin
+     * @param int $end
+     * @return array
      */
-    public function getCategoriesBetween($sid, $begin=-1, $end=-1)
+    public function getCategoriesBetweenLft($sid, $begin=-1, $end=-1)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('c')
@@ -55,11 +58,30 @@ class CategoryRepository extends NestedTreeRepository
             $qb->setParameter('begin', $begin);
         }
         if ($end != -1) {
-            $qb->andWhere('c.lft <=:end');
+            $qb->andWhere('c.lft <:end');
             $qb->setParameter('end', $end);
         }
         $qb->setParameter('simupoll', $sid);
+        //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * List of category from lvl list
+     *
+     * @param $sid
+     * @param $lftList array
+     * @return array
+     */
+    public function getCategoriesInLft($sid, $lftList)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = :simupoll')
+            ->andWhere('c.lft IN (:lftlist)')
+            ->setParameter('simupoll', $sid)
+            ->setParameter('lftlist', $lftList);
+        return $qb->getQuery()->getResult();
+    }
 }

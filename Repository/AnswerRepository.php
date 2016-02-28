@@ -14,6 +14,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     {
         return $this->getQuerySimupollAllResponsesForAllUsers($simupollId, $order)->getResult();
     }
+
     /**
      *
      * @return array
@@ -32,14 +33,14 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     }
 
     /**
-     *
+     * Retrieve answers for question in
      * @param $sid
      * @param $pid
      * @param $current
      * @param $next
      * @return array
      */
-    public function getAnswersForQuestions($sid, $pid, $current, $next)
+    public function getAnswersForQuestions($sid, $pid, $current=-1, $next=-1)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('a.id, q.id as qid, a.answer')
@@ -61,8 +62,26 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
         }
         $qb->orderBy('q.id', 'ASC');
         $qb->setParameter('simupoll', $sid);
-        //die($qb->getQuery()->getSQL());
-        //return $qb->getQuery()->getSQL();
+        //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Delete answers when updating a simupoll
+     *
+     * @param $pid
+     * @param $questionList
+     */
+    public function deleteOldAnswersInCategories($pid, $questionList)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        //$query = $qb->delete('CPASimUSante\SimupollBundle\Entity\Answer', 'a')
+        $query = $qb->delete('CPASimUSanteSimupollBundle:Answer', 'a')
+            ->where('a.question IN (:questionslist)')
+            ->andWhere('a.paper = :pid')
+            ->setParameter('pid', $pid)
+            ->setParameter('questionslist', $questionList)
+            ->getQuery();
+        $query->execute();
     }
 }

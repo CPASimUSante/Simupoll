@@ -36,7 +36,7 @@ class QuestionRepository extends EntityRepository
             $qb->setParameter('current', $current);
         }
         if ($next != -1) {
-            $qb->andWhere('c.lft <=:next');
+            $qb->andWhere('c.lft <:next');
             $qb->setParameter('next', $next);
         }
         $qb->orderBy('c.lft', 'ASC')
@@ -45,6 +45,12 @@ class QuestionRepository extends EntityRepository
         return $qb->getQuery()->getArrayResult();
     }
 
+    /**
+     * @param $sid
+     * @param int $current
+     * @param int $next
+     * @return array of object or null
+     */
     public function getQuestionsWithCategories($sid, $current=-1, $next=-1)
     {
         $qb = $this->_em->createQueryBuilder();
@@ -52,13 +58,13 @@ class QuestionRepository extends EntityRepository
             ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
             ->leftJoin('CPASimUSante\SimupollBundle\Entity\Category', 'c', 'WITH', 'q.category = c')
             ->leftJoin('CPASimUSante\SimupollBundle\Entity\Proposition', 'p')
-            ->where('c.simupoll = :simupoll');
+            ->where('c.simupoll =:simupoll');
         if ($current != -1) {
             $qb->andWhere('c.lft >=:current');
             $qb->setParameter('current', $current);
         }
         if ($next != -1) {
-            $qb->andWhere('c.lft <=:next');
+            $qb->andWhere('c.lft <:next');
             $qb->setParameter('next', $next);
         }
         $qb->orderBy('c.lft', 'ASC')
@@ -80,9 +86,11 @@ class QuestionRepository extends EntityRepository
     public function getQuestionsWithAnswers($sid, $pid, $limit=0, $offset=0)
     {
         $qb = $this->_em->createQueryBuilder();
-        $qb->select('q')
-            ->addSelect('a.id, a.answer')
-            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q');
+        $qb->select('q');
+        if ($pid != 0) {
+            $qb->addSelect('a.id, a.answer');
+        }
+        $qb->from('CPASimUSante\SimupollBundle\Entity\Question', 'q');
         if ($pid != 0) {
             $qb->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q');
         }
@@ -99,6 +107,7 @@ class QuestionRepository extends EntityRepository
             $qb->setFirstResult($offset);
         }
         $qb->setParameter('simupoll',$sid);
+        //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 
@@ -113,11 +122,15 @@ class QuestionRepository extends EntityRepository
     public function getQuestionsWithAnswersInCategories($sid, $pid, $current, $next)
     {
         $qb = $this->_em->createQueryBuilder();
-        $qb->select('q')
-            ->addSelect('a.id, a.answer')
-            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
-            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q')
-            ->leftJoin('CPASimUSante\SimupollBundle\Entity\Category', 'c', 'WITH', 'q.category = c')
+        $qb->select('q');
+        if ($pid != 0) {
+            $qb->addSelect('a.id, a.answer');
+        }
+        $qb->from('CPASimUSante\SimupollBundle\Entity\Question', 'q');
+        if ($pid != 0) {
+            $qb->leftJoin('CPASimUSante\SimupollBundle\Entity\Answer', 'a', 'WITH', 'a.question = q');
+        }
+        $qb->leftJoin('CPASimUSante\SimupollBundle\Entity\Category', 'c', 'WITH', 'q.category = c')
             ->where('q.simupoll = :simupoll');
         if ($pid != 0) {
             $qb->andWhere('a.paper = :paper');
@@ -128,7 +141,7 @@ class QuestionRepository extends EntityRepository
             $qb->setParameter('current', $current);
         }
         if ($next != -1) {
-            $qb->andWhere('c.lft <=:next');
+            $qb->andWhere('c.lft <:next');
             $qb->setParameter('next', $next);
         }
         $qb->orderBy('q.id', 'ASC');

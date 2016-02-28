@@ -42,16 +42,52 @@ class PaperRepository extends \Doctrine\ORM\EntityRepository
      * @param $simupollID
      * @return array
      */
-    public function getPaper($userID, $simupollID)
+    public function getPaper($userID, $simupollID, $periodId)
     {
         $qb = $this->createQueryBuilder('p');
         $qb->join('p.user', 'u')
             ->join('p.simupoll', 's')
+            ->join('p.period', 'd')
             ->where('u.id = :userid')
             ->andWhere('s.id = :simupollid')
             ->andWhere('p.end IS NULL')
-            ->setParameters(array('userid'=>$userID, 'simupollid' => $simupollID));
+            ->andWhere('d.id = :periodId')
+            ->setParameters(
+                array(
+                    'userid'=> $userID,
+                    'simupollid' => $simupollID,
+                    'periodId' => $periodId
+                )
+            );
+
+        //echo '<pre>';var_dump($qb->getQuery()->getSQL());echo '</pre>';
+        //echo '<pre>';var_dump($qb->getQuery()->getParameters());echo '</pre>';
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get paper for current timeframe
+     */
+    public function getCurrentPaperInPeriod($userID, $simupollID, $periodId)
+    {
+        $now = new \DateTime();
+        $now->setTime(0, 0, 0);
+        $qb = $this->createQueryBuilder('p');
+        $qb->join('p.user', 'u')
+            ->join('p.simupoll', 's')
+            ->join('p.period', 'd')
+            ->where('u.id = :userid')
+            ->andWhere('s.id = :simupollid')
+            ->andWhere('d.id = :periodId')
+            ->setParameters(
+                array(
+                    'userid'=> $userID,
+                    'simupollid' => $simupollID,
+                    'periodId' => $periodId
+                )
+            );
 
         return $qb->getQuery()->getResult();
+        //return $qb->getQuery()->getSQL();
     }
 }

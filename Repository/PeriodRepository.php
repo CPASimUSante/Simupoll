@@ -44,4 +44,23 @@ class PeriodRepository extends EntityRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     *
+     * @param $uid
+     * @param $date
+     * @return array
+     */
+    public function findOneContaining($uid, $date)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('p')
+            ->from('CPASimUSante\SimupollBundle\Entity\Period', 'p')
+            ->join('p.user', 'u')
+            ->where('u.id = :uid')
+            ->andWhere('p.start <= :thedate')
+            ->andWhere('p.stop >= :thedate')
+            ->setParameters(array('uid' => $uid, 'thedate' => $date));
+        return $qb->getQuery()->getResult();
+    }
 }

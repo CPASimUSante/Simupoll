@@ -37,6 +37,13 @@ class Organization
     protected $choiceData;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="category_list", type="text")
+     */
+    protected $categoryList;
+
+    /**
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Simupoll")
      * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -98,6 +105,18 @@ class Organization
     public function getChoiceData()
     {
         return $this->choiceData;
+    }
+
+    public function setCategoryList($categoryList)
+    {
+        $this->categoryList = $categoryList;
+
+        return $this;
+    }
+
+    public function getCategoryList()
+    {
+        return $this->categoryList;
     }
 
     public function getSimupoll()
