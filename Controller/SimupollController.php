@@ -363,8 +363,8 @@ class SimupollController extends Controller
             ->getQuery();
         $repoQuestion = $em->getRepository('CPASimUSanteSimupollBundle:Question');
 
-        $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')->findBy(
-            array('user' => $user, 'simupoll' => $simupoll)
+        $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')
+            ->findBy(array('user' => $user, 'simupoll' => $simupoll)
         );
         if ($statsmanage != array()) {
             $uids = $statsmanage[0]->getUserList();
@@ -376,17 +376,29 @@ class SimupollController extends Controller
             $uids = $request->request->get('simupoll_userlist');
             $categories = $request->request->get('categorygroup');
             $cats = ($categories != null) ? implode(',', $categories) : '';
-            if ($statsmanage == null)
-            {
+            //generate list of all categories
+            $allcats = null;
+            if ($categories != null) {
+                $allcatstmp = array();
+                $catlength = count($categories);
+                for ($c=0;$c<$catlength;$c++) {
+                    $begin = $categories[$c];
+                    $end = (isset($categories[$c+1])) ? $categories[$c+1] : '';
+                    $allcatstmp[] = $repoCat->getCategoriesBetween($simupoll->getId(), $begin, $end);
+                }
+            }
+            if ($statsmanage == null) {
                 $statsmanage = new Statmanage();
                 $statsmanage->setUser($user);
                 $statsmanage->setSimupoll($simupoll);
                 $statsmanage->setCategoryList($cats);
                 $statsmanage->setUserList($uids);
+                $statsmanage->setCompleteCategoryList($allcats);
                 $em->persist($statsmanage);
             } else {
                 $statsmanage[0]->setCategoryList($cats);
                 $statsmanage[0]->setUserList($uids);
+                $statsmanage[0]->setCompleteCategoryList($allcats);
                 $em->persist($statsmanage[0]);
             }
             $em->flush();
@@ -479,25 +491,30 @@ class SimupollController extends Controller
         $em = $this->getDoctrine()->getManager();
         //$papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')->findBySimupoll($simupoll);
 
+        //get stat parameters : list of categories and users to use
+        $userlist = '';
+        $categorylist = '';
+        $usersAndCategories = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')
+            ->findOneBy(array('simupoll' => $simupollId));
+        if (isset($usersAndCategories)) {
+            $userlist = $usersAndCategories->getUserList();
+            $categorylist = $usersAndCategories->getCategoryList();
+        }
+
         //query to get the mean for last try for the exercise
-        $averages = $this->getDoctrine()
-            ->getManager()
-            ->getRepository('CPASimUSanteExoverrideBundle:Response')
+        $averages = $em->getRepository('CPASimUSanteExoverrideBundle:Response')
             ->getAverageForExerciseLastTryByUser($simupollId);
 
         $row['galmeanlast'] = 0;
-        foreach($averages as $average)
-        {
+        foreach($averages as $average) {
             //mean for last try for a user for an exercise
             $row['avg_last'][$average['user']] = $average['average_mark'];
             //mean for last try for a user for all exercises
-            if (!isset($row['mean_last'][$average['user']]))
-            {
+            if (!isset($row['mean_last'][$average['user']])) {
                 $row['mean_last'][$average['user']] = $average['average_mark'];
                 $row['mean_lastcount'][$average['user']] = 1;
             }
-            else
-            {
+            else {
                 $row['mean_last'][$average['user']] += $average['average_mark'];
                 $row['mean_lastcount'][$average['user']] += 1;
             }
@@ -509,15 +526,13 @@ class SimupollController extends Controller
         //simupoll title
         $row['simupoll'] = $simupoll->getName();
 
+        $tmpmean = array();
         $gmean = array('m'=>0, 'c'=>0);
         //get all answers
-        $simupollAnswers = $this->getDoctrine()
-            ->getManager()
-            ->getRepository('CPASimUSanteSimupollBundle:Answer')
+        $simupollAnswers = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
 
-        foreach ($simupollAnswers as $responses)
-        {
+        foreach ($simupollAnswers as $responses) {
             $paper = $responses->getPaper();
             //paper_id
             $paperId = $paper->getId();
@@ -540,16 +555,13 @@ class SimupollController extends Controller
             //can't get the choice directly in the first query (string with ;)
             $choice = array();
             $choiceIds = array_filter(explode(";", $responses->getAnswer()), 'strlen'); //to avoid empty value
-            foreach ($choiceIds as $cid)
-            {
-                if (!in_array($cid, $choicetmp))//to avoid duplicate queries
-                {
+            foreach ($choiceIds as $cid) {
+                if (!in_array($cid, $choicetmp)) { //to avoid duplicate queries
                     $label = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')->find($cid)->getChoice();
                     $choicetmp[$cid] = $label;
                     $choice[] = $label;
                 }
-                else
-                {
+                else {
                     $choice[] = $choicetmp[$cid];
                 }
             }
@@ -561,13 +573,11 @@ class SimupollController extends Controller
             //list of choices
             $row['user'][$uid]['question'][$paperId][] = implode(';', $choice);
 
-            if (!isset($tmpmean[$uid]))
-            {
+            if (!isset($tmpmean[$uid])) {
                 $tmpmean[$uid]['sum'] = $mark;
                 $tmpmean[$uid]['count'] = 1;
             }
-            else
-            {
+            else {
                 $tmpmean[$uid]['sum'] += $mark;
                 $tmpmean[$uid]['count'] += 1;
             }
@@ -576,47 +586,38 @@ class SimupollController extends Controller
             $gmean['c'] += 1;
         }
 
-        foreach ($tmpmean as $uid => $m)
-        {
+        foreach ($tmpmean as $uid => $m) {
             //compute mean for each user
-            if (isset($m['count']))
-            {
+            if (isset($m['count'])) {
                 $row['user'][$uid]['mean'] = $m['sum']/$m['count'];
             }
-            else
-            {
+            else {
                 $row['user'][$uid]['mean'] = 0;
             }
             //general mean for user
-            if (isset($row['mean'][$uid]))
-            {
+            if (isset($row['mean'][$uid])) {
                 $row['mean'][$uid] += $row['user'][$uid]['mean'];
                 $row['mean_count'][$uid] += 1;
             }
-            else
-            {
+            else {
                 $row['mean'][$uid] = $row['user'][$uid]['mean'];
                 $row['mean_count'][$uid] = 1;
             }
         }
 
-        if ($gmean['c'] != 0)
-        {
+        if ($gmean['c'] != 0) {
             $row['galmean'] = $gmean['m']/$gmean['c'];
         }
-        else
-        {
+        else {
             $row['galmean'] = 0;
         }
         //mean for all exercises
-        if (!isset($row['allgalmean']))
-        {
+        if (!isset($row['allgalmean'])) {
             $row['allgalmean']      = $row['galmean'];
             $row['allgalmeanlast']  = $row['galmeanlast'];
             $row['galmeancount']    = 1;
         }
-        else
-        {
+        else {
             $row['allgalmean']      += $row['galmean'];
             $row['allgalmeanlast']  += $row['galmeanlast'];
             $row['galmeancount']    += 1;

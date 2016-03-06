@@ -38,6 +38,13 @@ class Statmanage
     protected $categoryList;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="completecategorylist", type="string", length=255, nullable=true)
+     */
+    protected $completeCategoryList;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\User")
      */
     private $user;
@@ -83,7 +90,7 @@ class Statmanage
     }
 
     /**
-     * Set userList
+     * Set categoryList
      *
      * @param string $categoryList
      *
@@ -104,6 +111,30 @@ class Statmanage
     public function getCategoryList()
     {
         return $this->categoryList;
+    }
+
+    /**
+     * Set completeCategoryList
+     *
+     * @param string $completeCategoryList
+     *
+     * @return Statmanage
+     */
+    public function setCompleteCategoryList($completeCategoryList)
+    {
+        $this->completeCategoryList = $completeCategoryList;
+
+        return $this;
+    }
+
+    /**
+     * Get completeCategoryList
+     *
+     * @return string
+     */
+    public function getCompleteCategoryList()
+    {
+        return $this->completeCategoryList;
     }
 
     public function getUser()

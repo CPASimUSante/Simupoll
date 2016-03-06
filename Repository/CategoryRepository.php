@@ -39,7 +39,6 @@ class CategoryRepository extends NestedTreeRepository
         return $qb->getQuery()->getResult();
     }
 
-
     /**
      * Categories between lft values
      * @param $sid
@@ -82,6 +81,30 @@ class CategoryRepository extends NestedTreeRepository
             ->andWhere('c.lft IN (:lftlist)')
             ->setParameter('simupoll', $sid)
             ->setParameter('lftlist', $lftList);
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Categories between lft values
+     * @param $sid
+     * @param int $begin
+     * @param int $end
+     * @return array
+     */
+    public function getCategoriesBetween($sid, $begin=-1, $end=-1)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c.id')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = :simupoll')
+            ->andWhere('c.id >=:begin')
+            ->setParameter('begin', $begin);
+        if ($end != '') {
+            $qb->andWhere('c.id <:end');
+            $qb->setParameter('end', $end);
+        }
+        $qb->setParameter('simupoll', $sid);
+        //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 }
