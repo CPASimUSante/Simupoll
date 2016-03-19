@@ -7,7 +7,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class SimupollServices
 {
-
     /**
      * Current entity manage for data persist
      * @var \Doctrine\Common\Persistence\ObjectManager $om
@@ -42,10 +41,10 @@ class SimupollServices
      *
      * @return boolean
      */
-    public function isSimupollAdmin($simupoll)
+    public function isGrantedAccess($simupoll, $access)
     {
         $collection = new ResourceCollection(array($simupoll->getResourceNode()));
-        if ($this->securityAuth->isGranted('ADMINISTRATE', $collection)) {
+        if ($this->securityAuth->isGranted($access, $collection)) {
             return true;
         } else {
             return false;

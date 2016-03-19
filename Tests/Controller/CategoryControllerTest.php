@@ -27,22 +27,26 @@ class CategoryControllerTest extends TransactionalTestCase
         $this->persist = new Persister($this->om);
     }
 
-    public function testCategoryNotFoundAction()
+    public function testCategoryFound()
     {
-        $this->request('GET', '/simupoll/category/categories/1');
-        $this->assertEquals(404, $this->client->getResponse()->getStatusCode());
-    }
-
-    public function testCategoryFoundAction()
-    {
-        $user = $this->persist->user('john');
-        $simupoll = $this->persist->simupoll('simupoll1');
-        $category = $this->persist->category('category1', $user, $simupoll);
+        $john = $this->persist->user('john');
+        $simupoll = $this->persist->simupoll('simupoll1', $john);
+        $category = $this->persist->category('category1', $john, $simupoll);
         $this->om->flush();
 
         $this->request('GET', "/simupoll/category/categories/{$simupoll->getId()}");
-        var_dump($this->client->getResponse()->getContent());
-        die();
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testDeleteCategoryNotAllowed()
+    {
+        $john = $this->persist->user('john');
+        $jane = $this->persist->user('jane');
+        $simupoll = $this->persist->simupoll('simupoll1', $john);
+        $category = $this->persist->category('category1', $john, $simupoll);
+        $this->om->flush();
+
+        $this->request('DELETE', "/simupoll/category/delete/{$category->getId()}", $jane);
+        $this->assertEquals(403, $this->client->getResponse()->getStatusCode());
     }
 }

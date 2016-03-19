@@ -13,6 +13,11 @@ namespace CPASimUSante\SimupollBundle\Testing;
 
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+
+//to create a resource
+use Claroline\CoreBundle\Entity\Resource\ResourceNode;
+use Claroline\CoreBundle\Entity\Resource\ResourceType;
+
 use Claroline\CoreBundle\Entity\Role;
 use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
@@ -26,6 +31,7 @@ class Persister
     private $om;
 
     private $userRole;
+    private $simupollType;
 
     public function __construct(ObjectManager $om)
     {
@@ -73,9 +79,13 @@ class Persister
         return $user;
     }
 
+    /**
+    * needed to create a functional simupoll resource
+    */
     public function simupoll($title, User $creator)
     {
       $simupoll = new Simupoll();
+      $simupoll->setTitle($title);
       if (!$this->simupollType) {
           $this->simupollType = new ResourceType();
           $this->simupollType->setName('claroline_result');

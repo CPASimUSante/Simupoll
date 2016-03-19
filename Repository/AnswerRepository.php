@@ -84,4 +84,44 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->getQuery();
         $query->execute();
     }
+
+    public function getAverageForExerciseByUser($sid)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('AVG(r.mark) as average_mark')
+            ->addSelect('IDENTITY(p.user) as user')             //IDENTITY needed because user is a FK
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')     //thus, avoid problem with "overriding" Response entity in ExoverrideBundle
+            ->join('a.paper', 'p')
+            ->join('p.simupoll', 'e')
+            ->where('e.id = ?1')
+            ->groupBy('p.user')
+            ->setParameters(array(1 => $simupollId));
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+    * @param $sid simupoll id
+    */
+    public function getAverageForSimupollLastTryByUser($sid)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('AVG(a.mark) as average_mark')
+            ->addSelect('IDENTITY(p.user) as user')             //IDENTITY needed because user is a FK
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')     //thus, avoid problem with "overriding" Response entity in ExoverrideBundle
+            ->join('a.paper', 'p')
+            ->join('p.simupoll', 's')
+            ->where('s.id = ?1')
+            ->andWhere(
+               $qb->expr()->in(
+                   'p.id',
+                   $this->_em->createQueryBuilder()->select('MAX(p2.id)')
+                       ->from('CPASimUSante\\SimupollBundle\\Entity\\Paper', 'p2')
+                       ->where('p2.simupoll= ?1')
+                       ->groupBy('p2.user')
+                       ->getDQL()
+               ))
+            ->groupBy('p.user')
+            ->setParameters(array(1 => $sid));
+        return $qb->getQuery()->getResult();
+    }
 }

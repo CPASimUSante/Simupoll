@@ -2,19 +2,22 @@
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
+
+use CPASimUSante\SimupollBundle\Manager\SimupollManager;
 use CPASimUSante\SimupollBundle\Entity\Organization;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Statmanage;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use CPASimUSante\SimupollBundle\Form\StatmanageType;
+
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Class SimupollController
@@ -36,6 +39,30 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class SimupollController extends Controller
 {
+    //list of hexa colors for graph
+    private static $RGBCOLORS = array("#000000", "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+      "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
+      "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+      "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
+      "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
+      "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
+      "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
+      "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C");
+
+    private $simupollManager;
+
+    /*
+     * @DI\InjectParams({
+     *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
+     * })
+     *
+     * @param SimupollManager   simupollManager
+
+    public function __construct(SimupollManager $simupollManager)
+    {
+      $this->simupollManager = $simupollManager;
+    }
+*/
     /**
      * Manage the form to create the simupoll
      *
@@ -49,12 +76,12 @@ class SimupollController extends Controller
     public function editAction(Request $request, Simupoll $simupoll)
     {
         //can user access ?
-        $this->checkAccess($simupoll);
+        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
-            ->isSimupollAdmin($simupoll);
+            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         if ($simupollAdmin === true)
         {
@@ -121,12 +148,12 @@ class SimupollController extends Controller
             ->getToken()->getUser();
 
         //can user access ?
-        $this->checkAccess($simupoll);
+        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
-            ->isSimupollAdmin($simupoll);
+            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
         $allowToCompose = 0;
@@ -165,12 +192,12 @@ class SimupollController extends Controller
             ->getToken()->getUser();
 
         //can user access ?
-        $this->checkAccess($simupoll);
+        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
-            ->isSimupollAdmin($simupoll);
+            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
         $allowToCompose = 0;
@@ -304,12 +331,12 @@ class SimupollController extends Controller
             ->getToken()->getUser();
 
         //can user access ?
-        $this->checkAccess($simupoll);
+        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
-            ->isSimupollAdmin($simupoll);
+            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
         $allowToCompose = 0;
@@ -345,12 +372,12 @@ class SimupollController extends Controller
             ->getToken()->getUser();
 
         //can user access ?
-        $this->checkAccess($simupoll);
+        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
-            ->isSimupollAdmin($simupoll);
+            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
         //display tree of categories for group
@@ -463,27 +490,206 @@ class SimupollController extends Controller
     }
 
     /**
-     * To check the right to open or not
-     *
-     * @access private
-     *
-     * @param \CPASimUSante\SimupollBundle\Entity\Simupoll $simupoll
-     *
-     * @return exception
-     */
-    private function checkAccess($simupoll)
-    {
-        $collection = new ResourceCollection(array($simupoll->getResourceNode()));
-        if (!$this->get('security.authorization_checker')->isGranted('OPEN', $collection)) {
-            throw new AccessDeniedException($collection->getErrorsForDisplay());
-        }
-    }
-
-    /**
      * General gathering of data to create statistics
+     *
+     * @param Simupoll $simupoll
+     * @return array array of results
      */
     public function prepareResultsAndStatsForSimupoll(Simupoll $simupoll)
     {
+        // $row = $this->simupollManager->prepareResultsAndStatsForSimupoll($simupoll);
+        $row = $this->getPrepareResultsAndStatsForSimupoll($simupoll);
+
+        return array(
+            'row' => $row
+        );
+    }
+
+    /**
+     * Display the statistics for the simupoll
+     *
+     * @EXT\Route("/showgeneralstats/{id}", name="cpasimusante_simupoll_stats_allhtml", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:showStats.html.twig")
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function getResultAllhtmlAction(Simupoll $simupoll)
+    {
+        //to associate the names
+        $user = array();
+
+        $datas = $this->prepareResultsAndStatsForSimupoll($simupoll);
+
+        // $html = $this->simupollManager->prepareHtmlStats($datas);
+        $html = $this->prepareHtmlStats($datas);
+
+        return array(
+            '_resource'     => $simupoll,
+            'html'          => $html
+        );
+    }
+
+    /**
+     * Export the statistics for the simupoll
+     *
+     * @EXT\Route("/exportstats/{id}", name="cpasimusante_simupoll_stats_csv", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function getResultCsvAction($simupoll)
+    {
+        $date = new \DateTime();
+        $now = $date->format('Y-m-d-His');
+
+        $content = '';
+
+        return new Response($content, 200, array(
+            'Content-Type' => 'application/force-download',
+            'Content-Disposition' => 'attachment; filename="exportall-'.$now.'.csv"'
+        ));
+    }
+
+    /**
+     * Prepare the statistics in json for radar display
+     *
+     * @EXT\Route("/jsonstats/{id}", name="cpasimusante_simupoll_stats_json", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function getResultJsonAction($simupoll)
+    {
+        //to rgb
+        $colors = array_map(array($this, 'rgb2hex'), $this::$RGBCOLORS);
+        $json = array();
+        $json['datasets'] = array();
+        $user = array();
+        $allgalmeanlast = array();
+        $allgalmean = array();
+        $usernames = array();
+
+        return new JsonResponse($json);
+    }
+
+
+/*TO BE REMOVED BELOW*/
+
+    /**
+     * transforms rgb color into hexa color
+     * @param $color
+     * @return array
+     */
+    public function rgb2hex($color)
+    {
+        $color = str_replace("#", "", $color);
+        $r = hexdec(substr($color,0,2));
+        $g = hexdec(substr($color,2,2));
+        $b = hexdec(substr($color,4,2));
+        return array($r, $g, $b);
+    }
+
+    /**
+    * Create an object usable for ChartNew.js dataset data in radar graph
+    *
+    * @param $label string label of dataset
+    * @param $data array stats to display
+    * @param $color string color of line
+    * @param $fill  boolean area filled or empty
+    * @return object
+    */
+    public function setObjectForRadarDataset($label, $data, $color, $fill=false)
+    {
+        $class = new \stdClass();
+        $class->label = $label;
+        $class->data = $data;
+        $class->pointStrokeColor = "#fff";
+        $class->pointHighlightFill = "#fff";
+        $class->fillColor = "rgba(0,0,0,0)";
+        $class->strokeColor = $color;
+        $class->pointHighlightFill = $color;
+        return $class;
+    }
+
+    /**
+    * Prepare the html code for displaying the stat results
+    *
+    * @param $datas array array of stats results
+    * @return string
+    */
+    public function prepareHtmlStats($datas)
+    {
+        $html = '';
+        $htmltmp = '';
+        $data = $datas['row'];
+        // echo '<pre>';var_dump($data);echo '</pre>';die();
+        //echo '<pre>';echo $sid.'<br>';var_dump($data);echo '</pre>';die();
+        $htmltmp .= '
+            <tr><th><b>'.$data['simupoll'].'</b></th>
+            <th>Moyenne générale : '.number_format(($data['galmean'])*100, 2).'%<br> = Moyenne tous essais pour tous utilisateurs</th>
+            <th>Moyenne dernier essai : '.number_format(($data['galmeanlast'])*100, 2).'%</th></tr>';
+
+        $htmltmp .= '<tr><td colspan="3">Questions : <ul>';
+        if (isset($data['question'])) {
+            foreach ($data['question'] as $question) {
+                $htmltmp .= '<li>' . $question['name'] . '</li>';
+            }
+        }
+        $htmltmp .= '</ul></td></tr>';
+        if (isset($data['user'])) {
+            foreach ($data['user'] as $u => $userdata) {
+                $user[$u] = $userdata['uname'];
+                $htmltmp .= '<tr>
+                    <td><u>' . $userdata['uname'] . '</u></td>
+                    <td>Moyenne tous essais :  ' . number_format(($data['user'][$u]['mean']) * 100, 2) . '%</td>
+                    <td>Moyenne dernier essai :  ' . number_format(($data['avg_last'][$u]) * 100, 2) . '%</td>
+                    </tr>';
+
+                $inc = 1;
+                $htmltmp .= '<tr><td colspan="3">Réponse : <br>';
+                foreach ($userdata['mark'] as $p => $papermark) {
+                    $htmltmp .= 'Essai ' . $inc . ' (' . $userdata['start'][$p] . ' - ' . $userdata['end'][$p] . ') => ';
+                    foreach ($papermark as $m => $mark) {
+                        $htmltmp .= $userdata['question'][$p][$m] . ' : ' . number_format(($mark) * 100, 2) . '%  - ';
+                    }
+                    $htmltmp .= '<br>';
+                    $inc++;
+                }
+                $htmltmp .= '</td></tr>';
+            }
+        }
+
+        //Display mean
+        $mean = '';
+        if (isset($datalist['mean'])) {
+            foreach ($datalist['mean'] as $u => $val) {
+                $mean .= '<tr><td><u>' . $user[$u] . '</u></td><td>' . number_format(($val) * 100, 2) . '%</td>' .
+                '<td>' . number_format(($datalist['mean_last'][$u]) * 100, 2) . '%</td></tr>';
+            }
+        }
+        $meanlast='';
+
+        $htmltmp = '<table class="table table-responsive">'.
+        '<tr><th></th><th><b>Moyenne générale tous essais</b></th><th><b>Moyenne générale dernier essais</b></th></tr>'.
+        '<tr><td>Groupe</td><td>'.number_format(($datas['row']['allgalmean'])*100, 2).'%</td><td>'.number_format(($datas['row']['allgalmeanlast'])*100, 2).'%</td><tr>'.
+        $mean.$meanlast.
+        $htmltmp.
+        '</table>';
+
+        $html .= $htmltmp;
+        return $html;
+    }
+
+    /**
+    * Prepare the data retrieved from db to be used in the stat results
+    *
+    * @param $datas array array of stats results
+    * @return string
+    */
+    public function getPrepareResultsAndStatsForSimupoll(Simupoll $simupoll)
+    {
+        $row = array();
         $simupollId = $simupoll->getId();
         //list of labels for Choice
         $choicetmp = array();
@@ -502,8 +708,8 @@ class SimupollController extends Controller
         }
 
         //query to get the mean for last try for the exercise
-        $averages = $em->getRepository('CPASimUSanteExoverrideBundle:Response')
-            ->getAverageForExerciseLastTryByUser($simupollId);
+        $averages = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
+            ->getAverageForSimupollLastTryByUser($simupollId);
 
         $row['galmeanlast'] = 0;
         foreach($averages as $average) {
@@ -622,126 +828,6 @@ class SimupollController extends Controller
             $row['allgalmeanlast']  += $row['galmeanlast'];
             $row['galmeancount']    += 1;
         }
-
-        return array(
-            'row'               => $row
-        );
-    }
-
-    /**
-     * Display the statistics for the simupoll
-     *
-     * @EXT\Route("/showgeneralstats/{id}", name="cpasimusante_simupoll_stats_allhtml", requirements={"id" = "\d+"}, options={"expose"=true})
-     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
-     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:showStats.html.twig")
-     * @param Simupoll $simupoll
-     * @return array
-     */
-    public function getResultAllhtmlAction(Simupoll $simupoll)
-    {
-        $html = '';
-
-        //to associate the names
-        $user = array();
-
-        $datas = $this->prepareResultsAndStatsForSimupoll($simupoll);
-
-        $htmltmp = '';
-        $data = $datas['row'];
-
-           // echo '<pre>';var_dump($data);echo '</pre>';die();
-            //echo '<pre>';echo $sid.'<br>';var_dump($data);echo '</pre>';die();
-
-            $htmltmp .= '<tr><th><b>'.$data['simupoll'].'</b></th>';
-            $htmltmp .= '<th>Moyenne générale : '.number_format(($data['galmean'])*100, 2).'%<br> = Moyenne tous essais pour tous utilisateurs</th>';
-                $htmltmp .= '<th>Moyenne dernier essai : '.number_format(($data['galmeanlast'])*100, 2).'%</th></tr>';
-
-                $htmltmp .= '<tr><td colspan="3">Questions : <ul>';
-                if (isset($data['question'])) {
-                    foreach ($data['question'] as $question) {
-                        $htmltmp .= '<li>' . $question['name'] . '</li>';
-                    }
-                }
-                $htmltmp .= '</ul></td></tr>';
-                if (isset($data['user'])) {
-                    foreach ($data['user'] as $u => $userdata) {
-                        $user[$u] = $userdata['uname'];
-                        $htmltmp .= '<tr><td><u>' . $userdata['uname'] . '</u></td>';
-                        $htmltmp .= ' <td>Moyenne tous essais :  ' . number_format(($data['user'][$u]['mean']) * 100, 2) . '%</td>
-                    <td>Moyenne dernier essai :  ' . number_format(($data['avg_last'][$u]) * 100, 2) . '%</td>
-                    </tr>';
-
-                        $inc = 1;
-                        $htmltmp .= '<tr><td colspan="3">Réponse : <br>';
-                        foreach ($userdata['mark'] as $p => $papermark) {
-                            $htmltmp .= 'Essai ' . $inc . ' (' . $userdata['start'][$p] . ' - ' . $userdata['end'][$p] . ') => ';
-                            foreach ($papermark as $m => $mark) {
-                                $htmltmp .= $userdata['question'][$p][$m] . ' : ' . number_format(($mark) * 100, 2) . '%  - ';
-                            }
-                            $htmltmp .= '<br>';
-                            $inc++;
-                        }
-                        $htmltmp .= '</td></tr>';
-                    }
-                }
-            //Display mean
-            $mean = '';
-            if (isset($datalist['mean'])) {
-                foreach ($datalist['mean'] as $u => $val) {
-                    $mean .= '<tr><td><u>' . $user[$u] . '</u></td><td>' . number_format(($val) * 100, 2) . '%</td>' .
-                        '<td>' . number_format(($datalist['mean_last'][$u]) * 100, 2) . '%</td></tr>';
-                }
-            }
-            $meanlast='';
-
-            $htmltmp = '<table class="table table-responsive">'.
-                '<tr><th></th><th><b>Moyenne générale tous essais</b></th><th><b>Moyenne générale dernier essais</b></th></tr>'.
-                '<tr><td>Groupe</td><td>'.number_format(($datas['row']['allgalmean'])*100, 2).'%</td><td>'.number_format(($datas['row']['allgalmeanlast'])*100, 2).'%</td><tr>'.
-                $mean.$meanlast.
-                $htmltmp.
-                '</table>';
-
-            $html .= $htmltmp;
-
-
-
-        return array(
-            '_resource'     => $simupoll,
-            'html'          => $html
-        );
-    }
-
-    /**
-     * Export the statistics for the simupoll
-     *
-     * @EXT\Route("/exportstats/{id}", name="cpasimusante_simupoll_stats_csv", requirements={"id" = "\d+"}, options={"expose"=true})
-     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
-     * @param Simupoll $simupoll
-     * @return array
-     */
-    public function getResultCsvAction($simupoll)
-    {
-        $date = new \DateTime();
-        $now = $date->format('Y-m-d-His');
-
-        $content = '';
-
-        return new Response($content, 200, array(
-            'Content-Type' => 'application/force-download',
-            'Content-Disposition' => 'attachment; filename="exportall-'.$now.'.csv"'
-        ));
-    }
-
-    /**
-     * Prepare the statistics in json for radar display
-     *
-     * @EXT\Route("/jsonstats/{id}", name="cpasimusante_simupoll_stats_json", requirements={"id" = "\d+"}, options={"expose"=true})
-     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
-     * @param Simupoll $simupoll
-     * @return array
-     */
-    public function getResultJsonAction($simupoll)
-    {
-
+        return $row;
     }
 }

@@ -9,7 +9,7 @@ use CPASimUSante\SimupollBundle\Entity\Answer;
 use CPASimUSante\SimupollBundle\Entity\Question;
 use CPASimUSante\SimupollBundle\Entity\Proposition;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -10,7 +10,11 @@ use Claroline\CoreBundle\Event\DeleteResourceEvent;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use JMS\DiExtraBundle\Annotation as DI;
 
+/**
+ * @DI\Service("cpasimusante.simupoll.simupoll_listener")
+ */
 class SimupollResourceListener extends ContainerAware
 {
     public function onCreateForm(CreateFormResourceEvent $event)

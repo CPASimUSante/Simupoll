@@ -5,7 +5,7 @@ use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -207,9 +207,15 @@ class CategoryController extends Controller
     public function categoryModifyAction(Request $request, $idcategory, $idsimupoll)
     {
         $em = $this->getDoctrine()->getManager();
+        $simupoll = $em->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->findOneById($idsimupoll);
+        if (!$this->checker->isGranted('OPEN', $simupoll)) {
+            throw new AccessDeniedException();
+        }
         $user = $this->container
             ->get('security.token_storage')
             ->getToken()->getUser();
+
         $category = $em->getRepository('CPASimUSanteSimupollBundle:Category')
             ->findOneBy(
                 array(

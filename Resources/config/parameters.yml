@@ -10,3 +10,6 @@ parameters:
 
     # Services types
     cpasimusante_simupoll.services.simupoll.class: CPASimUSante\SimupollBundle\Services\SimupollServices
+
+    # Managers
+    cpasimusante.simupoll.simupoll_manager.class: CPASimUSante\SimupollBundle\Manager\SimupollManager

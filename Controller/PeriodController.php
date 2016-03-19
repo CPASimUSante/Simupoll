@@ -5,7 +5,7 @@ use CPASimUSante\SimupollBundle\Entity\Period;
 use CPASimUSante\SimupollBundle\Form\PeriodType;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
