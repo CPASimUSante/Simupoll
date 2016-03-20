@@ -1,9 +1,11 @@
 <?php
 namespace CPASimUSante\SimupollBundle\Controller;
 
-use Claroline\CoreBundle\Library\Resource\ResourceCollection;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
+use JMS\DiExtraBundle\Annotation as DI;
 
 use CPASimUSante\SimupollBundle\Manager\SimupollManager;
+use CPASimUSante\SimupollBundle\Manager\CategoryManager;
 use CPASimUSante\SimupollBundle\Entity\Organization;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Statmanage;
@@ -11,13 +13,12 @@ use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Form\SimupollType;
 use CPASimUSante\SimupollBundle\Form\StatmanageType;
 
+use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use Doctrine\Common\Collections\ArrayCollection;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Class SimupollController
@@ -34,7 +35,6 @@ use JMS\DiExtraBundle\Annotation as DI;
  * @EXT\Route(
  *      "/",
  *      name    = "cpasimusante_simupoll",
- *      service = "cpasimusante_simupoll.controller.simupoll"
  * )
  */
 class SimupollController extends Controller
@@ -50,19 +50,26 @@ class SimupollController extends Controller
       "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C");
 
     private $simupollManager;
+    private $categoryManager;
 
-    /*
+    /**
      * @DI\InjectParams({
-     *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
+     *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
+     *     "categoryManager" = @DI\Inject("cpasimusante.simupoll.category_manager")
      * })
      *
      * @param SimupollManager   simupollManager
-
-    public function __construct(SimupollManager $simupollManager)
+     * @param CategoryManager   categoryManager
+     */
+    public function __construct(
+        SimupollManager $simupollManager,
+        CategoryManager $categoryManager
+    )
     {
       $this->simupollManager = $simupollManager;
+      $this->categoryManager = $categoryManager;
     }
-*/
+
     /**
      * Manage the form to create the simupoll
      *
@@ -83,8 +90,7 @@ class SimupollController extends Controller
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
-        if ($simupollAdmin === true)
-        {
+        if ($simupollAdmin === true) {
             $em = $this->getDoctrine()->getManager();
 
             // Create an array of the current Question objects in the database
@@ -125,8 +131,7 @@ class SimupollController extends Controller
             );
         }
         //If not admin, open
-        else
-        {
+        else {
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
     }
@@ -158,8 +163,7 @@ class SimupollController extends Controller
         //can user manage exercise
         $allowToCompose = 0;
 
-        if (is_object($user) && ($simupollAdmin === true) )
-        {
+        if (is_object($user) && ($simupollAdmin === true) ) {
             $allowToCompose = 1;
         }
 
@@ -201,8 +205,7 @@ class SimupollController extends Controller
 
         //can user manage exercise
         $allowToCompose = 0;
-        if (is_object($user) && ($simupollAdmin === true) )
-        {
+        if (is_object($user) && ($simupollAdmin === true) ) {
             $allowToCompose = 1;
             $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
             //retrieve max level of category
@@ -258,53 +261,12 @@ class SimupollController extends Controller
                 $em->flush();
             }
 
-            //display tree of categories for group
-            $query = $em->createQueryBuilder()
-                ->select('node')
-                ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
-                ->orderBy('node.root, node.lft', 'ASC')
-                ->where('node.simupoll = ?1')
-                ->setParameters(array(1 => $simupoll))
-                ->getQuery();
-            $repoQuestion = $em->getRepository('CPASimUSanteSimupollBundle:Question');
-
-            $options = array(
-                'decorate' => true,
-                'rootOpen' => '',
-                'rootClose' => '',
-                'childOpen' => '<tr>',
-                'childClose' => '</tr>',
-            );
-            if ($choice != 2){
-                $options['nodeDecorator'] = function($node) use ($repoQuestion) {
-                    $qcount = $repoQuestion->getQuestionCount($node['id']);
-                    if ($node['lvl']==0) {
-                        $extra = '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">';
-                        $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'" checked disabled>';
-                    } else {
-                        $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'">';
-                    }
-                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
-                };
-            } else {
-                $choice_categorygroup = ($choiceData != array()) ? explode(',', $choiceData) : array();
-                $options['nodeDecorator'] = function($node) use ($repoQuestion, $choice_categorygroup) {
-                    $qcount = $repoQuestion->getQuestionCount($node['id']);
-                    $disabled = ($node['lvl']==0) ? " disabled" : "";
-                    $checked = (in_array($node['lft'], $choice_categorygroup) || $node['lvl']==0) ? " checked" : "";
-                    //root is mandatory
-                    $extra = ($node['lvl']==0) ? '<input type="hidden" name="categorygroup[]" value="'.$node['lft'].'">' : '';
-                    $input = $extra.' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['lft'].'"'.$checked.$disabled.'>';
-                    return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
-                };
-            }
-
-            $tree = $repoCat->buildTree($query->getArrayResult(), $options);
+            $categoryTree = $this->categoryManager->getCategoryTreeForQuestions($simupoll, $choice, $choiceData);
 
             return array(
                 'choice'            => $choice,
                 'choiceData'        => $choiceData,
-                'tree'              => $tree,
+                'tree'              => $categoryTree,
                 'maxCategoryLevel'  => $maxCategoryLevel['maxlevel'],
                 'allowToCompose'    => $allowToCompose,
                 '_resource'         => $simupoll,
@@ -340,8 +302,7 @@ class SimupollController extends Controller
 
         //can user manage exercise
         $allowToCompose = 0;
-        if (is_object($user) && ($simupollAdmin === true) )
-        {
+        if (is_object($user) && ($simupollAdmin === true) ) {
             $allowToCompose = 1;
 
             return array(
@@ -448,8 +409,7 @@ class SimupollController extends Controller
 
         //can user manage exercise
         $allowToCompose = 0;
-        if (is_object($user) && ($simupollAdmin === true) )
-        {
+        if (is_object($user) && ($simupollAdmin === true) ) {
             $allowToCompose = 1;
 
             $cats = ($categories = array()) ? explode(',', $categories) : array();
@@ -474,18 +434,8 @@ class SimupollController extends Controller
      */
     public function getUsersInWorkspaceAction($wslist = '')
     {
-        $ids = [];
-        if ($wslist !== '')
-        {
-            $ws = explode(',', $wslist);
-            $em = $this->getDoctrine()->getManager();
-            $listofuser = $em->getRepository('ClarolineCoreBundle:User')
-                ->findUsersByWorkspaces($ws);
-            foreach($listofuser as $user)
-            {
-                $ids[] = $user->getId();
-            }
-        }
+        $ids = $this->simupollManager->getUsersInWorkspace($wslist);
+
         return new JsonResponse($ids);
     }
 
@@ -497,8 +447,7 @@ class SimupollController extends Controller
      */
     public function prepareResultsAndStatsForSimupoll(Simupoll $simupoll)
     {
-        // $row = $this->simupollManager->prepareResultsAndStatsForSimupoll($simupoll);
-        $row = $this->getPrepareResultsAndStatsForSimupoll($simupoll);
+        $row = $this->simupollManager->getResultsAndStatsForSimupoll($simupoll);
 
         return array(
             'row' => $row
@@ -506,7 +455,7 @@ class SimupollController extends Controller
     }
 
     /**
-     * Display the statistics for the simupoll
+     * Display the statistics for the Simupoll
      *
      * @EXT\Route("/showgeneralstats/{id}", name="cpasimusante_simupoll_stats_allhtml", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
@@ -521,8 +470,7 @@ class SimupollController extends Controller
 
         $datas = $this->prepareResultsAndStatsForSimupoll($simupoll);
 
-        // $html = $this->simupollManager->prepareHtmlStats($datas);
-        $html = $this->prepareHtmlStats($datas);
+        $html = $this->simupollManager->prepareHtmlStats($datas);
 
         return array(
             '_resource'     => $simupoll,
@@ -571,263 +519,5 @@ class SimupollController extends Controller
         $usernames = array();
 
         return new JsonResponse($json);
-    }
-
-
-/*TO BE REMOVED BELOW*/
-
-    /**
-     * transforms rgb color into hexa color
-     * @param $color
-     * @return array
-     */
-    public function rgb2hex($color)
-    {
-        $color = str_replace("#", "", $color);
-        $r = hexdec(substr($color,0,2));
-        $g = hexdec(substr($color,2,2));
-        $b = hexdec(substr($color,4,2));
-        return array($r, $g, $b);
-    }
-
-    /**
-    * Create an object usable for ChartNew.js dataset data in radar graph
-    *
-    * @param $label string label of dataset
-    * @param $data array stats to display
-    * @param $color string color of line
-    * @param $fill  boolean area filled or empty
-    * @return object
-    */
-    public function setObjectForRadarDataset($label, $data, $color, $fill=false)
-    {
-        $class = new \stdClass();
-        $class->label = $label;
-        $class->data = $data;
-        $class->pointStrokeColor = "#fff";
-        $class->pointHighlightFill = "#fff";
-        $class->fillColor = "rgba(0,0,0,0)";
-        $class->strokeColor = $color;
-        $class->pointHighlightFill = $color;
-        return $class;
-    }
-
-    /**
-    * Prepare the html code for displaying the stat results
-    *
-    * @param $datas array array of stats results
-    * @return string
-    */
-    public function prepareHtmlStats($datas)
-    {
-        $html = '';
-        $htmltmp = '';
-        $data = $datas['row'];
-        // echo '<pre>';var_dump($data);echo '</pre>';die();
-        //echo '<pre>';echo $sid.'<br>';var_dump($data);echo '</pre>';die();
-        $htmltmp .= '
-            <tr><th><b>'.$data['simupoll'].'</b></th>
-            <th>Moyenne générale : '.number_format(($data['galmean'])*100, 2).'%<br> = Moyenne tous essais pour tous utilisateurs</th>
-            <th>Moyenne dernier essai : '.number_format(($data['galmeanlast'])*100, 2).'%</th></tr>';
-
-        $htmltmp .= '<tr><td colspan="3">Questions : <ul>';
-        if (isset($data['question'])) {
-            foreach ($data['question'] as $question) {
-                $htmltmp .= '<li>' . $question['name'] . '</li>';
-            }
-        }
-        $htmltmp .= '</ul></td></tr>';
-        if (isset($data['user'])) {
-            foreach ($data['user'] as $u => $userdata) {
-                $user[$u] = $userdata['uname'];
-                $htmltmp .= '<tr>
-                    <td><u>' . $userdata['uname'] . '</u></td>
-                    <td>Moyenne tous essais :  ' . number_format(($data['user'][$u]['mean']) * 100, 2) . '%</td>
-                    <td>Moyenne dernier essai :  ' . number_format(($data['avg_last'][$u]) * 100, 2) . '%</td>
-                    </tr>';
-
-                $inc = 1;
-                $htmltmp .= '<tr><td colspan="3">Réponse : <br>';
-                foreach ($userdata['mark'] as $p => $papermark) {
-                    $htmltmp .= 'Essai ' . $inc . ' (' . $userdata['start'][$p] . ' - ' . $userdata['end'][$p] . ') => ';
-                    foreach ($papermark as $m => $mark) {
-                        $htmltmp .= $userdata['question'][$p][$m] . ' : ' . number_format(($mark) * 100, 2) . '%  - ';
-                    }
-                    $htmltmp .= '<br>';
-                    $inc++;
-                }
-                $htmltmp .= '</td></tr>';
-            }
-        }
-
-        //Display mean
-        $mean = '';
-        if (isset($datalist['mean'])) {
-            foreach ($datalist['mean'] as $u => $val) {
-                $mean .= '<tr><td><u>' . $user[$u] . '</u></td><td>' . number_format(($val) * 100, 2) . '%</td>' .
-                '<td>' . number_format(($datalist['mean_last'][$u]) * 100, 2) . '%</td></tr>';
-            }
-        }
-        $meanlast='';
-
-        $htmltmp = '<table class="table table-responsive">'.
-        '<tr><th></th><th><b>Moyenne générale tous essais</b></th><th><b>Moyenne générale dernier essais</b></th></tr>'.
-        '<tr><td>Groupe</td><td>'.number_format(($datas['row']['allgalmean'])*100, 2).'%</td><td>'.number_format(($datas['row']['allgalmeanlast'])*100, 2).'%</td><tr>'.
-        $mean.$meanlast.
-        $htmltmp.
-        '</table>';
-
-        $html .= $htmltmp;
-        return $html;
-    }
-
-    /**
-    * Prepare the data retrieved from db to be used in the stat results
-    *
-    * @param $datas array array of stats results
-    * @return string
-    */
-    public function getPrepareResultsAndStatsForSimupoll(Simupoll $simupoll)
-    {
-        $row = array();
-        $simupollId = $simupoll->getId();
-        //list of labels for Choice
-        $choicetmp = array();
-
-        $em = $this->getDoctrine()->getManager();
-        //$papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')->findBySimupoll($simupoll);
-
-        //get stat parameters : list of categories and users to use
-        $userlist = '';
-        $categorylist = '';
-        $usersAndCategories = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')
-            ->findOneBy(array('simupoll' => $simupollId));
-        if (isset($usersAndCategories)) {
-            $userlist = $usersAndCategories->getUserList();
-            $categorylist = $usersAndCategories->getCategoryList();
-        }
-
-        //query to get the mean for last try for the exercise
-        $averages = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getAverageForSimupollLastTryByUser($simupollId);
-
-        $row['galmeanlast'] = 0;
-        foreach($averages as $average) {
-            //mean for last try for a user for an exercise
-            $row['avg_last'][$average['user']] = $average['average_mark'];
-            //mean for last try for a user for all exercises
-            if (!isset($row['mean_last'][$average['user']])) {
-                $row['mean_last'][$average['user']] = $average['average_mark'];
-                $row['mean_lastcount'][$average['user']] = 1;
-            }
-            else {
-                $row['mean_last'][$average['user']] += $average['average_mark'];
-                $row['mean_lastcount'][$average['user']] += 1;
-            }
-            $row['galmeanlast'] += $average['average_mark'];
-        }
-        if (count($averages)> 0)
-            $row['galmeanlast'] = $row['galmeanlast'] / count($averages);
-
-        //simupoll title
-        $row['simupoll'] = $simupoll->getName();
-
-        $tmpmean = array();
-        $gmean = array('m'=>0, 'c'=>0);
-        //get all answers
-        $simupollAnswers = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
-
-        foreach ($simupollAnswers as $responses) {
-            $paper = $responses->getPaper();
-            //paper_id
-            $paperId = $paper->getId();
-            //user id
-            $uid = $paper->getUser()->getId();
-            //user name
-            $uname = $paper->getUser()->getLastName() . '-' . $paper->getUser()->getFirstName();
-            $user[$uid] = $uname;
-
-            //mark
-            $mark = $responses->getMark();
-
-            $row['user'][$uid]['uname'] = $uname;
-            $row['user'][$uid]['mark'][$paperId][] = $mark;
-            $row['user'][$uid]['start'][$paperId] = $paper->getStart()->format('Y-m-d H:i:s');
-            $row['user'][$uid]['end'][$paperId] = '';//$paper->getEnd()->format('Y-m-d H:i:s');
-
-            //get the result for responses for an exercise
-
-            //can't get the choice directly in the first query (string with ;)
-            $choice = array();
-            $choiceIds = array_filter(explode(";", $responses->getAnswer()), 'strlen'); //to avoid empty value
-            foreach ($choiceIds as $cid) {
-                if (!in_array($cid, $choicetmp)) { //to avoid duplicate queries
-                    $label = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')->find($cid)->getChoice();
-                    $choicetmp[$cid] = $label;
-                    $choice[] = $label;
-                }
-                else {
-                    $choice[] = $choicetmp[$cid];
-                }
-            }
-
-            $question = $responses->getQuestion();
-            $questionId = $question->getId();
-            //question title
-            $row['question'][$questionId]['name'] = $question->getTitle();
-            //list of choices
-            $row['user'][$uid]['question'][$paperId][] = implode(';', $choice);
-
-            if (!isset($tmpmean[$uid])) {
-                $tmpmean[$uid]['sum'] = $mark;
-                $tmpmean[$uid]['count'] = 1;
-            }
-            else {
-                $tmpmean[$uid]['sum'] += $mark;
-                $tmpmean[$uid]['count'] += 1;
-            }
-
-            $gmean['m'] += $mark;
-            $gmean['c'] += 1;
-        }
-
-        foreach ($tmpmean as $uid => $m) {
-            //compute mean for each user
-            if (isset($m['count'])) {
-                $row['user'][$uid]['mean'] = $m['sum']/$m['count'];
-            }
-            else {
-                $row['user'][$uid]['mean'] = 0;
-            }
-            //general mean for user
-            if (isset($row['mean'][$uid])) {
-                $row['mean'][$uid] += $row['user'][$uid]['mean'];
-                $row['mean_count'][$uid] += 1;
-            }
-            else {
-                $row['mean'][$uid] = $row['user'][$uid]['mean'];
-                $row['mean_count'][$uid] = 1;
-            }
-        }
-
-        if ($gmean['c'] != 0) {
-            $row['galmean'] = $gmean['m']/$gmean['c'];
-        }
-        else {
-            $row['galmean'] = 0;
-        }
-        //mean for all exercises
-        if (!isset($row['allgalmean'])) {
-            $row['allgalmean']      = $row['galmean'];
-            $row['allgalmeanlast']  = $row['galmeanlast'];
-            $row['galmeancount']    = 1;
-        }
-        else {
-            $row['allgalmean']      += $row['galmean'];
-            $row['allgalmeanlast']  += $row['galmeanlast'];
-            $row['galmeancount']    += 1;
-        }
-        return $row;
     }
 }

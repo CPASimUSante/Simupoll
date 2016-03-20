@@ -1,12 +1,12 @@
 answer_saved: Vos réponses ont été enregistrées
-cpasimusante_simupoll: Simupoll
 
 category_add: Ajouter une catégorie
 category_choice: Choisissez une catégorie
 category_delete: Supprimer la catégorie
-category_delete_confirm: Souhaitez vous supprimer cette catégorie
+category_delete_confirm: Souhaitez vous supprimer cette catégorie ?
 category_name: Nom de la catégorie
 category_root_add: Ajouter une catégorie racine
+cpasimusante_simupoll: Simupoll
 
 date_end: Fin
 date_start: Début

@@ -13,7 +13,7 @@
             <div class="modal-body">
                 <h3 class="panel-title">{{'period_modify'|trans({}, 'resource')}}</h3>
                 <form id="period-modify-form"
-                      action="{{ path('cpasimusante_simupoll_period_modify', {'idperiod':idperiod, 'idsimupoll':idsimupoll}) }}"
+                      action="{{ path('cpasimusante_simupoll_period_modify', {'idperiod':idperiod, 'sid':sid}) }}"
                       method="POST"
                         {{ form_enctype(form) }}
                 >

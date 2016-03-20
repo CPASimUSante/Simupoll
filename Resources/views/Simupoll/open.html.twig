@@ -29,12 +29,12 @@
                     <i class="fa fa-pencil"></i> {{ 'edit_simupoll' | trans }}
                 </a>
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_organize', { 'id': _resource.id }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'organize_simupoll' | trans }}
+                    <i class="fa fa-cogs"></i> {{ 'organize_simupoll' | trans }}
                 </a>
             {% endif %}
 
             {% if allowToCompose == 1 %}{% endif %}
-            simupaper= {{ app.session.get('simupaper') }}
+
             {% if opened %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_paper', { 'id': _resource.id }) }}">
                     <i class="fa fa-check-square-o"></i> {{ 'compose' | trans }}

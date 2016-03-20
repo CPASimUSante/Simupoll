@@ -13,7 +13,7 @@
             <div class="modal-body">
                 <h3 class="panel-title">{{'category_add'|trans({}, 'resource')}}</h3>
                 <form id="category-add-form"
-                      action="{{ path('cpasimusante_simupoll_category_add', {'idcategory':idcategory, 'idsimupoll':idsimupoll}) }}"
+                      action="{{ path('cpasimusante_simupoll_category_add', {'cid':cid, 'sid':sid}) }}"
                       method="POST"
                         {{ form_enctype(form) }}
                 >

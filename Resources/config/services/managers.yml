@@ -1,6 +1,6 @@
-services:
-    # Simupoll type
-    cpasimusante.simupoll.simupoll_manager:
-        class:  %cpasimusante.simupoll.simupoll_manager.class%
-        arguments:
-            objectManager:   @claroline.persistence.object_manager
+# services:
+#     # Simupoll type
+#     cpasimusante.simupoll.simupoll_manager:
+#         class:  %cpasimusante.simupoll.simupoll_manager.class%
+#         arguments:
+#             objectManager:   @claroline.persistence.object_manager
