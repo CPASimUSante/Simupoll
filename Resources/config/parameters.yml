@@ -1,6 +1,6 @@
 parameters:
     # Listeners
-    cpasimusante_simupoll.listener.simupoll.class: CPASimUSante\SimupollBundle\Listener\SimupollResourceListener
+    cpasimusante.simupoll.simupoll_listener.class: CPASimUSante\SimupollBundle\Listener\SimupollResourceListener
 
     # Controllers
     cpasimusante.simupoll.simupoll_controller.class: CPASimUSante\SimupollBundle\Controller\SimupollController
