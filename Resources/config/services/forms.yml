@@ -1,6 +1,6 @@
 services:
     # Simupoll type
-    cpasimusante_simupoll.form.type.simupoll:
-        class:  %cpasimusante_simupoll.form.type.simupoll.class%
+    cpasimusantesimupoll.simupoll_form:
+        class:  %cpasimusantesimupoll.simupoll_form.class%
         tags:
           - { name: form.type, alias: cpasimusante_simupoll }

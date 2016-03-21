@@ -1,6 +1,6 @@
 services:
-    cpasimusante_simupoll.listener.simupoll:
-        class: %cpasimusante_simupoll.listener.simupoll.class%
+    cpasimusante.simupoll.simupoll_listener:
+        class: %cpasimusante.simupoll.simupoll_listener.class%
         calls:
             - [setContainer, ["@service_container"]]
         tags:
