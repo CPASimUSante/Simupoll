@@ -1,7 +1,7 @@
 services:
     # Simupoll services
-    cpasimusantesimupoll.simupoll_services:
-        class: %cpasimusantesimupoll.simupoll_services.class%
+    cpasimusante.simupoll.simupoll_services:
+        class: %cpasimusante.simupoll.simupoll_services.class%
         arguments:
             objectManager:   @doctrine.orm.entity_manager
             securityAuth:    @security.authorization_checker

@@ -9,4 +9,4 @@ parameters:
     cpasimusantesimupoll.simupoll_form.class: CPASimUSante\SimupollBundle\Form\SimupollType
 
     # Services types
-    cpasimusantesimupoll.simupoll_services.class: CPASimUSante\SimupollBundle\Services\SimupollServices
+    cpasimusante.simupoll.simupoll_services.class: CPASimUSante\SimupollBundle\Services\SimupollServices
