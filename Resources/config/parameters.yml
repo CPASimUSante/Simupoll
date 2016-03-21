@@ -1,6 +1,6 @@
 parameters:
     # Listeners
-    cpasimusante.simupoll.simupoll_listener.class: CPASimUSante\SimupollBundle\Listener\SimupollResourceListener
+    cpasimusante_simupoll.listener.simupoll.class: CPASimUSante\SimupollBundle\Listener\SimupollResourceListener
 
     # Controllers
     cpasimusante.simupoll.simupoll_controller.class: CPASimUSante\SimupollBundle\Controller\SimupollController
@@ -9,4 +9,4 @@ parameters:
     cpasimusantesimupoll.simupoll_form.class: CPASimUSante\SimupollBundle\Form\SimupollType
 
     # Services types
-    cpasimusante.simupoll.simupoll_services.class: CPASimUSante\SimupollBundle\Services\SimupollServices
+    cpasimusante_simupoll.services.simupoll.class: CPASimUSante\SimupollBundle\Services\SimupollServices

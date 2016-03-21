@@ -87,7 +87,7 @@ class SimupollController extends Controller
 
         //can user edit ?
         $simupollAdmin = $this->container
-            ->get('cpasimusante.simupoll.simupoll_services')
+            ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         if ($simupollAdmin === true) {
@@ -157,7 +157,7 @@ class SimupollController extends Controller
 
         //can user edit ?
         $simupollAdmin = $this->container
-            ->get('cpasimusante.simupoll.simupoll_services')
+            ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
@@ -200,7 +200,7 @@ class SimupollController extends Controller
 
         //can user edit ?
         $simupollAdmin = $this->container
-            ->get('cpasimusante.simupoll.simupoll_services')
+            ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
@@ -297,7 +297,7 @@ class SimupollController extends Controller
 
         //can user edit ?
         $simupollAdmin = $this->container
-            ->get('cpasimusante.simupoll.simupoll_services')
+            ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         //can user manage exercise
@@ -337,7 +337,7 @@ class SimupollController extends Controller
 
         //can user edit ?
         $simupollAdmin = $this->container
-            ->get('cpasimusante.simupoll.simupoll_services')
+            ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
