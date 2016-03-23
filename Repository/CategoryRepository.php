@@ -84,6 +84,19 @@ class CategoryRepository extends NestedTreeRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findLftById($sid, $cids)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c.lft')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = :sid')
+            ->andWhere('c.id IN (:categories)')
+            ->setParameters(array('sid'=>$sid, 'categories'=>$cids))
+            ->orderBy('c.lft', 'ASC');
+        $result = $qb->getQuery()->getArrayResult();
+        return array_column($result, "lft");
+    }
+
     /**
      * Categories between lft values
      * @param $sid
@@ -91,20 +104,21 @@ class CategoryRepository extends NestedTreeRepository
      * @param int $end
      * @return array
      */
-    public function getCategoriesBetween($sid, $begin=-1, $end=-1)
+    public function getCategoriesBetween($sid, $begin=-1, $end='')
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('c.id')
             ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
-            ->where('c.simupoll = :simupoll')
-            ->andWhere('c.id >=:begin')
-            ->setParameter('begin', $begin);
+            ->where('c.simupoll = ?1')
+            ->andWhere('c.lft >= ?2')
+            ->setParameter(2, $begin);
         if ($end != '') {
-            $qb->andWhere('c.id <:end');
-            $qb->setParameter('end', $end);
+            $qb->andWhere('c.lft < ?3');
+            $qb->setParameter(3, $end);
         }
-        $qb->setParameter('simupoll', $sid);
+        $qb->setParameter(1, $sid);
         //echo $qb->getQuery()->getSQL();
-        return $qb->getQuery()->getResult();
+        $result = $qb->getQuery()->getResult();
+        return array_column($result, "id");
     }
 }

@@ -42,6 +42,13 @@ class Period
     private $stop;
 
     /**
+     * @var string $title
+     *
+     * @ORM\Column(name="title", type="string", length=255, nullable=true)
+     */
+    private $title;
+
+    /**
      * Get id
      *
      * @return integer
@@ -85,6 +92,29 @@ class Period
     }
 
     /**
+     * Set title
+     *
+     * @param  string $title
+     * @return Period
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * Get title
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
      * Set stop
      *
      * @param  \DateTime $stop
@@ -107,4 +137,3 @@ class Period
         return $this->stop;
     }
 }
-

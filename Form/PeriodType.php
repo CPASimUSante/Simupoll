@@ -45,11 +45,16 @@ class PeriodType extends AbstractType
         $startOptions = $generalOptions;
         $startOptions['label'] = 'period_start';*/
         $builder
+            ->add('title', 'text', array(
+                    'label' => 'period_title',
+                    'required' => false
+                )
+            )
             ->add('start', 'datepicker', $startParam)
             ->add('stop', 'datepicker', $stopParam)
         ;
     }
-    
+
     /**
      * @param OptionsResolverInterface $resolver
      */

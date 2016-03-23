@@ -80,7 +80,6 @@ class CategoryController extends Controller
      */
     public function indexAction(Simupoll $simupoll)
     {
-        $em = $this->getDoctrine()->getManager();
         $sid = $simupoll->getId();
 
         $tree = $this->categoryManager->getCategoryTree($simupoll, $sid);
@@ -104,8 +103,8 @@ class CategoryController extends Controller
      */
     public function categoryAddFormAction($cid, $sid)
     {
-        $form = $this->get('form.factory')
-            ->create(new CategoryType());
+        $form = $this->get('form.factory')->create(new CategoryType());
+
         return array(
             'form'    => $form->createView(),
             'parent'  => $cid,
@@ -126,8 +125,8 @@ class CategoryController extends Controller
      */
     public function categoryAddAction(Request $request, $cid, $sid)
     {
-        $form = $this->get('form.factory')
-            ->create(new CategoryType());
+        $form = $this->get('form.factory')->create(new CategoryType());
+
         $form->handleRequest($request);
 
         if ($form->isValid()) {
@@ -196,7 +195,6 @@ class CategoryController extends Controller
      */
     public function categoryModifyAction(Request $request, $cid, $sid)
     {
-        $em = $this->getDoctrine()->getManager();
         $simupoll = $this->simupollManager->getSimupollById($sid);
         /*if (!$this->checkAccess('OPEN', $simupoll)) {
             throw new AccessDeniedException();
@@ -210,6 +208,7 @@ class CategoryController extends Controller
         $form->handleRequest($request);
 
         if ($form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
             $em->persist($category);
             $em->flush();
             return new JsonResponse('success', 200);

@@ -6,6 +6,8 @@ use JMS\DiExtraBundle\Annotation as DI;
 
 use CPASimUSante\SimupollBundle\Manager\SimupollManager;
 use CPASimUSante\SimupollBundle\Manager\CategoryManager;
+use CPASimUSante\SimupollBundle\Manager\PeriodManager;
+use CPASimUSante\SimupollBundle\Manager\StatmanageManager;
 use CPASimUSante\SimupollBundle\Entity\Organization;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Statmanage;
@@ -51,23 +53,33 @@ class SimupollController extends Controller
 
     private $simupollManager;
     private $categoryManager;
+    private $periodManager;
+    private $statmanageManager;
 
     /**
      * @DI\InjectParams({
      *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
-     *     "categoryManager" = @DI\Inject("cpasimusante.simupoll.category_manager")
+     *     "categoryManager" = @DI\Inject("cpasimusante.simupoll.category_manager"),
+     *     "periodManager" = @DI\Inject("cpasimusante.simupoll.period_manager"),
+     *     "statmanageManager" = @DI\Inject("cpasimusante.simupoll.statmanage_manager")
      * })
      *
      * @param SimupollManager   simupollManager
      * @param CategoryManager   categoryManager
+     * @param PeriodManager   periodManager
+     * @param StatmanageManager   statmanageManager
      */
     public function __construct(
         SimupollManager $simupollManager,
-        CategoryManager $categoryManager
+        CategoryManager $categoryManager,
+        PeriodManager $periodManager,
+        StatmanageManager $statmanageManager
     )
     {
-      $this->simupollManager = $simupollManager;
-      $this->categoryManager = $categoryManager;
+      $this->simupollManager    = $simupollManager;
+      $this->categoryManager    = $categoryManager;
+      $this->periodManager      = $periodManager;
+      $this->statmanageManager  = $statmanageManager;
     }
 
     /**
@@ -168,9 +180,7 @@ class SimupollController extends Controller
         }
 
         //is there a period set or is this the right period to answer?
-        $isOpenedPeriod = $em->getRepository('CPASimUSanteSimupollBundle:Period')
-            ->isOpenedPeriodForSimupoll($simupoll->getId());
-        $opened = ($isOpenedPeriod > 0) ? true : false;
+        $opened = $this->periodManager->getOpenedPeriod($simupoll->getId());
 
         return array(
             '_resource'         => $simupoll,
@@ -325,7 +335,37 @@ class SimupollController extends Controller
      */
     public function statSetupAction(Request $request, $simupoll)
     {
-        $em = $this->getDoctrine()->getManager();
+        /*
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+        //can user open ?
+        $simupollAdmin = $this->container
+            ->get('cpasimusante_simupoll.services.simupoll')
+            ->isGrantedAccess($simupoll, 'OPEN');
+        $allowToCompose = 0;
+        if (is_object($user) && ($simupollAdmin === true) ) {
+            $allowToCompose = 1;
+            //retrieve data
+            $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
+
+            if ($statsmanage != array()) {
+                $uids = $statsmanage[0]->getUserList();
+
+            }
+            $categories = array();
+            $tree = $this->categoryManager->getCategoryTreeForStatsV2($simupoll, $categories);
+            return array(
+                'userlist'          => $uids,
+                'tree'              => $tree,
+                'allowToCompose'    => $allowToCompose,
+                '_resource'         => $simupoll,
+            );
+        } else {
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+        }
+*/
+
+
         $categories = array();
         $uids = '';
 
@@ -340,16 +380,7 @@ class SimupollController extends Controller
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
-        $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
-        //display tree of categories for group
-        $query = $em->createQueryBuilder()
-            ->select('node')
-            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
-            ->orderBy('node.root, node.lft', 'ASC')
-            ->where('node.simupoll = ?1')
-            ->setParameters(array(1 => $simupoll))
-            ->getQuery();
-        $repoQuestion = $em->getRepository('CPASimUSanteSimupollBundle:Question');
+        $em = $this->getDoctrine()->getManager();
 
         $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')
             ->findBy(array('user' => $user, 'simupoll' => $simupoll)
@@ -364,17 +395,10 @@ class SimupollController extends Controller
             $uids = $request->request->get('simupoll_userlist');
             $categories = $request->request->get('categorygroup');
             $cats = ($categories != null) ? implode(',', $categories) : '';
+
             //generate list of all categories
-            $allcats = null;
-            if ($categories != null) {
-                $allcatstmp = array();
-                $catlength = count($categories);
-                for ($c=0;$c<$catlength;$c++) {
-                    $begin = $categories[$c];
-                    $end = (isset($categories[$c+1])) ? $categories[$c+1] : '';
-                    $allcatstmp[] = $repoCat->getCategoriesBetween($simupoll->getId(), $begin, $end);
-                }
-            }
+            $allcats = $this->categoryManager->getCategoryListStats($simupoll->getId(), $categories);
+
             if ($statsmanage == null) {
                 $statsmanage = new Statmanage();
                 $statsmanage->setUser($user);
@@ -392,20 +416,7 @@ class SimupollController extends Controller
             $em->flush();
         }
 
-        $options = array(
-            'decorate' => true,
-            'rootOpen' => '',
-            'rootClose' => '',
-            'childOpen' => '<tr>',
-            'childClose' => '</tr>',
-            'nodeDecorator' => function($node) use ($repoQuestion, $categories) {
-                $qcount = $repoQuestion->getQuestionCount($node['id']);
-                $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
-                $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'" '.$checked.'>';
-                return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
-            }
-        );
-        $tree = $repoCat->buildTree($query->getArrayResult(), $options);
+        $tree = $this->categoryManager->getCategoryTreeForStats($simupoll, $categories);
 
         //can user manage exercise
         $allowToCompose = 0;
@@ -423,6 +434,7 @@ class SimupollController extends Controller
         } else {
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
+
     }
 
     /**
@@ -445,9 +457,9 @@ class SimupollController extends Controller
      * @param Simupoll $simupoll
      * @return array array of results
      */
-    public function prepareResultsAndStatsForSimupoll(Simupoll $simupoll)
+    public function prepareResultsAndStatsForSimupoll(Simupoll $simupoll, $categories=array())
     {
-        $row = $this->simupollManager->getResultsAndStatsForSimupoll($simupoll);
+        $row = $this->simupollManager->getResultsAndStatsForSimupoll($simupoll, $categories);
 
         return array(
             'row' => $row
@@ -463,15 +475,39 @@ class SimupollController extends Controller
      * @param Simupoll $simupoll
      * @return array
      */
-    public function getResultAllhtmlAction(Simupoll $simupoll)
+    public function getResultAllHtmlAction(Simupoll $simupoll)
     {
         //to associate the names
-        $user = array();
+        $users = array();
+        $html = '';
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
 
+        $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
+        //get categories groups : array (groups) of array (categories)
+        $categoryList = $this->categoryManager->decodeCategories($statsmanage);
+        foreach($categoryList as $categories) {
+            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories);
+            $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
+            $html .= $htmltmp;
+            //echo '<pre>';var_dump($datas);echo '</pre>';
+        }
+//        echo '<pre>';var_dump($categoryList);echo '</pre>';
+//        echo $html;
+//        die();
+/*
+        foreach($categoryList as $categories) {
+            $datas = $this->prepareResultsAndStatsForSimupoll($categories);
+            $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
+            $html .= $htmltmp;
+        }
+*/
+
+/*
         $datas = $this->prepareResultsAndStatsForSimupoll($simupoll);
 
         $html = $this->simupollManager->prepareHtmlStats($datas);
-
+*/
         return array(
             '_resource'     => $simupoll,
             'html'          => $html
@@ -491,7 +527,13 @@ class SimupollController extends Controller
         $date = new \DateTime();
         $now = $date->format('Y-m-d-His');
 
-        $content = '';
+        $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
+        //get categories groups : array (groups) of array (categories)
+        $categoryList = $this->categoryManager->decodeCategories($statsmanage);
+        foreach($categoryList as $categories) {
+            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories);
+            $content = $this->simupollManager->setCsvContent($datas);
+        }
 
         return new Response($content, 200, array(
             'Content-Type' => 'application/force-download',

@@ -33,6 +33,27 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     }
 
     /**
+     * @param $simupollId   integer id of simupoll
+     * @param $categories   array selected categories
+     * @return array
+     */
+    public function getQuerySimupollAllResponsesInCategoriesForAllUsers($simupollId, $categories=array(), $order='')
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('a')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
+            ->join('a.question', 'q')
+            ->join('a.paper', 'p')
+            ->join('p.simupoll', 's')
+            ->where('s.id = :sid')
+            ->andWhere('q.id IN (:categories)')
+            ->orderBy('p.'.$order, 'ASC')
+            ->setParameters(array('sid' => $simupollId, 'categories'=> $categories));
+//echo '<pre>';print_r(array('sql'=> $qb->getQuery()->getSQL(),'parameters' => $qb->getQuery()->getParameters(),));echo '</pre>';
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Retrieve answers for question in
      * @param $sid
      * @param $pid
@@ -106,7 +127,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('AVG(a.mark) as average_mark')
-            ->addSelect('IDENTITY(p.user) as user')             //IDENTITY needed because user is a FK
+            ->addSelect('IDENTITY(p.user) as user')                         //IDENTITY needed because user is a FK
             ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')     //thus, avoid problem with "overriding" Response entity in ExoverrideBundle
             ->join('a.paper', 'p')
             ->join('p.simupoll', 's')

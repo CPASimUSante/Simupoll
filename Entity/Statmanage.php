@@ -5,6 +5,9 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Claroline\CoreBundle\Entity\User;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Statmanage;
+use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Statmanage
@@ -31,6 +34,13 @@ class Statmanage
     protected $userList;
 
     /**
+     * @var statcategorygroups[]
+     *
+     * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\Statcategorygroup", mappedBy="statmanage", cascade={"all"})
+     */
+    protected $statcategorygroups;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="categorylist", type="string", length=255, nullable=true)
@@ -40,7 +50,7 @@ class Statmanage
     /**
      * @var string
      *
-     * @ORM\Column(name="completecategorylist", type="string", length=255, nullable=true)
+     * @ORM\Column(name="completecategorylist", type="text", nullable=true)
      */
     protected $completeCategoryList;
 
@@ -54,6 +64,14 @@ class Statmanage
      * @ORM\JoinColumn(name="simupoll_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $simupoll;
+
+    /**
+     * Class constructor
+     */
+    public function __construct()
+    {
+        $this->statcategorygroups = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -156,5 +174,38 @@ class Statmanage
     {
         $this->simupoll = $simupoll;
     }
-}
 
+    /**
+     * Add statcategorygroup
+     *
+     * @param \CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup
+     *
+     * @return Statmanage
+     */
+    public function addStatcategorygroup(\CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup)
+    {
+        $this->statcategorygroups[] = $statcategorygroup;
+        $statcategorygroup->setStatmanage($this);
+        return $this;
+    }
+
+    /**
+     * Remove statcategorygroup
+     *
+     * @param \CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup
+     */
+    public function removeStatcategorygroup(\CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup)
+    {
+        $this->statcategorygroups->removeElement($statcategorygroup);
+    }
+
+    /**
+     * Get statcategorygroups
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getStatcategorygroups()
+    {
+        return $this->statcategorygroups;
+    }
+}

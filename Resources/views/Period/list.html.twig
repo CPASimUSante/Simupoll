@@ -22,9 +22,16 @@
             </a>
             <hr>
             <table class="table">
-                <tr><th>{{ 'period_start'|trans({}, 'resource') }}</th><th>{{ 'period_stop'|trans({}, 'resource') }}</th><th class="col-md-1">{{ 'edit'|trans({}, 'platform') }}</th><th class="col-md-1">{{ 'delete'|trans({}, 'platform') }}</th></tr>
+                <tr>
+                    <th>{{ 'period_title'|trans({}, 'resource') }}</th>
+                    <th>{{ 'period_start'|trans({}, 'resource') }}</th>
+                    <th>{{ 'period_stop'|trans({}, 'resource') }}</th>
+                    <th class="col-md-1">{{ 'edit'|trans({}, 'platform') }}</th>
+                    <th class="col-md-1">{{ 'delete'|trans({}, 'platform') }}</th>
+                </tr>
                 {% for period in periods %}
                     <tr>
+                        <td>{{ period.title }}</td>
                         <td>{{ period.start|date("d/m/Y") }}</td>
                         <td>{{ period.stop|date("d/m/Y") }}</td>
                         <td><a class="btn btn-primary btn-sm period-modify-btn" data-id="{{ period.id }}" data-sid="{{ sid }}">{{ 'edit'|trans({}, 'platform') }}</a></td>

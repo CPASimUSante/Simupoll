@@ -40,6 +40,17 @@ class CategoryManager
                 ));
     }
 
+    public function getCategoryBySimupoll(Simupoll $simupoll)
+    {
+        return $this->om->createQueryBuilder()
+            ->select('node')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
+            ->orderBy('node.root, node.lft', 'ASC')
+            ->where('node.simupoll = ?1')
+            ->setParameters(array(1 => $simupoll))
+            ->getQuery();
+    }
+
     /**
     * @param $simupoll Simupoll
     * @param $choice integer type of category selection
@@ -48,13 +59,7 @@ class CategoryManager
     public function getCategoryTreeForQuestions(Simupoll $simupoll, $choice=0, $choiceData=array())
     {
         //display tree of categories for group
-        $query = $this->om->createQueryBuilder()
-          ->select('node')
-          ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
-          ->orderBy('node.root, node.lft', 'ASC')
-          ->where('node.simupoll = ?1')
-          ->setParameters(array(1 => $simupoll))
-          ->getQuery();
+        $query = $this->getCategoryBySimupoll($simupoll);
         $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
         $repoQuestion = $this->om->getRepository('CPASimUSanteSimupollBundle:Question');
         $options = array(
@@ -98,13 +103,7 @@ class CategoryManager
     public function getCategoryTree(Simupoll $simupoll, $sid)
     {
         //Custom query to display only tree from this resource
-        $query = $this->om->createQueryBuilder()
-            ->select('node')
-            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
-            ->orderBy('node.root, node.lft', 'ASC')
-            ->where('node.simupoll = ?1')
-            ->setParameters(array(1 => $simupoll))
-            ->getQuery();
+        $query = $this->getCategoryBySimupoll($simupoll);
 
         $repo = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
         //options for the tree display
@@ -124,5 +123,95 @@ class CategoryManager
         );
 
         return $repo->buildTree($query->getArrayResult(), $options);
+    }
+
+    /**
+    * @param $simupoll Simupoll
+    * @param $categories array list of categories
+    */
+    public function getCategoryTreeForStats(Simupoll $simupoll, $categories)
+    {
+        //display tree of categories for group
+        $query = $this->getCategoryBySimupoll($simupoll);
+        $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
+        $repoQuestion = $this->om->getRepository('CPASimUSanteSimupollBundle:Question');
+        $options = array(
+            'decorate' => true,
+            'rootOpen' => '',
+            'rootClose' => '',
+            'childOpen' => '<tr>',
+            'childClose' => '</tr>',
+            'nodeDecorator' => function($node) use ($repoQuestion, $categories) {
+                $qcount = $repoQuestion->getQuestionCount($node['id']);
+                $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
+                $input = ' <input type="checkbox" data-id="'.$node['id'].'" name="categorygroup[]" value="'.$node['id'].'" '.$checked.'>';
+                return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+            }
+        );
+
+        return $repoCat->buildTree($query->getArrayResult(), $options);
+    }
+
+    public function getCategoryTreeForStatsV2(Simupoll $simupoll, $categories)
+    {
+        //display tree of categories for group
+        $query = $this->getCategoryBySimupoll($simupoll);
+        $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
+        $repoQuestion = $this->om->getRepository('CPASimUSanteSimupollBundle:Question');
+        $options = array(
+            'decorate' => true,
+            'rootOpen' => '',
+            'rootClose' => '',
+            'childOpen' => '<tr>',
+            'childClose' => '</tr>',
+            'nodeDecorator' => function($node) use ($repoQuestion, $categories) {
+                $qcount = $repoQuestion->getQuestionCount($node['id']);
+                $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
+                $input = ' <input type="radio" title="Groupe 1" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-1" '.$checked.'>';
+                $input .= ' <input type="radio" title="Groupe 2" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-2" '.$checked.'>';
+                $input .= ' <input type="radio" title="Groupe 3" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-3" '.$checked.'>';
+                $input .= ' <input type="radio" title="Groupe 4" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-4" '.$checked.'>';
+                $input .= ' <input type="radio" title="Groupe 5" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-5" '.$checked.'>';
+                return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
+            }
+        );
+
+        return $repoCat->buildTree($query->getArrayResult(), $options);
+    }
+
+    /**
+     * Retrieve category list for stats
+     *
+     * @param $sid Simupoll simupoll id
+     * @param $categories array list of category bounds
+     */
+    public function getCategoryListStats($sid, $categories)
+    {
+        $allcats = null;
+        if ($categories != null) {
+            $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
+            $allcatstmp = array();
+            //find lft value bounds
+            $catLft = $repoCat->findLftById($sid, $categories);
+            $catlength = count($catLft);
+
+            for ($c=0;$c<$catlength;$c++) {
+                $begin = $catLft[$c];
+                $end = (isset($catLft[$c+1])) ? $catLft[$c+1] : '';
+                $allcatstmp[] = $repoCat->getCategoriesBetween($sid, $begin, $end);
+            }
+            $allcats = json_encode($allcatstmp);
+        }
+        return $allcats;
+    }
+
+    public function decodeCategories($statsmanage)
+    {
+        $categoryList = array();
+        if ($statsmanage != array()) {
+            $list = $statsmanage[0]->getCompleteCategoryList();
+            $categoryList = json_decode($list);
+        }
+        return $categoryList;
     }
 }

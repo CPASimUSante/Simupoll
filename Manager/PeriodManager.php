@@ -49,4 +49,16 @@ class PeriodManager
             ->getQuery();
         return $query->getArrayResult();
     }
+
+    /**
+    *
+    * @return boolean
+    */
+    public function getOpenedPeriod($sid)
+    {
+        $isOpenedPeriod = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
+            ->isOpenedPeriodForSimupoll($sid);
+        $opened = ($isOpenedPeriod > 0) ? true : false;
+        return $opened;
+    }
 }

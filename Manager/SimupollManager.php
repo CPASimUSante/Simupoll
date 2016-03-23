@@ -36,6 +36,28 @@ class SimupollManager
     }
 
     /**
+     * Array of categories to get stats from
+     *
+     * @param $categories string list of categories (c1,c2;c3,c4;c5)
+     * @return array list of categories
+     */
+    public function getListOfCategories($categories)
+    {
+        $categorylist = array();
+        if ($categories != '') {
+            //for each group of exercise
+            $list = explode(';', $categories);
+            //get array of exercise
+            foreach ($list as $item) {
+                if ($item != '') {
+                    $categorylist[] = explode(',', $item);
+                }
+            }
+        }
+        return $categorylist;
+    }
+
+    /**
     * @param $choice integer type of category selection
     * @param $choiceData string data for the current choice
     */
@@ -153,6 +175,18 @@ class SimupollManager
         $html .= $htmltmp;
         return $html;
     }
+    /**
+     * Prepare the csv content for exporting the stat results
+     *
+     * @param $datas array array of stats results
+     * @return string
+     */
+    public function setCsvContent($datas)
+    {
+        $content = '';
+
+        return $content;
+    }
 
     /**
      * transforms rgb color into hexa color
@@ -203,26 +237,31 @@ class SimupollManager
         }
         return $ids;
     }
-
-    public function getResultsAndStatsForSimupoll(Simupoll $simupoll)
+    /**
+     * Prepare the data for use in HTML, csv or graph
+     *
+     * @param $simupoll Simupoll
+     * @param $categories array
+     * @param $users array
+     * @return $row array
+     */
+    public function getResultsAndStatsForSimupoll(Simupoll $simupoll, $categories=array(), $users=array())
     {
         $row = array();
         $simupollId = $simupoll->getId();
         //list of labels for Choice
         $choicetmp = array();
-
-        //$papers = $om->getRepository('CPASimUSanteSimupollBundle:Paper')->findBySimupoll($simupoll);
-
+/*
         //get stat parameters : list of categories and users to use
         $userlist = '';
-        $categorylist = '';
+        $categories = '';
         $usersAndCategories = $this->om->getRepository('CPASimUSanteSimupollBundle:Statmanage')
             ->findOneBy(array('simupoll' => $simupollId));
         if (isset($usersAndCategories)) {
             $userlist = $usersAndCategories->getUserList();
-            $categorylist = $usersAndCategories->getCategoryList();
+            $categories = $usersAndCategories->getCategoryList();
         }
-
+*/
         //query to get the mean for last try for the exercise
         $averages = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getAverageForSimupollLastTryByUser($simupollId);
@@ -252,13 +291,12 @@ class SimupollManager
         $gmean = array('m'=>0, 'c'=>0);
         //get all answers
         $simupollAnswers = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
+            ->getQuerySimupollAllResponsesInCategoriesForAllUsers($simupoll->getId(), $categories, 'id');
+            //->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
 
         foreach ($simupollAnswers as $responses) {
             $paper = $responses->getPaper();
-            //paper_id
             $paperId = $paper->getId();
-            //user id
             $uid = $paper->getUser()->getId();
             //user name
             $uname = $paper->getUser()->getLastName() . '-' . $paper->getUser()->getFirstName();
