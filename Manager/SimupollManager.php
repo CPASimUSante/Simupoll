@@ -7,6 +7,9 @@ use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
+use CPASimUSante\SimupollBundle\Controller\SimupollController;
+use Buzz\Browser;
 
 /**
  * Helper functions for Simupoll Actions
@@ -108,6 +111,23 @@ class SimupollManager
     }
 
     /**
+     * @param $statcategorygroup    array result of findBy : array of Statcategorygroup
+     * @return array array of titles and categories
+     */
+    public function getStatcategoryData($statcategorygroup)
+    {
+        $cats = array();
+        $titles = array();
+        if ($statcategorygroup != array()) {
+            foreach ($statcategorygroup as $scg) {
+                $cats[] = explode(',', $scg->getGroup());
+                $titles[] = $scg->getTitle();
+            }
+        }
+        return array('cats'=> $cats, 'titles'=>$titles);
+    }
+
+    /**
     * Prepare the html code for displaying the stat results
     *
     * @param $datas array array of stats results
@@ -175,21 +195,192 @@ class SimupollManager
         $html .= $htmltmp;
         return $html;
     }
+
     /**
      * Prepare the csv content for exporting the stat results
      *
      * @param $datas array array of stats results
-     * @return string
+     * @param $handle file handle
+     * @return void
      */
-    public function setCsvContent($datas)
+    public function setCsvContent($datas, $handle)
     {
-        $content = '';
+//echo '<pre>';var_dump($datas);echo '</pre>';
+//die();
+        //Row 1 : directory name
+        $csv = array();
+        $csv[] = 'Nom';
+        $csv[] = $datas['row']['grouptitle'];
+        fputcsv($handle, $csv);
 
-        return $content;
+        $csv = array();
+        $csv[] = '';
+        $csv[] = 'Moyenne tous essais';
+        $csv[] = 'Moyenne dernier essai';
+        fputcsv($handle, $csv);
+
+        $csv = array();
+        $csv[] = 'Groupe';
+        $csv[] = number_format(($datas['row']['allgalmean'])*100, 2);
+        $csv[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
+        fputcsv($handle, $csv);
+
+        foreach($datas['row']['mean'] as $u => $val) {
+            $csv = array();
+            $csv[] = $datas['row']['user'][$u]['uname'];
+            $csv[] = number_format(($val)*100, 2);
+            $csv[] = number_format(($datas['row']['mean_last'][$u])*100, 2);
+            fputcsv($handle, $csv);
+        }
+
+        //Row 2 :
+        $csv = array();
+        $csv[] = '';
+        $csv[] = '';
+        $csv[] = '';
+        $csv[] = '';
+        $csv[] = '';
+        $csv[] = '';
+
+        //questions name
+        foreach($datas['row']['question'] as $question) {
+            $csv[] = $question['name'];
+        }
+        fputcsv($handle, $csv);
+
+        //Row 3 :
+        $csv = array();
+        $csv[] = '';
+        $csv[] = '';
+        $csv[] = '';
+        //general mean
+        $csv[] = 'Moyenne Générale';
+        $csv[] = number_format(($datas['row']['galmean'])*100, 2);
+        fputcsv($handle, $csv);
+
+        //Row 4 + : all users
+        foreach($datas['row']['user'] as $u => $userdata) {
+            //row 4n :
+            $csv = array();
+            $csv[] = '';
+            $csv[] = '';
+            $csv[] = '';
+            //username
+            $csv[] = $userdata['uname'];
+            fputcsv($handle, $csv);
+
+            //row 4n+1 :
+            $csv = array();
+            $csv[] = '';
+            $csv[] = '';
+            $csv[] = '';
+            $csv[] = 'Moyenne tous essais';
+            $csv[] = number_format(($userdata['mean'])*100, 2);
+            fputcsv($handle, $csv);
+
+            //row 4n+2 :
+            $csv = array();
+            $csv[] = '';
+            $csv[] = '';
+            $csv[] = '';
+            $csv[] = 'Moyenne dernier essai';
+            $csv[] = number_format(($datas['row']['avg_last'][$u])*100, 2);
+            fputcsv($handle, $csv);
+
+            //row 4n+3 + : responses
+            $incr = 1;
+            foreach($userdata['question'] as $pid => $paperresponse) {
+                $csv = array();
+                $csv[] = '';
+                $csv[] = '';
+                $csv[] = '';
+                $csv[] = '';
+                $csv[] = '';
+                $csv[] = 'Essai '.$incr. ' ('.$userdata['start'][$pid].' - '.$userdata['end'][$pid]. ')';
+                foreach($paperresponse as $response) {
+                    $csv[] = $response;
+                }
+                fputcsv($handle, $csv);
+                $incr++;
+            }
+        }
+//die();
     }
 
     /**
-     * transforms rgb color into hexa color
+     * Data prepared for use in radar display
+     *
+     * @param $datas array array of stats results
+     * @param $userdata string csv list of users to be used in the graph
+     * @return $json array array of data prepared for display
+     */
+    public function setJsonContentForRadar($datas, $userdata)
+    {
+       echo '<pre>';var_dump($datas['row']['user']);echo '</pre>';
+       die();
+        //to rgb
+        $colors = array_map(array($this, 'rgb2hex'), SimupollController::$RGBCOLORS);
+        //Init
+        $json = array();
+        $json['datasets'] = array();
+        $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+        $uu = array_keys($datas['row']['user']);
+        $user = array();
+        $allgalmeanlast = array();
+        $allgalmean = array();
+        $usernames = array();
+
+        //name of branch
+        $json['labels'][] = $datas['row']['grouptitle'];
+        //stat for last
+        $allgalmeanlast[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
+        //stat for all
+        $allgalmean[] = number_format(($datas['row']['allgalmean'])*100, 2);
+
+        //array of user without data
+        $userlisttmp = $userlist;
+        //Display mean (use $exerciselist['mean_last'] instead, for last)
+        foreach($datas['row']['mean_last'] as $u => $val) {
+            if (in_array($u, $userlist)) {
+                $usernames[$u] = $datas['row']['user'][$u];
+                $user[$u]['name'] = $datas['row']['user'][$u]['uname'];
+                $user[$u]['mean'][] = number_format(($val)*100, 2);
+                //TODO : remove this hacky shit ! save the real username for later
+                $user[$u]['nameok'] = true;
+                //remove user
+                array_diff($userlisttmp, [$u]);
+            }
+        }
+
+        //put 0 for absence of data for a user
+        foreach($userlist as $u) {
+            if (!in_array($u, $uu)) {
+                $user[$u]['name'] = $u;
+                $user[$u]['mean'][] = 0;
+                $user[$u]['nameok'] = false;
+            }
+        }
+
+        $inc = 0;
+        //dataset for group
+        $json['datasets'][] = $this->setObjectForRadarDataset('group', $allgalmean, $this->rgbacolor($colors[$inc]));
+        $inc++;
+
+        //datasets for users
+        foreach($user as $uid => $ud) {
+            //display only selected users
+            if (in_array($uid, $userlist)) {
+                $name = ($ud['nameok']) ? $ud['name'] : $usernames[$uid];
+                $json['datasets'][] = $this->setObjectForRadarDataset($name, $ud['mean'], $this->rgbacolor($colors[$inc]));
+                $inc++;
+            }
+        }
+        return $json;
+    }
+
+    /**
+     * Transforms rgb color into hexa color
+     *
      * @param $color
      * @return array
      */
@@ -224,6 +415,24 @@ class SimupollManager
         return $class;
     }
 
+    /**
+     * Create rgba color with opacity
+     *
+     * @param $color array rvb color
+     * @param int $opacity
+     * @return string
+     */
+    private function rgbacolor($color, $opacity=1)
+    {
+        return 'rgba('.join(',',$color).','.$opacity.')';
+    }
+
+    /**
+     * Retrieve list of user for the current WS
+     *
+     * @param $wslist string csv list WS to find users in
+     * @return $ids array of users id
+     */
     public function getUsersInWorkspace($wslist = '')
     {
         $ids = [];
@@ -237,15 +446,21 @@ class SimupollManager
         }
         return $ids;
     }
+
     /**
-     * Prepare the data for use in HTML, csv or graph
+     * Prepare the data for use in HTML, csv or graph display
      *
      * @param $simupoll Simupoll
      * @param $categories array
      * @param $users array
      * @return $row array
      */
-    public function getResultsAndStatsForSimupoll(Simupoll $simupoll, $categories=array(), $users=array())
+    public function getResultsAndStatsForSimupoll(
+        Simupoll $simupoll,
+        $categories=array(),
+        $title='',
+        $users=array()
+        )
     {
         $row = array();
         $simupollId = $simupoll->getId();
@@ -266,6 +481,7 @@ class SimupollManager
         $averages = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getAverageForSimupollLastTryByUser($simupollId);
 
+        $row['grouptitle'] = $title;
         $row['galmeanlast'] = 0;
         foreach($averages as $average) {
             //mean for last try for a user for an exercise

@@ -5,3 +5,4 @@ li.proposition table {margin:0}
 .question_label label{width: 100%}
 .propositiongroup{border-left: 1px solid #ccc}
 .propositiongroup li:last-child{padding: 8px}
+.containerradar{width: 100%;position:relative}

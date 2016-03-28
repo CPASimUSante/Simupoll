@@ -43,10 +43,11 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
         $qb->select('a')
             ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
             ->join('a.question', 'q')
+            ->join('q.category', 'c')
             ->join('a.paper', 'p')
             ->join('p.simupoll', 's')
             ->where('s.id = :sid')
-            ->andWhere('q.id IN (:categories)')
+            ->andWhere('c.id IN (:categories)')
             ->orderBy('p.'.$order, 'ASC')
             ->setParameters(array('sid' => $simupollId, 'categories'=> $categories));
 //echo '<pre>';print_r(array('sql'=> $qb->getQuery()->getSQL(),'parameters' => $qb->getQuery()->getParameters(),));echo '</pre>';

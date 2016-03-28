@@ -21,7 +21,7 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-
+<!-- users -->
             <form action="#" method="post">
             <table class="table">
                 <tr id="pick-user-for-stats">
@@ -35,10 +35,21 @@
                     </td>
                 </tr>
             </table>
-                {{ 'stat_category_manage'|trans({}, 'resource') }}
-                Séléctionner par colonne les catégories à regrouper dans les statistiques : une colonne = un groupe. CTRL + clic pour déselectionner
+<!-- title -->
+            <p>{{'categorygroups_define'|trans({}, 'resource')}}</p>
+            <table class="table" id="stat-group-titles">
+                {% for inc in range(0, 4) %}
+                <tr class="group-titles" data-id="{{inc}}">
+                    <td class="isel_label">{{ 'group_title'|trans({'inc':(inc + 1)}, 'resource') }}</td>
+                    {% set title = (titles[inc] is defined) ? titles[inc] : '' %}
+                    <td class="isel_extra"><input type="text" name="group_title{{inc}}" value="{{title}}" class="form-control" /></td>
+                </tr>
+                {% endfor %}
+            </table>
+<!-- categories -->
+            <p>{{ 'stat_category_manage'|trans({}, 'resource') }}</p>
             <table class="table">
-                <tr><th class="col-md-1"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                <tr><th class="col-md-2"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
                 {{ tree |raw }}
             </table>
                 <input type="hidden" value="{{ _resource.getResourceNode().getWorkspace().id }}" name="wsn" id="wsn" />
@@ -59,9 +70,5 @@
     {# Claroline JS #}
     {{ parent() }}
 
-    <script type="text/javascript">
-        $(document).ready(function() {
-
-        });
-    </script>
+    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollStatSetup.js') }}'></script>
 {% endblock %}

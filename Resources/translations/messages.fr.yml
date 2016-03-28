@@ -1,13 +1,14 @@
-compose: Répondre
-cpasimusante_papers: Gérer les copies
-display_results_simupoll: Afficher les résultats
-edit_simupoll: Créer le Simupoll
-export_csv_simupoll: Exporter les résultats
-manage_categories: Gérer les catégories
-manage_periods : Gérer les périodes
-manage_questions: Gérer les questions
-organize_simupoll: Organiser le Simupoll
-results: Résultats
-setup_results_simupoll: Définir les stats
-show_graphics_simupoll: Afficher la représentation graphique
-userlist : Liste des utilisateurs
+back: Retour
+compose: 'Répondre'
+cpasimusante_papers: 'Gérer les copies'
+display_results_simupoll: 'Afficher les résultats'
+edit_simupoll: 'Créer le Simupoll'
+export_csv_simupoll: 'Exporter les résultats'
+manage_categories: 'Gérer les catégories'
+manage_periods : 'Gérer les périodes'
+manage_questions: 'Gérer les questions'
+organize_simupoll: 'Organiser le Simupoll'
+results: 'Résultats'
+setup_results_simupoll: 'Définir les stats'
+show_graphics_simupoll: 'Afficher la représentation graphique'
+userlist : 'Liste des utilisateurs'

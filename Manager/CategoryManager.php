@@ -152,7 +152,7 @@ class CategoryManager
         return $repoCat->buildTree($query->getArrayResult(), $options);
     }
 
-    public function getCategoryTreeForStatsV2(Simupoll $simupoll, $categories)
+    public function getCategoryTreeForStatsV2(Simupoll $simupoll, $categorygroups)
     {
         //display tree of categories for group
         $query = $this->getCategoryBySimupoll($simupoll);
@@ -164,14 +164,13 @@ class CategoryManager
             'rootClose' => '',
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
-            'nodeDecorator' => function($node) use ($repoQuestion, $categories) {
+            'nodeDecorator' => function($node) use ($repoQuestion, $categorygroups) {
                 $qcount = $repoQuestion->getQuestionCount($node['id']);
-                $checked = (in_array($node['id'], $categories)) ? 'checked' : '';
-                $input = ' <input type="radio" title="Groupe 1" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-1" '.$checked.'>';
-                $input .= ' <input type="radio" title="Groupe 2" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-2" '.$checked.'>';
-                $input .= ' <input type="radio" title="Groupe 3" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-3" '.$checked.'>';
-                $input .= ' <input type="radio" title="Groupe 4" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-4" '.$checked.'>';
-                $input .= ' <input type="radio" title="Groupe 5" data-id="'.$node['id'].'" name="categorygroup'.$node['id'].'[]" value="'.$node['id'].'-5" '.$checked.'>';
+                $input = '';
+                for ($inc=0;$inc<5;$inc++) {
+                    $checked = (isset($categorygroups[$inc]) && false !== strpos($categorygroups[$inc], ','.$node['id'].',')) ? 'checked' : '';
+                    $input .= ' <input type="checkbox" title="Groupe '.($inc+1).'" data-id="'.$node['id'].'" name="categorygroup'.$inc.'[]" class="categorygroup'.$inc.'" value="'.$node['id'].'" '.$checked.'>';
+                }
                 return '<td>'.$input.'</td><td>'.$qcount.'</td><td>'.str_repeat("=",($node['lvl'])*2).' '.$node['name'].'</td>';
             }
         );
@@ -205,6 +204,9 @@ class CategoryManager
         return $allcats;
     }
 
+    /**
+    * obsolete
+    */
     public function decodeCategories($statsmanage)
     {
         $categoryList = array();

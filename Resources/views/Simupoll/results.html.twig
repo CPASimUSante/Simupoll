@@ -27,12 +27,12 @@
                     <i class="fa fa-cogs"></i> {{ 'setup_results_simupoll' | trans }}
                 </a>
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_allhtml', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-pencil"></i> {{ 'display_results_simupoll' | trans }}
+                    <i class="fa fa-table"></i> {{ 'display_results_simupoll' | trans }}
                 </a>
-                <a class="btn btn-primary" href="#">
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_csv', {'id': _resource.getId() }) }}">
                     <i class="fa fa-download"></i> {{ 'export_csv_simupoll' | trans }}
                 </a>
-                <a class="btn btn-primary" href="#">
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_graph_show', {'id': _resource.getId() }) }}">
                     <i class="fa fa-bar-chart"></i> {{ 'show_graphics_simupoll' | trans }}
                 </a>
             {% endif %}

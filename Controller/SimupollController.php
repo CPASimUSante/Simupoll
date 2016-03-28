@@ -8,7 +8,9 @@ use CPASimUSante\SimupollBundle\Manager\SimupollManager;
 use CPASimUSante\SimupollBundle\Manager\CategoryManager;
 use CPASimUSante\SimupollBundle\Manager\PeriodManager;
 use CPASimUSante\SimupollBundle\Manager\StatmanageManager;
+use CPASimUSante\SimupollBundle\Manager\StatcategorygroupManager;
 use CPASimUSante\SimupollBundle\Entity\Organization;
+use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Statmanage;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
@@ -42,7 +44,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class SimupollController extends Controller
 {
     //list of hexa colors for graph
-    private static $RGBCOLORS = array("#000000", "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+    public static $RGBCOLORS = array("#000000", "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
       "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
       "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
       "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
@@ -55,13 +57,15 @@ class SimupollController extends Controller
     private $categoryManager;
     private $periodManager;
     private $statmanageManager;
+    private $statcategorygroupManager;
 
     /**
      * @DI\InjectParams({
      *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
      *     "categoryManager" = @DI\Inject("cpasimusante.simupoll.category_manager"),
      *     "periodManager" = @DI\Inject("cpasimusante.simupoll.period_manager"),
-     *     "statmanageManager" = @DI\Inject("cpasimusante.simupoll.statmanage_manager")
+     *     "statmanageManager" = @DI\Inject("cpasimusante.simupoll.statmanage_manager"),
+     *     "statcategorygroupManager" = @DI\Inject("cpasimusante.simupoll.statcategorygroup_manager")
      * })
      *
      * @param SimupollManager   simupollManager
@@ -73,13 +77,15 @@ class SimupollController extends Controller
         SimupollManager $simupollManager,
         CategoryManager $categoryManager,
         PeriodManager $periodManager,
-        StatmanageManager $statmanageManager
+        StatmanageManager $statmanageManager,
+        StatcategorygroupManager $statcategorygroupManager
     )
     {
-      $this->simupollManager    = $simupollManager;
-      $this->categoryManager    = $categoryManager;
-      $this->periodManager      = $periodManager;
-      $this->statmanageManager  = $statmanageManager;
+      $this->simupollManager            = $simupollManager;
+      $this->categoryManager            = $categoryManager;
+      $this->periodManager              = $periodManager;
+      $this->statmanageManager          = $statmanageManager;
+      $this->statcategorygroupManager   = $statcategorygroupManager;
     }
 
     /**
@@ -287,7 +293,7 @@ class SimupollController extends Controller
     }
 
     /**
-     * Display the statistics choices
+     * Display the statistics choices page
      *
      * @EXT\Route("/result/{id}", name="cpasimusante_simupoll_results", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
@@ -333,58 +339,118 @@ class SimupollController extends Controller
      * @param Simupoll $simupoll
      * @return array
      */
+     //TODO : remove categorylist and completecategorylist from statmanage
     public function statSetupAction(Request $request, $simupoll)
     {
-        /*
+        $categories = array();
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
-        //can user open ?
+        $uids = '';
+        $datatosave = array();
+
+        //TODO : manage user administrate stat display OR  chose a stat for him
+        //can user OPEN ? Not ADMINISTRATE because user can make its
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'OPEN');
         $allowToCompose = 0;
+
+        //If user is auth
         if (is_object($user) && ($simupollAdmin === true) ) {
             $allowToCompose = 1;
             //retrieve data
-            $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
+            $statsmanage = $this->statmanageManager
+                ->getStatmanageBySimupollAndUser($user, $simupoll);
+            $statcategorygroup = array();
+            $titles = array();
+            $categorygroupsWithComma = array();
 
             if ($statsmanage != array()) {
+                //retrieve users
                 $uids = $statsmanage[0]->getUserList();
 
+                $statcategorygroup = $this->statcategorygroupManager
+                    ->getStatcategorygroupByStatmanage($statsmanage[0]);
+                //retrieve title & categorygroups
+                foreach ($statcategorygroup as $scg) {
+                    $titles[] = $scg->getTitle();
+                    $categorygroupsWithComma[] = ','.$scg->getGroup().',';
+                }
             }
-            $categories = array();
-            $tree = $this->categoryManager->getCategoryTreeForStatsV2($simupoll, $categories);
+
+            if ($request->isMethod('POST')) {
+                //list of users
+                $uids = $request->request->get('simupoll_userlist');
+
+                for ($i = 0; $i < 5; $i++) {
+                    //raw values from request
+                    $title = $request->request->get('group_title'.$i);
+                    $categorygroup = $request->request->get('categorygroup'.$i);
+
+                    $titles[$i] = $title;
+
+                    if (isset($categorygroup)) {
+                        $categorygroup = implode(',', $categorygroup);
+                        $categorygroupsWithComma[$i] = ','.$categorygroup.',';
+                    }
+
+                    //group to save
+                    if (trim($title) != "") { $datatosave[] = array('title'=>$title,'group'=>$categorygroup); }
+                }
+//echo '<pre>';var_dump($datatosave);echo '</pre>';
+
+                $em = $this->getDoctrine()->getManager();
+                //save Statmanage
+                if ($statsmanage == array()) {
+                    $statsmanage = new Statmanage();
+                    $statsmanage->setUser($user);
+                    $statsmanage->setSimupoll($simupoll);
+                    $statsmanage->setUserList($uids);
+                    $em->persist($statsmanage);
+                    $sm = $statsmanage;
+                } else {
+                    $statsmanage[0]->setUserList($uids);
+                    $em->persist($statsmanage[0]);
+                    $sm = $statsmanage[0];
+                }
+                $em->flush();
+
+                if ($datatosave != array())
+                {
+                    //save Statcategorygroup
+                    if ($statcategorygroup != array()) {
+                        //delete old value
+                        foreach ($statcategorygroup as $scg) {
+                            $em->remove($scg);
+                        }
+                    }
+                    //insert new values
+                    foreach ($datatosave as $value) {
+                        $statcategorygroup = new Statcategorygroup();
+                        $statcategorygroup->setStatmanage($sm);
+                        $statcategorygroup->setTitle($value['title']);
+                        $statcategorygroup->setGroup($value['group']);
+                        $em->persist($statcategorygroup);
+                    }
+                    $em->flush();
+                }
+            }
+
+            $tree = $this->categoryManager->getCategoryTreeForStatsV2($simupoll, $categorygroupsWithComma);
+
             return array(
                 'userlist'          => $uids,
+                'titles'            => $titles,
                 'tree'              => $tree,
                 'allowToCompose'    => $allowToCompose,
                 '_resource'         => $simupoll,
             );
+        //User not auth => get out!
         } else {
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
-*/
 
-
-        $categories = array();
-        $uids = '';
-
-        $user = $this->container->get('security.token_storage')
-            ->getToken()->getUser();
-
-        //can user access ?
-        $this->checkAccess('OPEN', $simupoll);
-
-        //can user edit ?
-        $simupollAdmin = $this->container
-            ->get('cpasimusante_simupoll.services.simupoll')
-            ->isGrantedAccess($simupoll, 'ADMINISTRATE');
-
-        $em = $this->getDoctrine()->getManager();
-
-        $statsmanage = $em->getRepository('CPASimUSanteSimupollBundle:Statmanage')
-            ->findBy(array('user' => $user, 'simupoll' => $simupoll)
-        );
+/*
         if ($statsmanage != array()) {
             $uids = $statsmanage[0]->getUserList();
             $cats = $statsmanage[0]->getCategoryList();
@@ -416,25 +482,7 @@ class SimupollController extends Controller
             $em->flush();
         }
 
-        $tree = $this->categoryManager->getCategoryTreeForStats($simupoll, $categories);
-
-        //can user manage exercise
-        $allowToCompose = 0;
-        if (is_object($user) && ($simupollAdmin === true) ) {
-            $allowToCompose = 1;
-
-            $cats = ($categories = array()) ? explode(',', $categories) : array();
-            return array(
-                'categories'        => $cats,
-                'userlist'          => $uids,
-                'tree'              => $tree,
-                'allowToCompose'    => $allowToCompose,
-                '_resource'         => $simupoll,
-            );
-        } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
-        }
-
+*/
     }
 
     /**
@@ -455,11 +503,18 @@ class SimupollController extends Controller
      * General gathering of data to create statistics
      *
      * @param Simupoll $simupoll
+     * @param array $categories array of categories for the group
+     * @param string title title of the group
      * @return array array of results
      */
-    public function prepareResultsAndStatsForSimupoll(Simupoll $simupoll, $categories=array())
+    public function prepareResultsAndStatsForSimupoll(
+        Simupoll $simupoll,
+        $categories=array(),
+        $title=''
+        )
     {
-        $row = $this->simupollManager->getResultsAndStatsForSimupoll($simupoll, $categories);
+        $row = $this->simupollManager
+            ->getResultsAndStatsForSimupoll($simupoll, $categories, $title);
 
         return array(
             'row' => $row
@@ -482,32 +537,42 @@ class SimupollController extends Controller
         $html = '';
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
-
+        //get the stat Configuration
         $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
-        //get categories groups : array (groups) of array (categories)
-        $categoryList = $this->categoryManager->decodeCategories($statsmanage);
-        foreach($categoryList as $categories) {
-            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories);
-            $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
-            $html .= $htmltmp;
-            //echo '<pre>';var_dump($datas);echo '</pre>';
-        }
-//        echo '<pre>';var_dump($categoryList);echo '</pre>';
-//        echo $html;
-//        die();
-/*
-        foreach($categoryList as $categories) {
-            $datas = $this->prepareResultsAndStatsForSimupoll($categories);
-            $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
-            $html .= $htmltmp;
-        }
-*/
+        $statcategorygroup = $this->statcategorygroupManager->getStatcategorygroupByStatmanage($statsmanage);
 
-/*
-        $datas = $this->prepareResultsAndStatsForSimupoll($simupoll);
+        if (isset($statsmanage[0])) {
+            //retrieve titles and categorygroups
+            $data = $this->simupollManager->getStatcategoryData($statcategorygroup);
+            //get categories groups : array (groups) of array (categories)
+            $categoryList = $data['cats'];
+    //echo '<pre>';var_dump($categoryList);echo '</pre>';die();
 
-        $html = $this->simupollManager->prepareHtmlStats($datas);
-*/
+            foreach($categoryList as $inc => $categories) {
+                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
+                $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
+    // echo '<pre>';var_dump($categories);echo '</pre>';
+    // echo $htmltmp.'<br>';
+                $html .= $htmltmp;
+                //echo '<pre>';var_dump($datas);echo '</pre>';
+            }
+    //        echo '<pre>';var_dump($categoryList);echo '</pre>';
+    //        echo $html;
+    //        die();
+    /*
+            foreach($categoryList as $categories) {
+                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
+                $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
+                $html .= $htmltmp;
+            }
+    */
+
+    /*
+            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
+
+            $html = $this->simupollManager->prepareHtmlStats($datas);
+    */
+        }
         return array(
             '_resource'     => $simupoll,
             'html'          => $html
@@ -526,19 +591,52 @@ class SimupollController extends Controller
     {
         $date = new \DateTime();
         $now = $date->format('Y-m-d-His');
-
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+        //get the stat Configuration
         $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
-        //get categories groups : array (groups) of array (categories)
-        $categoryList = $this->categoryManager->decodeCategories($statsmanage);
-        foreach($categoryList as $categories) {
-            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories);
-            $content = $this->simupollManager->setCsvContent($datas);
+        $statcategorygroup = $this->statcategorygroupManager->getStatcategorygroupByStatmanage($statsmanage);
+        $content = '';
+
+        if (isset($statsmanage[0])) {
+            //retrieve titles and categorygroups
+            $data = $this->simupollManager->getStatcategoryData($statcategorygroup);
+            //get categories groups : array (groups) of array (categories)
+            $categoryList = $data['cats'];
+
+            //open file stream
+            $handle = fopen('php://memory', 'r+');
+            foreach($categoryList as $inc => $categories) {
+                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
+                //Add csv lines
+                $this->simupollManager->setCsvContent($datas, $handle);
+            }
+    //die();
+            rewind($handle);
+            $content = stream_get_contents($handle);
+            fclose($handle);
         }
 
         return new Response($content, 200, array(
             'Content-Type' => 'application/force-download',
-            'Content-Disposition' => 'attachment; filename="exportall-'.$now.'.csv"'
+            'Content-Disposition' => 'attachment; filename="simupoll-exportall-'.$now.'.csv"'
         ));
+    }
+
+    /**
+     * Page to display the graph for the Simupoll
+     *
+     * @EXT\Route("/simugraph/{id}", name="cpasimusante_simupoll_graph_show", requirements={"id" = "\d+"}, options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:showGraph.html.twig")
+     * @param Simupoll $simupoll
+     * @return array
+     */
+    public function getResultGraphAction($simupoll)
+    {
+        return array(
+            '_resource'     => $simupoll,
+        );
     }
 
     /**
@@ -549,17 +647,29 @@ class SimupollController extends Controller
      * @param Simupoll $simupoll
      * @return array
      */
-    public function getResultJsonAction($simupoll)
+    public function getJsonForGraphAction($simupoll)
     {
-        //to rgb
-        $colors = array_map(array($this, 'rgb2hex'), $this::$RGBCOLORS);
         $json = array();
-        $json['datasets'] = array();
-        $user = array();
-        $allgalmeanlast = array();
-        $allgalmean = array();
-        $usernames = array();
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+        //get the stat Configuration
+        $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
+        $statcategorygroup = $this->statcategorygroupManager->getStatcategorygroupByStatmanage($statsmanage);
+        if (isset($statsmanage[0])) {
+            //retrieve titles and categorygroups
+            $data = $this->simupollManager->getStatcategoryData($statcategorygroup);
+            //List of users to be shown in the graph
+            $userdata = $statsmanage[0]->getUserList();
 
+            //get categories groups : array (groups) of array (categories)
+            $categoryList = $data['cats'];
+
+            foreach($categoryList as $inc => $categories) {
+                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
+                $json = $this->simupollManager->setJsonContentForRadar($datas, $userdata);
+            }
+        }
+//echo '<pre>';var_dump($json);echo '</pre>';
         return new JsonResponse($json);
     }
 }

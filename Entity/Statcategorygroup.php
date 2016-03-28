@@ -35,7 +35,7 @@ class Statcategorygroup
     /**
      * @var string $group
      *
-     * @ORM\Column(name="group", type="string", length=255, nullable=true)
+     * @ORM\Column(name="categorygroup", type="string", length=255, nullable=true)
      */
     private $group;
 

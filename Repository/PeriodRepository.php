@@ -11,7 +11,7 @@ class PeriodRepository extends EntityRepository
     /**
      * Get currently opened simupoll period
      *
-     * @param $sid
+     * @param $sid integer simupoll id
      * @return array
      */
     public function getOpenedPeriodForSimupoll($sid)
@@ -29,10 +29,16 @@ class PeriodRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * User can access the compose button when the time is right
+     *
+     * @param $sid integer simupoll id
+     * @return integer
+     */
     public function isOpenedPeriodForSimupoll($sid)
     {
         $now = new \DateTime();
-        $now->setTime(0, 0, 0);
+        $now->setTime(0, 0, 0);//to check against YY:mm:dd 00:00:00
         $qb = $this->_em->createQueryBuilder();
         $qb->select('COUNT(p.id) AS pcount')
             ->from('CPASimUSante\SimupollBundle\Entity\Period', 'p')

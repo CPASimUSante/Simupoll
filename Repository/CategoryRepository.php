@@ -27,6 +27,7 @@ class CategoryRepository extends NestedTreeRepository
     /**
      * get root category for simupoll
      *
+     * @param $sid integer id of simupoll
      */
     public function getRoot($sid)
     {
@@ -41,6 +42,7 @@ class CategoryRepository extends NestedTreeRepository
 
     /**
      * Categories between lft values
+     *
      * @param $sid
      * @param int $begin
      * @param int $end
