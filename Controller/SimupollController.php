@@ -650,6 +650,12 @@ class SimupollController extends Controller
     public function getJsonForGraphAction($simupoll)
     {
         $json = array();
+        $json['datasets'] = array();
+        $users = array();
+        $allgalmeanlast = array();
+        $allgalmean = array();
+        $usernames = array();
+        $dataforjson = array();
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
         //get the stat Configuration
@@ -660,16 +666,122 @@ class SimupollController extends Controller
             $data = $this->simupollManager->getStatcategoryData($statcategorygroup);
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
+            $userlist = ($userdata == '') ? array() : explode(',', $userdata);
 
             //get categories groups : array (groups) of array (categories)
             $categoryList = $data['cats'];
 
             foreach($categoryList as $inc => $categories) {
                 $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
-                $json = $this->simupollManager->setJsonContentForRadar($datas, $userdata);
+
+                $uu = array_keys($datas['row']['user']);
+
+                //name of branch
+                $json['labels'][] = $datas['row']['grouptitle'];
+                //stat for last
+                $allgalmeanlast[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
+                //stat for all
+                $allgalmean[] = number_format(($datas['row']['allgalmean'])*100, 2);
+
+                //array of user without data
+                $userlisttmp = $userlist;
+                //Display mean (use $exerciselist['mean_last'] instead, for last)
+                foreach($datas['row']['mean_last'] as $u => $val) {
+                    if (in_array($u, $userlist)) {
+                        if (isset($datas['row']['user'][$u])){
+                            $usernames[$u] = $datas['row']['user'][$u];
+                            $users[$u]['name'] = $datas['row']['user'][$u];
+                            $users[$u]['mean'][] = number_format(($val)*100, 2);
+                            //TODO : remove this hacky shit ! save the real username for later
+                            $users[$u]['nameok'] = true;
+                            //remove user
+                            array_diff($userlisttmp, [$u]);
+                        }
+                    }
+                }
+
+                //put 0 for absence of data for a user
+                foreach($userlist as $u) {
+                    if (!in_array($u, $uu)) {
+                        $users[$u]['name'] = $u;
+                        $users[$u]['mean'][] = 0;
+                        $users[$u]['nameok'] = false;
+                    }
+                }
+
+                //$users = $this->simupollManager->getContentForRadar($datas, $userlist);
             }
+
+            $colors = array_map(array($this, 'rgb2hex'), SimupollController::$RGBCOLORS);
+
+            //prepare data for json
+            $inc = 0;
+            //dataset for group
+            $json['datasets'][] = $this->setObjectForRadarDataset('group', $allgalmean, $this->rgbacolor($colors[$inc]));
+            $inc++;
+
+            //datasets for users
+            foreach($users as $uid => $ud) {
+                //display only selected users
+                if (in_array($uid, $userlist)) {
+                    $name = ($ud['nameok']) ? $ud['name'] : $usernames[$uid];
+                    $json['datasets'][] = $this->setObjectForRadarDataset($name, $ud['mean'], $this->rgbacolor($colors[$inc]));
+                    $inc++;
+                }
+            }
+
+            // $json = $this->simupollManager
+            //     ->setJsonContentForRadar($allgalmean, $users, $userlist, $json);
         }
 //echo '<pre>';var_dump($json);echo '</pre>';
         return new JsonResponse($json);
+    }
+    /**
+     * Transforms rgb color into hexa color
+     *
+     * @param $color
+     * @return array
+     */
+    public function rgb2hex($color)
+    {
+        $color = str_replace("#", "", $color);
+        $r = hexdec(substr($color,0,2));
+        $g = hexdec(substr($color,2,2));
+        $b = hexdec(substr($color,4,2));
+        return array($r, $g, $b);
+    }
+
+    /**
+    * Create an object usable for ChartNew.js dataset data in radar graph
+    *
+    * @param $label string label of dataset
+    * @param $data array stats to display
+    * @param $color string color of line
+    * @param $fill  boolean area filled or empty
+    * @return object
+    */
+    public function setObjectForRadarDataset($label, $data, $color, $fill=false)
+    {
+        $class = new \stdClass();
+        $class->label = $label;
+        $class->data = $data;
+        $class->pointStrokeColor = "#fff";
+        $class->pointHighlightFill = "#fff";
+        $class->fillColor = "rgba(0,0,0,0)";
+        $class->strokeColor = $color;
+        $class->pointHighlightFill = $color;
+        return $class;
+    }
+
+    /**
+     * Create rgba color with opacity
+     *
+     * @param $color array rvb color
+     * @param int $opacity
+     * @return string
+     */
+    private function rgbacolor($color, $opacity=1)
+    {
+        return 'rgba('.join(',',$color).','.$opacity.')';
     }
 }

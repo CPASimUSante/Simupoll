@@ -311,47 +311,34 @@ class SimupollManager
      * Data prepared for use in radar display
      *
      * @param $datas array array of stats results
-     * @param $userdata string csv list of users to be used in the graph
+     * @param $userlist array list of users to be used in the graph
      * @return $json array array of data prepared for display
      */
-    public function setJsonContentForRadar($datas, $userdata)
+    public function getContentForRadar($datas, $userlist)
     {
-       echo '<pre>';var_dump($datas['row']['user']);echo '</pre>';
-       die();
-        //to rgb
-        $colors = array_map(array($this, 'rgb2hex'), SimupollController::$RGBCOLORS);
+// echo '<pre>';var_dump($datas['row']);echo '</pre>';
+//die();
         //Init
-        $json = array();
-        $json['datasets'] = array();
-        $userlist = ($userdata == '') ? array() : explode(',', $userdata);
         $uu = array_keys($datas['row']['user']);
-        $user = array();
-        $allgalmeanlast = array();
-        $allgalmean = array();
-        $usernames = array();
-
-        //name of branch
-        $json['labels'][] = $datas['row']['grouptitle'];
-        //stat for last
-        $allgalmeanlast[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
-        //stat for all
-        $allgalmean[] = number_format(($datas['row']['allgalmean'])*100, 2);
 
         //array of user without data
         $userlisttmp = $userlist;
         //Display mean (use $exerciselist['mean_last'] instead, for last)
         foreach($datas['row']['mean_last'] as $u => $val) {
             if (in_array($u, $userlist)) {
-                $usernames[$u] = $datas['row']['user'][$u];
-                $user[$u]['name'] = $datas['row']['user'][$u]['uname'];
-                $user[$u]['mean'][] = number_format(($val)*100, 2);
-                //TODO : remove this hacky shit ! save the real username for later
-                $user[$u]['nameok'] = true;
-                //remove user
-                array_diff($userlisttmp, [$u]);
+                if (isset($datas['row']['user'][$u])) { //TODO : fix it : if no answer, user is not known
+                    $usernames[$u] = $datas['row']['user'][$u];
+                    $user[$u]['name'] = $datas['row']['user'][$u]['uname'];
+                    $user[$u]['mean'][] = number_format(($val)*100, 2);
+                    //TODO : remove this hacky shit ! save the real username for later
+                    $user[$u]['nameok'] = true;
+                    //remove user
+                    array_diff($userlisttmp, [$u]);
+                }
             }
         }
-
+// echo '<pre>';var_dump($userlisttmp);echo '</pre>';
+// die();
         //put 0 for absence of data for a user
         foreach($userlist as $u) {
             if (!in_array($u, $uu)) {
@@ -361,6 +348,16 @@ class SimupollManager
             }
         }
 
+        return $user;
+    }
+    /**
+    * @param $json array
+    * @return $json array array of data prepared for display
+     */
+    public function setJsonContentForRadar($allgalmean, $user, $userlist, $json)
+    {
+        //to rgb
+        $colors = array_map(array($this, 'rgb2hex'), SimupollController::$RGBCOLORS);
         $inc = 0;
         //dataset for group
         $json['datasets'][] = $this->setObjectForRadarDataset('group', $allgalmean, $this->rgbacolor($colors[$inc]));
@@ -370,11 +367,14 @@ class SimupollManager
         foreach($user as $uid => $ud) {
             //display only selected users
             if (in_array($uid, $userlist)) {
-                $name = ($ud['nameok']) ? $ud['name'] : $usernames[$uid];
-                $json['datasets'][] = $this->setObjectForRadarDataset($name, $ud['mean'], $this->rgbacolor($colors[$inc]));
-                $inc++;
+                if (isset($usernames[$uid])) {  //TODO : fix it : if no answer, user is not known
+                    $name = ($ud['nameok']) ? $ud['name'] : $usernames[$uid];
+                    $json['datasets'][] = $this->setObjectForRadarDataset($name, $ud['mean'], $this->rgbacolor($colors[$inc]));
+                    $inc++;
+                }
             }
         }
+
         return $json;
     }
 
