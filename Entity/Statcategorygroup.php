@@ -43,7 +43,7 @@ class Statcategorygroup
      * @var Statmanage
      *
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Statmanage", inversedBy="statcategorygroups")
-     * @ORM\JoinColumn(name="statmanage_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="statmanage_id", referencedColumnName="id", onDelete="CASCADE")
      */
     protected $statmanage;
 
