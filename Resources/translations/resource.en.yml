@@ -12,7 +12,10 @@ cpasimusante_simupoll: 'Simupoll'
 date_end: 'End'
 date_start: 'Start'
 
+graph_show: 'Show graph'
+graph_export: 'Save graph'
 group_name: 'Group name'
+group_title: 'Name of group inc'
 
 period_add : 'Add a period'
 period_start: 'Period start'

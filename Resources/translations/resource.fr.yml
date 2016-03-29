@@ -12,8 +12,11 @@ cpasimusante_simupoll: 'Simupoll'
 date_end: 'Fin'
 date_start: 'Début'
 
+graph_show: 'Afficher le graphique'
+graph_export: 'Enregistrer le graphique'
 group_name: 'Nom du groupe'
 group_title: 'Intitulé du groupe inc'
+
 period_add : 'Ajouter une période'
 period_start: 'Début de la période'
 period_stop : 'Fin de la période'

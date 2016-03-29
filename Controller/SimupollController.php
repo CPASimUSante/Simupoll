@@ -651,6 +651,7 @@ class SimupollController extends Controller
     {
         $json = array();
         $json['datasets'] = array();
+        $json['labels'] = array();
         $users = array();
         $allgalmeanlast = array();
         $allgalmean = array();
@@ -724,16 +725,12 @@ class SimupollController extends Controller
             foreach($users as $uid => $ud) {
                 //display only selected users
                 if (in_array($uid, $userlist)) {
-                    $name = ($ud['nameok']) ? $ud['name'] : $usernames[$uid];
+                    $name = ($ud['nameok']) ? $ud['name']['uname'] : $usernames[$uid]['uname'];
                     $json['datasets'][] = $this->setObjectForRadarDataset($name, $ud['mean'], $this->rgbacolor($colors[$inc]));
                     $inc++;
                 }
             }
-
-            // $json = $this->simupollManager
-            //     ->setJsonContentForRadar($allgalmean, $users, $userlist, $json);
         }
-//echo '<pre>';var_dump($json);echo '</pre>';
         return new JsonResponse($json);
     }
     /**
