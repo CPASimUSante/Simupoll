@@ -24,6 +24,9 @@ class QuestionRepository extends EntityRepository
         return $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     *
+     */
     public function getQuestionsWithinCategories($sid, $current=-1, $next=-1)
     {
         $qb = $this->_em->createQueryBuilder();
@@ -46,6 +49,8 @@ class QuestionRepository extends EntityRepository
     }
 
     /**
+     * Find questions in the selected categories
+     *
      * @param $sid
      * @param int $current
      * @param int $next

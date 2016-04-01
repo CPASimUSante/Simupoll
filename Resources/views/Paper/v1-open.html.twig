@@ -24,36 +24,34 @@
             <hr>
 
             <div id="messagediv"></div>
-            <p>Step {{ page }} / {{ total }}</p>
-             simupaper : {{ app.session.get('simupaper') }} {##}
+            <p>Page {{ page }} / {{ total }}</p>
             {% for category in categories %}
-                {% if choice == 2 and ((category.lft >= current) and (category.lft <= next)) %}
+{#lft:{{ category.lft }} current{{ current }} next{{ next }}<br>#}
                     <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
                     {% for question in questions %}
                         {# needed because the query result are different whether there's an answer or not #}
-    {#
-                        {% if pid != 0 %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
-    #}
                         {% if question[0] is defined %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
 
                         {% if thequestion.category.id == category.id %}
-                            <p><span class="">{{ thequestion.title }}</span>
-                            <ul class="simuproposition">
-                            {% for proposition in thequestion.propositions %}
-                                {% set checked = "" %}
-                                {% if pid != 0 and regexTwig('/' ~ proposition.id ~ ';/', question.answer) > 0 %}
-                                    {% set checked = "checked" %}
-                                {% endif %}
-                                <li>
-                                    <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
-                                    <label>{{ proposition.choice }}</label>
-                                </li>
-                            {% endfor %}
-                        </ul></p>
+                            <div>
+                                <p class="simuquestion">{{ thequestion.title }}</p>
+                                <ul class="simuproposition">
+                                    {% for proposition in thequestion.propositions %}
+                                        {% set checked = "" %}
+                                        {% if pid != 0 and thequestion.id in answers|keys and regexTwig('/' ~ proposition.id ~ ';/', answers[thequestion.id].answer) > 0 %}
+                                            {% set checked = "checked" %}
+                                        {% endif %}
+                                        <li>
+                                            <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                            <label>{{ proposition.choice }}</label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         {% endif %}
                     {% endfor %}
-                {% endif %}
-            {% endfor %}
+            {% endfor %}{#for category in categories#}
+{{ page }}
 {#
             {% if pager.haveToPaginate %}
                 <div class="text-center panel-footer">
@@ -79,6 +77,8 @@
                 {% endif %}
                 {% if (page < total) %}
                     <button class="btn btn-primary" id="nextpage" type="submit">{{ 'next' | trans }}  <i class="fa fa-chevron-right"></i></button>
+                    {# {% else %}
+                         <input type="submit" value="{{ 'submit' | trans }}" class="btn btn-primary" id="submit" />#}
                 {% endif %}
             {% else %}
                 <input type="submit" value="{{ 'submit' | trans }}" class="btn btn-primary" id="submit" />
@@ -104,17 +104,28 @@
         var translation= window.Translator;
         $(document).ready(function() {
 
-            //if we're in choice = 2 (display by categories)
+            //if we're in choice = 2 (= display by categories)
             if ($('#nextpage').length != 0) {
+console.log("$('#nextpage').length != 0");
 
-                $('#paperResponse').on('#nextpage', 'submit', function(event){
+                $('#nextpage').on('click', function(event){
+console.log("#nextpage submit");
                     event.preventDefault();
                     $('#direction').val('next');
                     //saveAnswers('all');
-                    return true;
+                    $('#paperResponse').submit();
                 });
             }
-
+            if ($('#prevpage').length != 0) {
+console.log("$('#prevpage').length != 0");
+                $('#prevpage').on('click', function(event){
+console.log("#prevpage submit");
+                    event.preventDefault();
+                    $('#direction').val('prev');
+                    //saveAnswers('all');
+                    $('#paperResponse').submit();
+                });
+            }
             function saveAnswers() {
                 var $sid = $('#sid').val();
                 var choice = [];

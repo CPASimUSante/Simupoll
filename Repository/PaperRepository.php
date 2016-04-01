@@ -90,4 +90,43 @@ class PaperRepository extends \Doctrine\ORM\EntityRepository
         return $qb->getQuery()->getResult();
         //return $qb->getQuery()->getSQL();
     }
+
+    /**
+     *
+     *
+     * @param $userID integer
+     * @param $ids array
+     * @return array
+     */
+    public function findPapersByUserAndIds($userID, $ids)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->join('p.user', 'u')
+            ->join('p.period', 'd')
+            ->where('u.id = :userid')
+            ->andWhere('p.id IN (:ids)')
+            ->setParameters(
+                array(
+                    'userid'=> $userID,
+                    'ids' => $ids
+                )
+            );
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findByUserAndSimupoll($userID, $sid)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->join('p.user', 'u')
+            ->join('p.simupoll', 's')
+            ->where('u.id = :userid')
+            ->andWhere('s.id =:sid')
+            ->setParameters(
+                array(
+                    'userid'=> $userID,
+                    'sid' => $sid
+                )
+            );
+        return $qb->getQuery()->getResult();
+    }
 }

@@ -6,3 +6,4 @@ li.proposition table {margin:0}
 .propositiongroup{border-left: 1px solid #ccc}
 .propositiongroup li:last-child{padding: 8px}
 .containerradar{width: 100%;position:relative}
+p.simuquestion {font-weight: bold;text-decoration: underline;}

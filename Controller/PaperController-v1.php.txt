@@ -4,7 +4,6 @@ namespace CPASimUSante\SimupollBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
 
-use CPASimUSante\SimupollBundle\Manager\PaperManager;
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
@@ -42,22 +41,6 @@ use Pagerfanta\Pagerfanta;
  */
 class PaperController extends Controller
 {
-    private $paperManager;
-
-    /**
-     * @DI\InjectParams({
-     *     "paperManager" = @DI\Inject("cpasimusante.simupoll.paper_manager")
-     * })
-     *
-     * @param paperManager   paperManager
-     */
-    public function __construct(
-        PaperManager $paperManager
-    )
-    {
-        $this->paperManager   = $paperManager;
-    }
-
     /**
      * Prepare the data to display the paper
      *
@@ -77,13 +60,9 @@ class PaperController extends Controller
              ->getToken()->getUser();
          $uid = $user->getId();
          $sid = $simupoll->getId();
-         //$periods = array('id', 'title')
-         $periods = array();
-         $papersIds = array();
-         $periodsIds = array();
+         $pid = 0;
          $categorybounds = array();
          $answers = null;
-         $maxNumPaper = 0;
 
          $session = $request->getSession();
          $em = $this->getDoctrine()->getManager();
@@ -94,15 +73,9 @@ class PaperController extends Controller
          $current_category = 0;
          $next_category = -1;
 
-         //get all periods for the Simupoll
-         $period_list = $em->getRepository('CPASimUSanteSimupollBundle:Period')
-             ->findBySimupoll($sid);
-        foreach ($period_list as $period) {
-            $periods['id'][] = $period->getId();
-            $periods['title'][] = $period->getTitle();
-        }
+        //  $periods = $em->getRepository('CPASimUSanteSimupollBundle:Period')
+        //      ->findBySimupoll($sid);
 
-/*
          //1 - is the simupoll opened now ? = between start-stop in Period
          //TODO : should not be needed, if the answer button is not shown
          $period_start = '';
@@ -120,7 +93,7 @@ class PaperController extends Controller
              //get out
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }
-*/
+
          //2 - retrieve the data to drive how the questions are displayed
          //all questions, from categories ... ?
          $displayOrganization = $em->getRepository('CPASimUSanteSimupollBundle:Organization')
@@ -136,7 +109,7 @@ class PaperController extends Controller
                  $total_page = count($categorybounds);
                  //default values
                  $current_category = $categorybounds[0];
-                 //did user choose several categories
+                 //(did user choose several categories)
                  if (isset($categorybounds[1])) {
                      $next_category = $categorybounds[1];
                  }
@@ -145,74 +118,17 @@ class PaperController extends Controller
              //get out
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }
+echo ' period_id='.$period_id;
+echo ' user_id='.$uid;
+echo ' simupoll_id='.$sid;
 
-var_dump($periods);echo ' user_id='.$uid;echo ' simupoll_id='.$sid;
-/*
-        //3 - Get paper ids (list of id)
-        //periodIds >= paperIds = sessionIds
-        $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-            ->findByUserAndSimupoll($uid, $sid);
-        if ($papers != array()) {
-            foreach ($papers as $paper) {
-                $periodId = $paper->getPeriod()->getId();
-                $papersIds[$periodId] = $paper->getId();
-                $saved_periods[] = $periodId;
-            }
-        }
-        $maxNumPaper = count($papers);
-
-        //paper already created, and simupaper session exists
-        //$session->get('simupaper') = paperid1-periodid1;paperid2-periodid2...
-        if ($session->get('simupaper') != null) {
-            $tmps = explode(';', $session->get('simupaper'));
-            foreach ($tmps as $tmp) {
-                $t = explode('-', $tmp);
-                $session_papersIds[$t[1]] = $t[0];
-                $session_periods[] = $t[1];
-            }
-            //list of corresponding papers
-            $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-                ->findPapersByUserAndIds($uid, $session_papersIds);
-echo 'session exists';
-            // if (count($papersIds) != count($session_papersIds))
-        }
-*/
-        //3 - Get paper ids (list of id)
-        //periodIds >= paperIds = sessionIds
-        //paper already created, and simupaper session exists
-        //$session->get('simupaper') = paperid1-periodid1;paperid2-periodid2...
-        if ($session->get('simupaper') != null) {
-            $tmps = explode(';', $session->get('simupaper'));
-            foreach ($tmps as $tmp) {
-                $t = explode('-', $tmp);
-                $papersIds[$t[1]] = $t[0];
-                $periodsIds[] = $t[1];
-            }
-            $maxNumPaper = count($tmps);
-echo 'session exists';
-            // if (count($papersIds) != count($session_papersIds))
-        } else {
-            $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-                ->findByUserAndSimupoll($uid, $sid);
-            if ($papers != array()) {
-                foreach ($papers as $paper) {
-                    $periodId = $paper->getPeriod()->getId();
-                    $papersIds[$periodId] = $paper->getId();
-                    $periodsIds[] = $periodId;
-                }
-            }
-echo 'session does not exist';
-            $maxNumPaper = count($papers);
-        }
-
-/*
-         //3 - Get paper id
+         //3 - get paper id
          //paper already created, and simupaper session exists
          if ($session->get('simupaper') != null) {
-             $paperId = $session->get('simupaper');
+             $pid = $session->get('simupaper');
              $paper = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-                 ->findOneBy(array('user'=>$uid, 'id' => $paperId, 'period'=>$period_id));
-                 //->getPaper($uid, $paperId, $period_id);
+                 ->findOneBy(array('user'=>$uid, 'id' => $pid, 'period'=>$period_id));
+                 //->getPaper($uid, $pid, $period_id);
              echo ' a ';
              //we don't have simupaper session
          } else {
@@ -223,81 +139,68 @@ echo 'session does not exist';
              // no simupaper session but a paper already exists (new login)
              echo ' b ';
              if ($paper != array()) {
-                 $paperId = $paper->getId();
+                 $pid = $paper->getId();
              }
-             echo ' c='.$paperId.'<br>';
+             echo ' c='.$pid.'<br>';
          }
          echo '<pre>';var_dump(gettype($paper));echo '</pre>';
-*/
          //4 - the save part
          if ($request->isMethod('POST')) {
-             $next_category = $request->request->get('next');
-             $current_category = $request->request->get('current');
-
-echo 'IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
-
-             //4 - 1 save paper
-             $apaper = array();
-             $tmp = array();
-             //for each period
-             foreach ($periods['id'] as $periodId) {
-                 //if paper has not been saved
-                 if (!in_array($periodId, $periodsIds)) {
-                     $maxNumPaper = $maxNumPaper + 1;
-                     //Create paper
-                     $paper = new Paper();
-                     $paper->setUser($user);
-                     $paper->setStart(new \DateTime());
-                     $paper->setSimupoll($simupoll);
-                     $paper->setPeriod($periodId);
-                     $paper->setNumPaper($maxNumPaper);
-                     $em->persist($paper);
-                     $em->flush();
-                     $apaper[$periodId] = $paper;
-                     $tmp[] = $paper->getId().'-'.$periodId;
-                 } else {
-                     $tmp[] = $papersIds[$periodId].'-'.$periodId;
-                 }
-             }
-
-             //Set session
-             $session->set('simupaper', implode(';', $tmp));
-
+/*
+             //get NumPaper for the simupoll / user
+             $dql = 'SELECT max(p.numPaper) FROM CPASimUSante\SimupollBundle\Entity\Paper p '
+                 . 'WHERE p.simupoll='.$sid.' AND p.user='.$uid;
+             $query = $em->createQuery($dql);
+             $maxNumPaper = $query->getSingleScalarResult();
+*/
              //list of answers
              $choices = $request->request->get('choice');
 
-             //4 - 2 Save user Answers
+             $next_category = $request->request->get('next');
+             $current_category = $request->request->get('current');
+echo 'IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
+             //save paper
+             if ($pid == 0) {
+                 //Create paper
+                 $paper = new Paper();
+                 $paper->setUser($user);
+                 $paper->setStart(new \DateTime());
+                 $paper->setSimupoll($simupoll);
+                 $paper->setPeriod($period);
+                 $paper->setNumPaper(1);
+                 $em->persist($paper);
+                 $em->flush();
+                 //Set session
+                 $session->set('simupaper', $paper->getId());
+             } else {
+                 $maxNumPaper = $paper->getNumPaper() + 1;
+                 $paper->setNumPaper((int)$maxNumPaper);
+                 $em->persist($paper);
+                 $em->flush();
+             }
+
+             //Save user answers
              if ($choices != null) {
-                 //get questions for the selected categories
+                 //get question list
                  $questionList = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                      ->getQuestionsWithinCategories($sid, $current_category, $next_category);
+                 $al = array();
+                 if ($questionList != null){
+                     foreach($questionList as $ql){$al[] = $ql['id'];}
+                     if ($al != array()) {
+                         //remove old answers
+                         $em->getRepository('CPASimUSanteSimupollBundle:Answer')
+                             ->deleteOldAnswersInCategories($pid, $al);
 
-                 //First, remove the already saved answers
-                 $qids = array();
-                 if ($questionList != null) {
-                     //get question id array
-                     foreach($questionList as $ql){$qids[] = $ql['id'];}
-                     if ($qids != array()) {
-                         //remove old answers, for each paper = corresponding to each period
-                         foreach ($papersIds as $paperId) {
-                             $em->getRepository('CPASimUSanteSimupollBundle:Answer')
-                                ->deleteOldAnswersInCategories($paperId, $qids);
-                         }
-//echo 'pid'.$pid;echo '<pre>';var_dump(implode(',',$al));echo '</pre>';
+echo 'pid'.$pid;echo '<pre>';var_dump(implode(',',$al));echo '</pre>';
                      }
                  }
 
-                //Then, save the answers
                  foreach($choices as $c) {
-                     //retrieve data from value : proposition_id - period_id
-                     $atmp  = explode('-', $c);
-                     //get proposition
                      $proposition = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')
-                         ->findOneById($atmp[0]);
-                     // get paper
-                     $thepaper = $apaper[$atmp[1]];
+                         ->findOneById($c);
                      $answer = new Answer();
-                     $answer->setPaper($thepaper);
+                     $answer->setPaper($paper);
                      $answer->setQuestion($proposition->getQuestion());
                      $answer->setAnswer($proposition->getId().';');
                      $answer->setMark($proposition->getMark());
@@ -306,76 +209,72 @@ echo 'IN POST 1- current_category '.$current_category.' next_category '.$next_ca
                  $em->flush();
              }
          }
-
 echo '2- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
-
-         //5 - get general data for display questions in categories
+         //5 - get general data for display
+         //questions in categories
          //get new bounds
          $tmp_current = $current_category;
          $tmp_next = $next_category;
          if ($choice == 2) {
-             if ($next_category == -1) {$current_page = $total_page;}
-             if ($current_category == -1) {$current_page = 1;}
+             if ($next_category == -1){$current_page = $total_page;}
+             if ($current_category == -1){$current_page = 1;}
              if ($request->isMethod('POST')) {
                  $direction = $request->request->get('direction');
-echo 'next ';var_dump($request->request->get('next'));echo '<br>';echo 'direction ';var_dump($direction);echo '<br>';
-                //click on Next button
+echo 'next ';var_dump($request->request->get('next'));echo '<br>';
+echo 'direction ';var_dump($direction);echo '<br>';
                  if ($direction != 'prev') {
                      //get current pos. of "next"
                      $k = array_search($next_category, $categorybounds);
                      if ($k !== false) {
-echo 'k='.$k.'<br>';echo '3next - current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
+echo 'k='.$k.'<br>';
+echo '3next - current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          $current_category = $next_category;
                          $current_page = $k + 1;
                          //not the last position
                          if (isset($categorybounds[$k + 1])) {
+                             echo 'isset<br>';
                              $next_category = $categorybounds[$k + 1];
-echo 'isset<br>';
                              //last pos
                          } else {
                              $next_category = -1;
                          }
                          // $next_category already -1
                      } else {
+                         echo 'next, k=false<br>';
                          $next_category = -1;
-echo 'next, k=false<br>';
                      }
-                //click on Previous button
                  } else {
                      $k = array_search($current_category, $categorybounds);
                      if ($k !== false) {
+echo 'k='.$k.'<br>';
+echo '3prev- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          $next_category = $current_category;
                          $current_page = $k;
-echo 'k='.$k.'<br>';echo '3prev- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          //not the first position
                          if (isset($categorybounds[$k-1])) {
+                             echo 'isset<br>';
                              $current_category = $categorybounds[$k-1];
-echo 'isset<br>';
                              //last pos
                          } else {
                              $current_category = -1;
                          }
                      } else {
+                         echo 'prev, k=false<br>';
                          $current_category = -1;
-echo 'prev, k=false<br>';
                      }
                  }
+
              }
 echo '4- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
 
              //manage bounds
-             //find categories between the bounds
              $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
-                 ->getCategoriesBetweenLft($sid, $current_category, $next_category);
+                 ->getCategoriesBetweenLft($simupoll->getId(), $current_category, $next_category);
 foreach($categories as $c){var_dump($c->getId());} //OK
-             //find questions and answers for these categories
-             $questions = $this->om->getRepository('CPASimUSanteSimupollBundle:Question')
-                ->getQuestionsWithCategories($sid, $current_category, $next_category);
-            foreach ($papersIds as $paperId) {
-                $answers[$paperId] = $this->paperManager
-                ->getAnswerDataForPaperInCategorylist($sid, $paperId, $current_category, $next_category);
-            }
-         //case : all questions shown
+             $data = $this->setQuestionDataForPaperInCategorylist($request, $simupoll, $pid, $categorybounds, $current_category, $next_category);
+             $questions = $data['questions'];
+             $answers = $data['answers'];
+         //all questions
          } else {
              //get all categories
              $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
@@ -383,15 +282,17 @@ foreach($categories as $c){var_dump($c->getId());} //OK
                      array('simupoll' => $simupoll),
                      array('lft' => 'ASC')
                  );
+             $answersList = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
+                 ->getAnswersForQuestions($simupoll->getId(), $pid);
 
-             foreach ($papersIds as $paperId) {
-                 $answers[$paperId] = $this->paperManager
-                     ->getAnswerDataForPaperInCategorylist($sid, $paperId, $current_category, $next_category);
+             $answers = array();
+             if ($answersList != null) {
+                 foreach($answersList as $a) {
+                     $answers[$a['qid']] = array('id' => $a['id'], 'answer' => $a['answer']);
+                 }
              }
-
-            //  $limit = (int)$choiceData;
-            //  $offset = 0; //TODO
-
+             $limit = (int)$choiceData;
+             $offset = 0; //TODO
              //get all questions and propositions
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                  ->getQuestionsWithCategories($sid);
@@ -399,11 +300,11 @@ foreach($categories as $c){var_dump($c->getId());} //OK
                  //only from categories
          }
 
-echo '5- current_category '.$current_category.' next_category '.$next_category.' paper '.$paperId.'<br><b>current_page='.$current_page;echo '</b><br>';
+echo '5- current_category '.$current_category.' next_category '.$next_category.' paper '.$pid.'<br><b>current_page='.$current_page;echo '</b><br>';
 
          return array(
              'choice'           => $choice,
-             'pids'             => $papersIds,
+             'pid'              => $pid,
              'page'             => $current_page,
              'total'            => $total_page,
              'categories'       => $categories,
@@ -411,12 +312,101 @@ echo '5- current_category '.$current_category.' next_category '.$next_category.'
              'answers'          => $answers,
              'next'             => $next_category,
              'current'          => $current_category,
-             'periods'          => $periods,    //array of all periods (id, title) for the simupoll
              'workspace'        => $workspace,
              '_resource'        => $simupoll,
              //'pager'            => $pagerfanta
          );
      }
+
+    private function setQuestionDataForPaperInCategorylist(Request $request, Simupoll $simupoll, $pid, $categorybounds, $current_category, $next_category)
+    {
+        $session = $request->getSession();
+        $em = $this->getDoctrine()->getManager();
+
+        $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+            ->getQuestionsWithCategories($simupoll->getId(), $current_category, $next_category);
+/*
+        $answers = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+            ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, $current_category, $next_category);
+        $answ = array();
+        if ($answers != null) {
+            foreach ($answers as $answer) {
+                //var_dump($answer[0]->getId());
+                var_dump($answer->getAnswer());
+                die();
+                $answ[$answer[0]->getId()] = $answer->getId();
+            }
+        }
+        */
+
+        $answersList = $em->getRepository('CPASimUSanteSimupollBundle:Answer')
+            ->getAnswersForQuestions($simupoll->getId(), $pid, $current_category, $next_category);
+
+        $answers = array();
+        if ($answersList != null) {
+            foreach($answersList as $a) {
+                $answers[$a['qid']] = array('id' => $a['id'], 'answer' => $a['answer']);
+            }
+        }
+
+        /*
+           $answers = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+            ->getQuestionsInCategories($simupoll->getId(), $pid, $current_category, $next_category);
+        */
+
+
+        /*
+        //we have catpaper session
+        if ($session->get('catpaper') != null) {
+echo 'x1';
+            if (count($categorybounds) > 1) {
+echo 'x2';
+                $keys = array_keys($categorybounds);
+                //we didn't reach the end
+                $prev = $session->get('catpaper')['next'];
+                if (isset($keys[array_search($prev, $categorybounds)+1])) {
+echo 'x3';
+                    $next_category = $categorybounds[$keys[array_search($prev, $categorybounds)+1]];
+                    $current_category = $prev;
+                //last category
+                } else {
+echo 'x4';
+                    $next_category = -1;
+                    $current_category = $session->get('catpaper')['next'];  //finished
+                }
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, $prev, $next_category);
+            } else {
+echo 'x5';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->findBy(array('simupoll' => $simupoll));
+            }
+            //we don't have catpaper session : we don't know where we are
+        } else {
+echo 'x6';                      //OK
+            //no bounds = Only root : get all questions !
+            if (count($categorybounds) == 1) {
+echo 'x7';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->findBy(array('simupoll' => $simupoll));
+                //bounds exist : get questions
+            } else {
+echo 'x8';
+                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
+                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, 0, $categorybounds[1]);
+                $next_category = $categorybounds[1];
+                $current_category = 0;
+            }
+        }
+        */
+
+
+        //foreach ($questions as $question) {echo $question[0]->getTitle().'<br>';}echo 'xxx';
+        //echo $questions;
+        //die();
+        //echo '<pre>';var_dump($questions);echo '</pre>';die();
+        return array('questions'=> $questions, 'answers' => $answers);
+    }
 
     /**
      * json request, save the paper data
