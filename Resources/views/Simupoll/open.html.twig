@@ -33,7 +33,11 @@
                 </a>
             {% endif %}
 
-            {% if allowToCompose == 1 %}{% endif %}
+            {% if allowToCompose == 1 %}
+            <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_import', {'id': _resource.id}) }}">
+                <i class="fa fa-download"></i> {{ 'import_simupoll' | trans }}
+            </a>
+            {% endif %}
 
             {% if opened %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_paper', { 'id': _resource.id }) }}">

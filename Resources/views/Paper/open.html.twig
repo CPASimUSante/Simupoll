@@ -35,27 +35,31 @@
                         {% if thequestion.category.id == category.id %}
                             <div>
                                 <p class="simuquestion">{{ thequestion.title }}</p>
-                                {% for id, period in periods.id %}
-                                    {{ periods.title.id }}
+                                {% for periodid, period in periods.id %}
+                                    {{ periods.title[periodid] }}
                                     <ul class="simuproposition">
                                         {% for proposition in thequestion.propositions %}
+
                                             {% set checked = "" %}
+                                            {% set radiokey = thequestion.id ~ '-' ~ period %}
                                             {% if pids|length > 0
-                                                and thequestion.id in answers|keys
-                                                and regexTwig('/' ~ proposition.id ~ ';/', answers[thequestion.id].answer) > 0
+                                                and radiokey in answers|keys
+                                                and regexTwig('/' ~ proposition.id ~ ';/', answers[radiokey]) > 0
                                             %}
                                                 {% set checked = "checked" %}
                                             {% endif %}
+
                                             <li>
-                                                <input type="radio" class="propositionchoice" name="choice[{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}-{{ period }}" {{ checked }}/>
+                                                <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
                                                 <label>{{ proposition.choice }}</label>
                                             </li>
                                         {% endfor %}
                                     </ul>
-                                {% endfor %}
+
+                                {% endfor %}{# for id, period in periods.id #}
                             </div>
                         {% endif %}
-                    {% endfor %}
+                    {% endfor %}{# for question in questions #}
             {% endfor %}{#for category in categories#}
 {{ page }}
 {#

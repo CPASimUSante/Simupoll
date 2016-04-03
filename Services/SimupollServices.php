@@ -50,4 +50,10 @@ class SimupollServices
             return false;
         }
     }
+
+    public function periodList($simupoll)
+    {
+        return $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
+            ->findBySimupoll($simupoll);
+    }
 }

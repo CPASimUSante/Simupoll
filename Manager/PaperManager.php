@@ -40,17 +40,18 @@ class PaperManager
      * @param $next_category
      * @return array('questions', 'answers');
      */
-    public function getAnswerDataForPaperInCategorylist($sid, $pid, $current_category=-1, $next_category=-1)
+    public function getAnswerDataForPaperInCategorylist($sid, $pid, $answers = array(), $current_category=-1, $next_category=-1)
     {
         $answersList = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getAnswersForQuestions($simupoll->getId(), $pid, $current_category, $next_category);
+            ->getAnswersForQuestions($sid, $pid, $current_category, $next_category);
 
-        $answers = array();
+        //$answers = array();
         if ($answersList != null) {
             foreach($answersList as $a) {
-                $answers[$a['qid']] = array('id' => $a['id'], 'answer' => $a['answer']);
+                $answers[$a['qid'].'-'. $a['period']] = $a['answer'];
             }
         }
+//echo '<pre>$answers=';var_dump($answers);echo '</pre>'; //OK
         return $answers;
     }
 

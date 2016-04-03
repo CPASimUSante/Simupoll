@@ -129,4 +129,22 @@ class PaperRepository extends \Doctrine\ORM\EntityRepository
             );
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Get all the users that have answered to this Simupoll
+     *
+     * @param $sid simupoll id
+     * @return array array of users
+     */
+    public function getAllUsers($sid)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('DISTINCT IDENTITY(p.user) AS user')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Paper', 'p')
+            ->leftJoin('p.simupoll', 's')
+            ->where('s.id = :sid')
+            ->setParameter('sid', $sid);
+        echo $qb->getQuery()->getSQL().'<br><br>';
+        return $qb->getQuery()->getResult();
+    }
 }
