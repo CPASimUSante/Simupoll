@@ -8,8 +8,6 @@
     var resourcedata;
     var sid = $('#sid').html();
 
-    //
-
     ///Get the data and Draw the chart
     $('#showgraph').on('click', function(){
         $.ajax({
@@ -34,9 +32,6 @@
     }
 
     function setRadarChart(radarChartData) {
-
-        //$(document.createElement('<canvas id="canvas_Radar1" height="550" width="500"></canvas>'));
-
         var options = {
             canvasBorders : false
             ,canvasBordersWidth : 3

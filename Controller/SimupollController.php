@@ -504,22 +504,30 @@ class SimupollController extends Controller
      *
      * @param Simupoll $simupoll
      * @param array $categories array of categories for the group
-     * @param string title title of the group
+     * @param string $groupTitle title of the group
      * @param array $users list of users from Statmanage
      * @return array array of results
      */
     public function prepareResultsAndStatsForSimupoll(
         Simupoll $simupoll,
         $categories=array(),
-        $title='',
+        $groupTitle='',
+        $groupId=0,
         $users=array()
         )
     {
+        //get periods for the simupoll
+        $periodData = array();
         $periods = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
             ->periodList($simupoll);
+        foreach ($periods as $period) {
+            $periodData[$period->getId()] = $period->getTitle();
+        }
+//echo '<pre>';var_dump($users);echo '</pre>';die();
+
         $row = $this->simupollManager
-            ->getResultsAndStatsForSimupoll($simupoll, $categories, $title, $users, $periods);
+            ->getResultsAndStatsForSimupoll($simupoll, $categories, $groupTitle, $groupId, $users, $periodData);
 
         return array(
             'row' => $row
@@ -556,26 +564,20 @@ class SimupollController extends Controller
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $users = $this->simupollManager->getUserData($userlist);
 
             foreach($categoryList as $inc => $categories) {
-                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc], $userlist);
-                $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
+                $datas = $this->prepareResultsAndStatsForSimupoll(
+                    $simupoll,
+                    $categories,
+                    $data['titles'][$inc],
+                    $data['ids'][$inc],
+                    $userlist
+                );
+                $htmltmp = $this->simupollManager->prepareHtmlStats($datas, $users);
                 $html .= $htmltmp;
             }
 //echo '<pre>';var_dump($categoryList);echo '</pre>';die();
-    /*
-            foreach($categoryList as $categories) {
-                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
-                $htmltmp = $this->simupollManager->prepareHtmlStats($datas);
-                $html .= $htmltmp;
-            }
-    */
-
-    /*
-            $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc]);
-
-            $html = $this->simupollManager->prepareHtmlStats($datas);
-    */
         } else {
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
@@ -613,13 +615,20 @@ class SimupollController extends Controller
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $users = $this->simupollManager->getUserData($userlist);
 
             //open file stream
             $handle = fopen('php://memory', 'r+');
             foreach($categoryList as $inc => $categories) {
-                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc], $userlist);
+                $datas = $this->prepareResultsAndStatsForSimupoll(
+                    $simupoll,
+                    $categories,
+                    $data['titles'][$inc],
+                    $data['ids'][$inc],
+                    $userlist
+                );
                 //Add csv lines
-                $this->simupollManager->setCsvContent($datas, $handle);
+                $this->simupollManager->setCsvContent($datas, $users, $handle);
             }
 
             rewind($handle);
@@ -651,6 +660,20 @@ class SimupollController extends Controller
 
     /**
      * Prepare the statistics in json for radar display
+     * format :
+     * {
+     *      labels: ["group1","group2",...],
+     *      datasets: [
+     *          {
+     *              fillColor : "rgba(r,v,b,0.5)",
+     *              strokeColor : "rgba(r,v,b,1)",
+     *              pointColor : "rgba(r,v,b,1)",
+     *              pointstrokeColor : "yellow",
+     *              data : [va11, val2, ...],
+     *              title : "sometitle"
+     *          },{...}
+     *      ]
+     * }
      *
      * @EXT\Route("/jsonstats/{id}", name="cpasimusante_simupoll_stats_json", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
@@ -680,98 +703,60 @@ class SimupollController extends Controller
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $users = $this->simupollManager->getUserData($userlist);
 
             //get categories groups : array (groups) of array (categories)
             $categoryList = $data['cats'];
-
+//echo '<pre>';var_dump($data);echo '</pre>';
             foreach($categoryList as $inc => $categories) {
-                $datas = $this->prepareResultsAndStatsForSimupoll($simupoll, $categories, $data['titles'][$inc], $userlist);
-
-                //list of users
-                $uu = array_keys($datas['row']['user']);
-//echo '<pre>';var_dump($uu);echo '</pre>';die();
-                //name of branch
-                $json['labels'][] = $datas['row']['grouptitle'];
-                //stat for last
-                $allgalmeanlast[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
-                //stat for all
-                $allgalmean[] = number_format(($datas['row']['allgalmean'])*100, 2);
-//echo '<pre>';var_dump($datas['row']['user']);echo '</pre>';die();
-                foreach ($datas['row']['user'] as $u => $duser) {
-                    $users[$u]['name'] = $duser['uname'];
-                    $users[$u]['mean'][] = number_format(($duser['mean'])*100, 2);
-                }
-                /*
-                //array of user without data
-                $userlisttmp = $userlist;
-                //Display mean (use $exerciselist['mean_last'] instead, for last)
-                foreach($datas['row']['mean_last'] as $u => $val) {
-                    if (in_array($u, $userlist)) {
-                        if (isset($datas['row']['user'][$u])){
-                            $usernames[$u] = $datas['row']['user'][$u];
-                            $users[$u]['name'] = $datas['row']['user'][$u];
-                            $users[$u]['mean'][] = number_format(($val)*100, 2);
-                            //TODO : remove this hacky shit ! save the real username for later
-                            $users[$u]['nameok'] = true;
-                            //remove user
-                            array_diff($userlisttmp, [$u]);
+                $datas = $this->prepareResultsAndStatsForSimupoll(
+                    $simupoll,
+                    $categories,
+                    $data['titles'][$inc],
+                    $data['ids'][$inc],
+                    $userlist
+                );
+//echo '<pre>';var_dump($users);echo '</pre>';die();
+                foreach($datas['row']['period'] as $periodId => $period) {
+                    if (isset($datas['row']['gAvgByPeriod'][$periodId][$datas['row']['groupid']])) {
+                        $juser['mean'][0][$periodId][] = number_format(($datas['row']['gAvgByPeriod'][$periodId][$datas['row']['groupid']])*100,2);
+                    } else {
+                        $juser['mean'][0][$periodId][] = 0;
+                    }
+                    foreach ($users as $userId => $userd) {
+                        $juser['name'][$userId] = $userd;
+                        if (isset($datas['row']['avgByPeriodAndUser'][$periodId][$datas['row']['groupid']][$userId])) {
+                            $juser['mean'][$userId][$periodId][] = number_format(($datas['row']['avgByPeriodAndUser'][$periodId][$datas['row']['groupid']][$userId])*100,2);
+                        } else {
+                            $juser['mean'][$userId][$periodId][] = 0;
                         }
                     }
                 }
-echo '<pre>';var_dump($datas['row']['user']);echo '</pre>';die();
-                //put 0 for absence of data for a user
-                foreach($userlist as $u) {
-                    if (!in_array($u, $uu)) {
-                        $users[$u]['name'] = $u;
-                        $users[$u]['mean'][] = 0;
-                        $users[$u]['nameok'] = false;
-                    }
-                }
-                */
-                //$users = $this->simupollManager->getContentForRadar($datas, $userlist);
             }
-//echo '<pre>';var_dump($users);echo '</pre>';die();
+//echo '<pre>';var_dump($juser);echo '</pre>';
             $colors = array_map(array($this->simupollManager, 'rgb2hex'), SimupollController::$RGBCOLORS);
-
-            //prepare data for json
             $inc = 0;
-            //dataset for group
-            $json['datasets'][] = $this->simupollManager
-                ->setObjectForRadarDataset(
-                    'group',
-                    $allgalmean,
-                    $this->simupollManager->rgbacolor($colors[$inc])
-                );
-            $inc++;
-//echo '<pre>';var_dump($users);echo '</pre>';die();
-            foreach ($users as $u) {
-                $json['datasets'][] = $this->simupollManager
-                ->setObjectForRadarDataset(
-                    $u['name'],
-                    $u['mean'],
-                    $this->simupollManager->rgbacolor($colors[$inc])
-                );
-                $inc++;
-            }
-
-/*
-            //datasets for users
-            foreach($users as $uid => $ud) {
-                //display only selected users
-                if (in_array($uid, $userlist)) {
-                    $uname = (isset($usernames[$uid]['uname'])) ? $usernames[$uid]['uname'] : "-";
-                    $name = ($ud['nameok']) ? $ud['name']['uname'] : $uname;
-echo '<pre>';var_dump($name);echo '</pre>';
-                    $json['datasets'][] = $this->simupollManager
+            foreach($datas['row']['period'] as $periodId => $period) {
+                $json['labels'][$periodId][] = $datas['row']['grouptitle'];
+                //for group
+                $json['datasets'][$periodId][] = $this->simupollManager
+                    ->setObjectForRadarDataset(
+                        'group',
+                        $juser['mean'][0][$periodId],
+                        $this->simupollManager->rgbacolor($colors[$inc])
+                    );
+                //for user
+                foreach ($juser['name'] as $uid => $name) {
+                    $json['datasets'][$periodId][] = $this->simupollManager
                         ->setObjectForRadarDataset(
                             $name,
-                            $ud['mean'],
+                            $juser['mean'][$uid][$periodId],
                             $this->simupollManager->rgbacolor($colors[$inc])
                         );
                     $inc++;
                 }
             }
-*/
+//echo '<pre>';var_dump($json['datasets']);echo '</pre>';die();
         }
         return new JsonResponse($json);
     }
@@ -787,6 +772,29 @@ echo '<pre>';var_dump($name);echo '</pre>';
     public function importSimupollAction(Request $request, Simupoll $simupoll)
     {
         $request = $this->container->get('request');
+
+        $sessionFlashBag = $this->session->getFlashBag();
+
+        $data = file_get_contents($file);
+        $lines = str_getcsv($data, PHP_EOL);
+        foreach ($lines as $line) {
+            //data separated with ;
+            $categories = str_getcsv($line, ';');
+        }
+
+        if (isset($categories)) {
+            $createdCategories = $this->simupollManager->importCategories($categories);
+
+            foreach ($createdCategories as $cats) {
+                $msg =  '<' . $cats . '> ';
+                $msg .= $this->translator->trans(
+                'has_been_created',
+                array(),
+                'platform'
+                );
+                $sessionFlashBag->add('success', $msg);
+            }
+        }
         /*
         $sid = $request->get('sid');
         //the file input

@@ -52,9 +52,11 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     }
 
     /**
+     * Retrieve Answers for a Simupoll and selected categories
      * @param $simupollId   integer id of simupoll
      * @param $categories   array selected categories
-     * @return array
+     * @param $order  string order of the query
+     * @return array of entities
      */
     public function getQuerySimupollAllResponsesInCategoriesForAllUsers($simupollId, $categories=array(), $order='')
     {
@@ -188,7 +190,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function getAverageForSimupollLastTryForUser($sid, $user)
+    public function getAverageForSimupollForUserAndPeriod1($sid, $user)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('AVG(a.mark) as average_mark')                   //IDENTITY needed because user is a FK
@@ -210,6 +212,91 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->setParameter(1, $sid)
             ->setParameter(2, $user);
         // echo $qb->getQuery()->getSQL().'<br><br>';
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Retrieve averages, grouped by user and period
+     *
+     * @param $sid integer id of simupoll
+     * @param $categories array list of categories selected in Statmanage
+     * @param $userlist array list of user for the stats
+     * @return $result array array of results
+     */
+    public function getAverageForSimupollInCategoriesByUserAndPeriod($sid, $categories, $userlist)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('AVG(a.mark) as average_mark')
+            ->addSelect('IDENTITY(p.user) as user')
+            ->addSelect('IDENTITY(p.period) as period')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
+            ->leftJoin('a.paper', 'p')
+            ->leftJoin('p.simupoll', 's')
+            ->leftJoin('a.question', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('s.id = ?1')
+            ->andWhere('c.id IN (?2)')
+            ->andWhere('p.user IN (?3)')
+            ->setParameter(1, $sid)
+            ->setParameter(2, $categories)
+            ->setParameter(3, $userlist)
+            ->groupBy('p.user, p.period');
+// echo $qb->getQuery()->getSQL().'<br>';
+// echo '<pre>';var_dump($qb->getQuery()->getParameters());echo '</pre><br><br>';
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Retrieve general average for a period
+     *
+     * @param $sid integer id of simupoll
+     * @param $categories array list of categories selected in Statmanage
+     * @param $userlist array list of user for the stats
+     * @return $result array array of results
+     */
+    public function getGeneralAverageForSimupollInCategoriesByPeriod($sid, $categories)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('AVG(a.mark) as average_mark')
+            ->addSelect('IDENTITY(p.period) as period')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
+            ->leftJoin('a.paper', 'p')
+            ->leftJoin('p.simupoll', 's')
+            ->leftJoin('a.question', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('s.id = ?1')
+            ->andWhere('c.id IN (?2)')
+            ->setParameter(1, $sid)
+            ->setParameter(2, $categories)
+            ->groupBy('p.period');
+// echo $qb->getQuery()->getSQL().'<br>';
+// echo '<pre>';var_dump($qb->getQuery()->getParameters());echo '</pre><br><br>';
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Retrieve general average for all periods
+     *
+     * @param $sid integer id of simupoll
+     * @param $categories array list of categories selected in Statmanage
+     * @param $userlist array list of user for the stats
+     * @return $result array array of results
+     */
+    public function getGeneralAverageForSimupollInCategoriesAllPeriod($sid, $categories)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('AVG(a.mark) as average_mark')
+            ->from('CPASimUSante\\SimupollBundle\\Entity\\Answer', 'a')
+            ->leftJoin('a.paper', 'p')
+            ->leftJoin('p.simupoll', 's')
+            ->leftJoin('a.question', 'q')
+            ->leftJoin('q.category', 'c')
+            ->where('s.id = ?1')
+            ->andWhere('c.id IN (?2)')
+            ->setParameter(1, $sid)
+            ->setParameter(2, $categories);
+// echo $qb->getQuery()->getSQL().'<br>';
+// echo '<pre>';var_dump($qb->getQuery()->getParameters());echo '</pre><br><br>';
         return $qb->getQuery()->getResult();
     }
 }

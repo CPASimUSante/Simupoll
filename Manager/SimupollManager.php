@@ -112,109 +112,108 @@ class SimupollManager
 
     /**
      * @param $statcategorygroup    array result of findBy : array of Statcategorygroup
-     * @return array array of titles and categories
+     * @return array array of titles, categories and ids
      */
     public function getStatcategoryData($statcategorygroup)
     {
         $cats = array();
         $titles = array();
+        $ids = array();
         if ($statcategorygroup != array()) {
             foreach ($statcategorygroup as $scg) {
                 $cats[] = explode(',', $scg->getGroup());
                 $titles[] = $scg->getTitle();
+                $ids[] = $scg->getId();
             }
         }
-        return array('cats'=> $cats, 'titles'=>$titles);
+        return array('cats'=> $cats, 'titles'=>$titles, 'ids'=> $ids);
+    }
+
+    public function getUserData($userlist)
+    {
+        $userdata = array();
+        $ud = $this->om->getRepository('ClarolineCoreBundle:User')
+            ->findById($userlist);
+        foreach($ud as $user) {
+            $userdata[$user->getId()] =  $user->getLastName() . '-' . $user->getFirstName();
+        }
+        return $userdata;
     }
 
     /**
     * Prepare the html code for displaying the stat results
     *
     * @param $datas array array of stats results
-    * @return string
+    * @param $user array array of selected users (user[id] = name)
+    * @return string html to be display
     */
-    public function prepareHtmlStats($datas)
+    public function prepareHtmlStats($datas, $users)
     {
         $html = '';
         $htmltmp = '';
+        $htmlmean = array('th'=>'', 'td'=>'');
         $data = $datas['row'];
-//echo '<pre>';var_dump($data);echo '</pre>';die();
-        $htmltmp .= '
-            <tr><th><b>'.$data['simupoll'].'</b></th>
-            <th>Moyenne générale : '.number_format(($data['galmean'])*100, 2).'%<br> = Moyenne tous essais pour tous utilisateurs</th>
-            <th>Moyenne dernier essai : '.number_format(($data['galmeanlast'])*100, 2).'%</th></tr>';
+        $periodcount = count($data['period']);
+        $questioncount = count($data['question']);
+        $htmlmeantmp = array();
+        $htmlmeangroup = '<th>Groupe</th>';
+        $htmlgalmeantmp = '';
+        $htmlmeantmp[0] = '<th>Groupe</th>';
+//echo '<pre>';var_dump($data);echo '</pre>';
 
-        //Display questions
-        $htmltmp .= '<tr><td colspan="3">Questions : <ul>';
-        if (isset($data['question'])) {
-            foreach ($data['question'] as $question) {
-                $htmltmp .= '<li>' . $question['name'] . '</li>';
+        foreach($data['period'] as $periodId => $period) {
+            $htmlmean['th'] .= '<th>'.$period.'</th>';
+            /*//for group stats
+            if (isset($data['galmean'][$periodId])) {
+                $htmlmeangroup .= '<td>'.number_format(($data['galmean'][$periodId])*100,2).'%</td>';
+            } else {
+                $htmlmeangroup .= '<td>-</td>';
+            }*/
+            //for group stats
+            if (isset($data['gAvgByPeriod'][$periodId][$data['groupid']])) {
+                $htmlmeantmp[0] .= '<td>'.number_format(($data['gAvgByPeriod'][$periodId][$data['groupid']])*100,2).'%</td>';
+            } else {
+                $htmlmeantmp[0] .= '<td>-</td>';
             }
-        }
+            $htmltmp .= '<h3>'.$period.'</h3>';
 
-        $htmltmp .= '</ul></td></tr>';
-        if (isset($data['user'])) {
-            foreach ($data['user'] as $u => $userdata) {
-                $user[$u] = $userdata['uname'];
-                $htmltmp .= '<tr>
-                    <td><u>' . $userdata['uname'] . '</u></td>
-                    <td>Moyenne tous essais :  ' . number_format(($data['user'][$u]['mean']) * 100, 2) . '%</td>';
-                    if (isset($data['avg_last'][$u])) {
-                        $htmltmp .= '<td>Moyenne dernier essai :  ' . number_format(($data['avg_last'][$u]) * 100, 2) . '%</td>';
-                    }
-                $htmltmp .= '</tr>';
-
-                $inc = 1;
-                /*
-                $htmltmp .= '<tr><td colspan="3">Réponses : <table class="table table-responsive">';
-                $ttmph = '';
-                $ttmpr = '';
-                foreach ($userdata['mark'] as $p => $papermark) {
-                    $ttmph .= '<th>Essai ' . $inc . ' (' . $userdata['start'][$p] . ' - ' . $userdata['end'][$p] . ')</th>';
-                    foreach ($papermark as $m => $mark) {
-                        $ttmpr .= '<tr><td>Q</td><td>'.$userdata['question'][$p][$m] . ' : ' . number_format(($mark) * 100, 2) . '%</td></tr>';
-                    }
-                    $htmltmp .= '<br>';
-                    $inc++;
+            foreach ($users as $userId => $userdata) {
+                if (!isset($htmlmeantmp[$userId])) {$htmlmeantmp[$userId] = '<th>'.$userdata.'</th>';}
+                if (isset($data['avgByPeriodAndUser'][$periodId][$data['groupid']][$userId])) {
+                    $htmlmeantmp[$userId] .= '<td>'.number_format(($data['avgByPeriodAndUser'][$periodId][$data['groupid']][$userId])*100,2).'%</td>';
+                } else {
+                    $htmlmeantmp[$userId] .= '<td>-</td>';
                 }
-                $htmltmp .= '<tr><th>Question</th>'.$ttmph.'</tr>'.$ttmpr.'</table>';
-                */
-
-                $htmltmp .= '<tr><td colspan="3">Réponses : <br>';
-                foreach ($userdata['mark'] as $p => $papermark) {
-                    $htmltmp .= 'Essai ' . $inc . ' (' . $userdata['start'][$p] . ' - ' . $userdata['end'][$p] . ') => ';
-                    foreach ($papermark as $m => $mark) {
-                        $htmltmp .= $userdata['question'][$p][$m] . ' : ' . number_format(($mark) * 100, 2) . '%  - ';
+                $htmltmp .= '<h4>'.$userdata.'</h4>';
+                $htmltmp .= '<table class="table table-responsive">
+                <tr><th>Question</th><th>Réponse</th></tr>';
+                foreach ($data['question'] as $questionId => $question) {
+                    $htmltmp .= '<tr><td>'.$question.'</td>';
+                    if (isset($data['user'][$userId]['proposition'][$questionId][$periodId])){
+                        $htmltmp .= '<td>'.$data['user'][$userId]['proposition'][$questionId][$periodId];
+                        $htmltmp .= ' ('.$data['user'][$userId]['mark'][$questionId][$periodId].')</td>';
+                    } else {
+                        $htmltmp .= '<td>-</td>';
                     }
-                    $htmltmp .= '<br>';
-                    $inc++;
+                    $htmltmp .= '</tr>';
                 }
-
-                $htmltmp .= '</td></tr>';
+                $htmltmp .= '</table><hr>';
             }
         }
+        $htmlhead = '<h2>'.$data['grouptitle'].'</h2>';
 
-        //Display mean
-        $mean = '';
-        if (isset($data['mean'])) {
-            foreach ($data['mean'] as $u => $val) {
-                $ml = isset($data['mean_last'][$u]) ? $data['mean_last'][$u] : 0;
-                $mean .= '<tr><td><u>' . $user[$u] . '</u></td><td>' . number_format(($val) * 100, 2) . '%</td>' .
-                '<td>' . number_format(($ml) * 100, 2) . '%</td></tr>';
-            }
+        //Mean part
+        $htmlhead .= '
+        <table class="table table-responsive">
+        <tr><th>Moyenne par période</th>'.$htmlmean['th'].'</tr>';
+        foreach ($users as $userId => $userdata) {
+            $htmlhead .= '<tr>'.$htmlmeantmp[$userId].'</tr>';
         }
-
-        $meanlast='';
-
-        $htmltmp = '<h2>'.$data['grouptitle'].'</h2>
-        <table class="table table-responsive">'.
-        '<tr><th></th><th><b>Moyenne générale tous essais</b></th><th><b>Moyenne générale dernier essais</b></th></tr>'.
-        '<tr><td>Groupe</td><td>'.number_format(($datas['row']['allgalmean'])*100, 2).'%</td><td>'.number_format(($datas['row']['allgalmeanlast'])*100, 2).'%</td><tr>'.
-        $mean.$meanlast.
-        $htmltmp.
-        '</table>';
-
+        $htmlhead .= '<tr>'.$htmlmeantmp[0].'</tr>';
+        $htmlhead .= '</table>';
+        $htmlhead .= '<p>Moyenne générale, toutes périodes : '.number_format(($data['aAvg'][$data['groupid']])*100,2).'%</p>';
         $html .= $htmltmp;
+        $html = $htmlhead.$htmltmp.'</table>';
         return $html;
     }
 
@@ -222,119 +221,109 @@ class SimupollManager
      * Prepare the csv content for exporting the stat results
      *
      * @param $datas array array of stats results
+     * @param $users array array of selected users (user[id] = name)
      * @param $handle file handle
      * @return void
      */
-    public function setCsvContent($datas, $handle)
+    public function setCsvContent($datas, $users, $handle)
     {
 //echo '<pre>';var_dump($datas);echo '</pre>';
 //die();
-        //Row 1 : directory name
+        $csvmeantmp = array();
+        //"spacer" for csv
+        $csvspaceperiods = array();
+        $data = $datas['row'];
+
+        //Row 1 : group name
         $csv = array();
         $csv[] = 'Nom';
-        $csv[] = $datas['row']['grouptitle'];
+        $csv[] = $data['grouptitle'];
         fputcsv($handle, $csv);
 
+        //Row 2 : mean by period
         $csv = array();
-        $csv[] = '';
-        $csv[] = 'Moyenne tous essais';
-        $csv[] = 'Moyenne dernier essai';
+        $csv[] = 'Moyenne par période';
+        foreach($data['period'] as $periodId => $period) {
+            $csv[] = $period;
+        }
         fputcsv($handle, $csv);
-
+        //Row 2-1 : Group
         $csv = array();
         $csv[] = 'Groupe';
-        $csv[] = number_format(($datas['row']['allgalmean'])*100, 2);
-        $csv[] = number_format(($datas['row']['allgalmeanlast'])*100, 2);
-        fputcsv($handle, $csv);
-
-        foreach($datas['row']['mean'] as $u => $val) {
-            $csv = array();
-            $csv[] = $datas['row']['user'][$u]['uname'];
-            $csv[] = number_format(($val)*100, 2);
-            if (isset($datas['row']['mean_last'][$u])) {
-                $csv[] = number_format(($datas['row']['mean_last'][$u])*100, 2);
+        foreach($data['period'] as $periodId => $period) {
+            if (isset($data['gAvgByPeriod'][$periodId][$data['groupid']])) {
+                $csv[] = number_format(($data['gAvgByPeriod'][$periodId][$data['groupid']])*100,2);
             } else {
-                $csv[] = "-";
+                $csv[] = '-';
             }
-            fputcsv($handle, $csv);
+        }
+        fputcsv($handle, $csv);
+        //Row 2-(2+) : selected users
+        foreach($data['period'] as $periodId => $period) {
+            $csvspaceperiods[] = '';
+            foreach ($users as $userId => $userdata) {
+                if (!isset($csvmeantmp[$userId][0])) {$csvmeantmp[$userId][0] = $userdata;}
+                if (isset($data['avgByPeriodAndUser'][$periodId][$data['groupid']][$userId])) {
+                    $csvmeantmp[$userId][] = number_format(($data['avgByPeriodAndUser'][$periodId][$data['groupid']][$userId])*100,2);
+                } else {
+                    $csvmeantmp[$userId][] = '-';
+                }
+            }
+        }
+        foreach ($users as $userId => $userdata) {
+            fputcsv($handle, $csvmeantmp[$userId]);
         }
 
-        //Row 2 :
         $csv = array();
-        $csv[] = '';
-        $csv[] = '';
-        $csv[] = '';
-        $csv[] = '';
-        $csv[] = '';
-        $csv[] = '';
+        fputcsv($handle, $csv);
 
+        //Row 3 : general mean, all periods
+        $csv = array();
+        $csv[] = 'Moyenne générale, toutes périodes';
+        $csv[] = number_format(($data['aAvg'][$data['groupid']])*100,2);
+        fputcsv($handle, $csv);
+
+        $csv = array();
+        fputcsv($handle, $csv);
+
+        //Row 4 : questions
+        $csv = array();
+        $csv = $csvspaceperiods + $csv;
+        $csv[] = '';
+        $csv[] = '';
         //questions name
-        foreach($datas['row']['question'] as $question) {
-            $csv[] = $question['name'];
+        foreach($data['question'] as $question) {
+            $csv[] = $question;
         }
         fputcsv($handle, $csv);
 
-        //Row 3 :
-        $csv = array();
-        $csv[] = '';
-        $csv[] = '';
-        $csv[] = '';
-        //general mean
-        $csv[] = 'Moyenne Générale';
-        $csv[] = number_format(($datas['row']['galmean'])*100, 2);
-        fputcsv($handle, $csv);
-
-        //Row 4 + : all users
-        foreach($datas['row']['user'] as $u => $userdata) {
+        //Row 5 + : results for users
+        foreach($data['user'] as $userId => $userdata) {
             //row 4n :
             $csv = array();
-            $csv[] = '';
-            $csv[] = '';
+            $csv = $csvspaceperiods + $csv;
             $csv[] = '';
             //username
             $csv[] = $userdata['uname'];
             fputcsv($handle, $csv);
 
-            //row 4n+1 :
-            $csv = array();
-            $csv[] = '';
-            $csv[] = '';
-            $csv[] = '';
-            $csv[] = 'Moyenne tous essais';
-            $csv[] = number_format(($userdata['mean'])*100, 2);
-            fputcsv($handle, $csv);
-
-            //row 4n+2 :
-            $csv = array();
-            $csv[] = '';
-            $csv[] = '';
-            $csv[] = '';
-            $csv[] = 'Moyenne dernier essai';
-            if (isset($datas['row']['avg_last'][$u])){
-                $csv[] = number_format(($datas['row']['avg_last'][$u])*100, 2);
-            } else {
-                $csv[] = "-";
-            }
-            fputcsv($handle, $csv);
-
-            //row 4n+3 + : responses
-            $incr = 1;
-            foreach($userdata['question'] as $pid => $paperresponse) {
+            foreach($data['period'] as $periodId => $period) {
                 $csv = array();
+                $csv = $csvspaceperiods + $csv;
                 $csv[] = '';
-                $csv[] = '';
-                $csv[] = '';
-                $csv[] = '';
-                $csv[] = '';
-                $csv[] = 'Essai '.$incr. ' ('.$userdata['start'][$pid].' - '.$userdata['end'][$pid]. ')';
-                foreach($paperresponse as $response) {
-                    $csv[] = $response;
+                $csv[] = $period;
+                foreach($data['question'] as $questionId => $question) {
+                    if (isset($userdata['proposition'][$questionId][$periodId])) {
+                        $csv[] = $userdata['proposition'][$questionId][$periodId];
+                    } else {
+                        $csv[] = '-';
+                    }
                 }
                 fputcsv($handle, $csv);
-                $incr++;
             }
+            $csv = array();
+            fputcsv($handle, $csv);
         }
-//die();
     }
 
     /**
@@ -482,14 +471,21 @@ class SimupollManager
      *
      * @param $simupoll Simupoll
      * @param $categories array
+     * @param $groupTitle string name of the group
+     * @param $groupId integer id of the group
      * @param $userlist array list of user selected in Statmanage
      * @param $periods array list of Period entity for the Simupoll
      * @return $row array
+     *  - avgByPeriodAndUser[periodId][groupId][userId]
+     *  - gAvgByPeriod[periodId]["period"][groupId]
+     *  - user[userId](["uname"], ["mark"], ["start"], ["end"], ["question"][periodId], ["mean"])
+     *  - question[questionId][name]
      */
     public function getResultsAndStatsForSimupoll(
         Simupoll $simupoll,
         $categories=array(),
-        $title='',
+        $groupTitle='',
+        $groupId=0,
         $userlist=array(),
         $periods=array()
         )
@@ -499,41 +495,63 @@ class SimupollManager
         //list of labels for Choice
         $choicetmp = array();
         $tmpmean = array();
-        $gmean = array('m'=>0, 'c'=>0);
+        $gmean = array();
+        $row['question'] = array();
+        $row['period'] = $periods;
+        $row['simupoll'] = $simupoll->getTitle();
+        $row['grouptitle'] = $groupTitle;
+        $row['groupid'] = $groupId;
 
-        $row['grouptitle'] = $title;
-        $row['galmeanlast'] = 0;
-        //simupoll title
-        $row['simupoll'] = $simupoll->getName();
+        //avg by period, group, user
+        $averages = array();
+        $tmpavg = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
+            ->getAverageForSimupollInCategoriesByUserAndPeriod($simupollId, $categories, $userlist);
+        foreach ($tmpavg as $avg) {
+            $averages[$avg['period']][$groupId][$avg['user']] = $avg['average_mark'];
+        }
+        $row['avgByPeriodAndUser'] = $averages;
+//echo '<pre>';var_dump($averages);echo '</pre>';die();
 
+        //general average (= for all users), by period
+        $tmpgavg = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
+            ->getGeneralAverageForSimupollInCategoriesByPeriod($simupollId, $categories);
+        foreach ($tmpgavg as $id => $gavg) {
+            $row['gAvgByPeriod'][$tmpgavg[$id]['period']][$groupId] = $gavg['average_mark'];
+        }
 
-/*
+        //general average all (= for all users), for all periods = 1 value
+        $tmpaavg = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
+            ->getGeneralAverageForSimupollInCategoriesAllPeriod($simupollId, $categories);
+        $row['aAvg'][$groupId] = $tmpaavg[0]['average_mark'];
+ //echo '<pre>';var_dump($tmpaavg);echo '</pre>';die();
+
         //get all answers
         $simupollAnswers = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getQuerySimupollAllResponsesInCategoriesForAllUsers($simupoll->getId(), $categories, 'id');
-            //->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
 
-        foreach ($simupollAnswers as $responses) {
-            $paper = $responses->getPaper();
+        foreach ($simupollAnswers as $answers) {
+            $paper = $answers->getPaper();
             $paperId = $paper->getId();
-            $uid = $paper->getUser()->getId();
+            $userId = $paper->getUser()->getId();
             $period = $paper->getPeriod();
             $periodId = $period->getId();
+            $question = $answers->getQuestion();
+            $questionId = $question->getId();
             //user name
             $uname = $paper->getUser()->getLastName() . '-' . $paper->getUser()->getFirstName();
-            $user[$uid] = $uname;
+            $user[$userId] = $uname;
 
             //mark
-            $mark = $responses->getMark();
+            $mark = $answers->getMark();
 
-            $row['user'][$uid]['uname'] = $uname;
-            $row['user'][$uid]['mark'][$periodId][$paperId][] = $mark;
-            $row['user'][$uid]['start'][$periodId][$paperId] = $paper->getStart()->format('Y-m-d H:i:s');
-            $row['user'][$uid]['end'][$periodId][$paperId] = '';//$paper->getEnd()->format('Y-m-d H:i:s');
+            $row['user'][$userId]['uname'] = $uname;
+            $row['user'][$userId]['mark'][$questionId][$periodId] = $mark;
+            $row['user'][$userId]['start'][$periodId] = $paper->getStart()->format('Y-m-d H:i:s');
+            $row['user'][$userId]['end'][$periodId] = '';//$paper->getEnd()->format('Y-m-d H:i:s');
 
             //can't get the choice directly in the first query (string with ;)
             $choice = array();
-            $choiceIds = array_filter(explode(";", $responses->getAnswer()), 'strlen'); //to avoid empty value
+            $choiceIds = array_filter(explode(";", $answers->getAnswer()), 'strlen'); //to avoid empty value
             foreach ($choiceIds as $cid) {
                 if (!in_array($cid, $choicetmp)) { //to avoid duplicate queries
                     $label = $this->om
@@ -542,170 +560,123 @@ class SimupollManager
                     $choicetmp[$cid] = $label;
                     $choice[] = $label;
                 } else {
-                    $choice[] = $choicetmp[$cid];
+                    $row['user'][$userId]['question'];
                 }
             }
 
-            $question = $responses->getQuestion();
-            $questionId = $question->getId();
             //question title
-            $row['question'][$questionId]['name'] = $question->getTitle();
-            //list of choices
-            $row['user'][$uid]['question'][$paperId][] = implode(';', $choice);
+            $row['question'][$questionId] = $question->getTitle();
+            $row['user'][$userId]['proposition'][$questionId][$periodId] = implode(';', $choice);
 
-            if (!isset($tmpmean[$periodId][$uid])) {
-                $tmpmean[$periodId][$uid]['sum'] = $mark;
-                $tmpmean[$periodId][$uid]['count'] = 1;
+            if (!isset($tmpmean[$periodId][$userId])) {
+                $tmpmean[$periodId][$userId]['sum'] = $mark;
+                $tmpmean[$periodId][$userId]['count'] = 1;
             } else {
-                $tmpmean[$periodId][$uid]['sum'] += $mark;
-                $tmpmean[$periodId][$uid]['count'] += 1;
+                $tmpmean[$periodId][$userId]['sum'] += $mark;
+                $tmpmean[$periodId][$userId]['count'] += 1;
             }
-
-            $gmean[$periodId]['m'] += $mark;
-            $gmean[$periodId]['c'] += 1;
+            if (!isset($gmean[$periodId]['mark'])) {
+                $gmean[$periodId]['mark'] = $mark;
+                $gmean[$periodId]['count'] = 1;
+            } else {
+                $gmean[$periodId]['mark'] += $mark;
+                $gmean[$periodId]['count'] += 1;
+            }
         }
 
+        //compute mean
         foreach ($tmpmean as $tmpperiod) {
-            foreach ($tmpperiod as $uid => $m) {
+            foreach ($tmpperiod as $userId => $mean) {
                 //compute mean for each user
-                if (isset($m['count'])) {
-                    $row['user'][$uid]['mean'] = $m['sum']/$m['count'];
+                if (isset($mean['count'])) {
+                    $row['user'][$userId]['mean'] = $mean['sum']/$mean['count'];
                 } else {
-                    $row['user'][$uid]['mean'] = 0;
+                    $row['user'][$userId]['mean'] = 0;
                 }
                 //general mean for user
-                if (isset($row['mean'][$uid])) {
-                    $row['mean'][$uid] += $row['user'][$uid]['mean'];
-                    $row['mean_count'][$uid] += 1;
+                if (isset($row['mean'][$userId])) {
+                    $row['mean'][$userId] += $row['user'][$userId]['mean'];
+                    $row['mean_count'][$userId] += 1;
                 } else {
-                    $row['mean'][$uid] = $row['user'][$uid]['mean'];
-                    $row['mean_count'][$uid] = 1;
+                    $row['mean'][$userId] = $row['user'][$userId]['mean'];
+                    $row['mean_count'][$userId] = 1;
                 }
             }
         }
-*/
 
-
-        $averages = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getAverageForSimupollLastTryByUser($simupollId);
-            //->getAverageForSimupollLastTryByUsers($simupollId, $userlist);
-
-        foreach($averages as $average) {
-            //mean for last try for a user for an exercise
-            $row['avg_last'][$average['user']] = $average['average_mark'];
-            //mean for last try for a user for all exercises
-            if (!isset($row['mean_last'][$average['user']])) {
-                $row['mean_last'][$average['user']] = $average['average_mark'];
-                $row['mean_lastcount'][$average['user']] = 1;
+        foreach ($gmean as $periodId => $mean) {
+            if ($mean['count'] != 0) {
+                $row['galmean'][$periodId] = $mean['mark']/$mean['count'];
             } else {
-                $row['mean_last'][$average['user']] += $average['average_mark'];
-                $row['mean_lastcount'][$average['user']] += 1;
+                $row['galmean'][$periodId] = 0;
             }
-            $row['galmeanlast'] += $average['average_mark'];
-        }
-        if (count($averages)> 0)
-            $row['galmeanlast'] = $row['galmeanlast'] / count($averages);
+            //mean for all simupoll
+            if (!isset($row['allgalmean'][$periodId])) {
+                $row['allgalmean'][$periodId]      = $row['galmean'][$periodId];
+                $row['galmeancount'][$periodId]    = 1;
+            } else {
+                $row['allgalmean'][$periodId]      += $row['galmean'][$periodId];
+                $row['galmeancount'][$periodId]    += 1;
+            }
 
-        //get all answers
-        $simupollAnswers = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getQuerySimupollAllResponsesInCategoriesForAllUsers($simupoll->getId(), $categories, 'id');
-            //->getSimupollAllResponsesForAllUsersQuery($simupoll->getId(), 'id');
-
-        foreach ($simupollAnswers as $responses) {
-            $paper = $responses->getPaper();
-            $paperId = $paper->getId();
-            $uid = $paper->getUser()->getId();
-            //user name
-            $uname = $paper->getUser()->getLastName() . '-' . $paper->getUser()->getFirstName();
-            $user[$uid] = $uname;
-
-            //mark
-            $mark = $responses->getMark();
-
-            $row['user'][$uid]['uname'] = $uname;
-            $row['user'][$uid]['mark'][$paperId][] = $mark;
-            $row['user'][$uid]['start'][$paperId] = $paper->getStart()->format('Y-m-d H:i:s');
-            $row['user'][$uid]['end'][$paperId] = '';//$paper->getEnd()->format('Y-m-d H:i:s');
-
-            //get the result for responses for an exercise
-
-            //can't get the choice directly in the first query (string with ;)
-            $choice = array();
-            $choiceIds = array_filter(explode(";", $responses->getAnswer()), 'strlen'); //to avoid empty value
-            foreach ($choiceIds as $cid) {
-                if (!in_array($cid, $choicetmp)) { //to avoid duplicate queries
-                    $label = $this->om->getRepository('CPASimUSanteSimupollBundle:Proposition')->find($cid)->getChoice();
-                    $choicetmp[$cid] = $label;
-                    $choice[] = $label;
-                } else {
-                    $choice[] = $choicetmp[$cid];
+            //Compute means
+            if ($row['galmeancount'][$periodId] > 0) {
+                $row['allgalmean'][$periodId]      = $row['allgalmean'][$periodId] / $row['galmeancount'][$periodId];
+                foreach($row['mean'] as $u => $val) {
+                    $row['mean'][$u] = $val / $row['mean_count'][$u];
                 }
-            }
-
-            $question = $responses->getQuestion();
-            $questionId = $question->getId();
-            //question title
-            $row['question'][$questionId]['name'] = $question->getTitle();
-            //list of choices
-            $row['user'][$uid]['question'][$paperId][] = implode(';', $choice);
-
-            if (!isset($tmpmean[$uid])) {
-                $tmpmean[$uid]['sum'] = $mark;
-                $tmpmean[$uid]['count'] = 1;
-            } else {
-                $tmpmean[$uid]['sum'] += $mark;
-                $tmpmean[$uid]['count'] += 1;
-            }
-
-            $gmean['m'] += $mark;
-            $gmean['c'] += 1;
-        }
-
-        foreach ($tmpmean as $uid => $m) {
-            //compute mean for each user
-            if (isset($m['count'])) {
-                $row['user'][$uid]['mean'] = $m['sum']/$m['count'];
-            } else {
-                $row['user'][$uid]['mean'] = 0;
-            }
-            //general mean for user
-            if (isset($row['mean'][$uid])) {
-                $row['mean'][$uid] += $row['user'][$uid]['mean'];
-                $row['mean_count'][$uid] += 1;
-            } else {
-                $row['mean'][$uid] = $row['user'][$uid]['mean'];
-                $row['mean_count'][$uid] = 1;
-            }
-        }
-
-        if ($gmean['c'] != 0) {
-            $row['galmean'] = $gmean['m']/$gmean['c'];
-        } else {
-            $row['galmean'] = 0;
-        }
-        //mean for all exercises
-        if (!isset($row['allgalmean'])) {
-            $row['allgalmean']      = $row['galmean'];
-            $row['allgalmeanlast']  = $row['galmeanlast'];
-            $row['galmeancount']    = 1;
-        } else {
-            $row['allgalmean']      += $row['galmean'];
-            $row['allgalmeanlast']  += $row['galmeanlast'];
-            $row['galmeancount']    += 1;
-        }
-
-        //Compute means
-        if ($row['galmeancount'] > 0) {
-            $row['allgalmean']      = $row['allgalmean'] / $row['galmeancount'];
-            $row['allgalmeanlast']  = $row['allgalmeanlast'] / $row['galmeancount'];
-            foreach($row['mean_last'] as $u => $val) {
-                $row['mean_last'][$u] = $val / $row['mean_lastcount'][$u];
-            }
-            foreach($row['mean'] as $u => $val) {
-                $row['mean'][$u] = $val / $row['mean_count'][$u];
             }
         }
 
         return $row;
+    }
+
+    public function importCategories(array $categories)
+    {
+        $returnValues = array();
+     //Add
+     //use Claroline\CoreBundle\Persistence\ObjectManager;
+     //*     "objectManager"          = @DI\Inject("claroline.persistence.object_manager"),
+        $this->objectManager->clear();
+        $this->objectManager->startFlushSuite();
+
+        foreach ($categories as $category) {
+            $categoryName = $category[0];
+            $parentName = $category[1];
+
+            $newCategory = new Category();
+            $newCategory->setName($catName);
+            $newCategory->setParent($parentName);
+            $newCategory->setSimupoll($simupoll);
+            $newCategory->setUser($user);
+
+        }
+        $this->objectManager->endFlushSuite();
+
+        return $returnValues;
+    }
+
+    public function importQuestions(array $questions)
+    {
+        $returnValues = array();
+     //Add
+     //use Claroline\CoreBundle\Persistence\ObjectManager;
+     //*     "objectManager"          = @DI\Inject("claroline.persistence.object_manager"),
+        $this->objectManager->clear();
+        $this->objectManager->startFlushSuite();
+
+        foreach ($questions as $question) {
+            $questionTitle = $question[0];
+            $questionCategory = $question[1];
+            $category = null;   //find entity
+
+            $newQuestion = new Question();
+            $newQuestion->setTitle($questionTitle);
+            $newQuestion->setCategory($category);
+            $newQuestion->setSimupoll($simupoll);
+        }
+        $this->objectManager->endFlushSuite();
+
+        return $returnValues;
     }
 }
