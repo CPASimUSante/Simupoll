@@ -7,8 +7,8 @@
     var userdata;
     var resourcedata;
     var sid = $('#sid').html();
-
-    //
+    var radar = [];
+    var downloadBtn = [];
 
     ///Get the data and Draw the chart
     $('#showgraph').on('click', function(){
@@ -16,8 +16,21 @@
             type:"GET",
             url: Routing.generate('cpasimusante_simupoll_stats_json', {id:sid}),
             success: function(response) {
-                radarChartData = response;
-                setRadarChart(radarChartData);
+                var radarChartDataRaw = response;
+                $.each(radarChartDataRaw, function( index, radarChartData ) {
+                    //create canvas for each period
+                    radar[index]= $('<canvas id="radaranalytics'+index+'" class="radarstat" height="550" width="500">');
+                    $('#containerradar').append(radar[index]);
+                    //create downloadBtn for each canvas
+                    var title = radarChartData['graphtitle'];
+                    downloadBtn[index]= $('<a class="btn btn-primary" id="exportgraph'+index+'"><i class="fa fa-download"></i>Enregistrer '+radarChartData['graphtitle']+'</a>');
+                    downloadBtn[index].on('click', function(){
+                        downloadCanvas(this, 'radaranalytics'+index, 'radar'+index+'.png');
+                    });
+                    $('#containerradar').append(downloadBtn[index]);
+                    //display radar
+                    setRadarChart(radarChartData['graph'], radarChartData['graphtitle'], index);
+                });
             },
             error: function(jqXHR, textStatus, errorThrown) { }
         });
@@ -33,10 +46,7 @@
         return "<%='"+retstring+"'%>".replace(/<BR>/g," ");
     }
 
-    function setRadarChart(radarChartData) {
-
-        //$(document.createElement('<canvas id="canvas_Radar1" height="550" width="500"></canvas>'));
-
+    function setRadarChart(radarChartData, title, index) {
         var options = {
             canvasBorders : false
             ,canvasBordersWidth : 3
@@ -46,17 +56,18 @@
             ,annotateDisplay : true
             ,annotateLabel: annotateAllX
             ,responsive: true
+            ,graphTitle : title
         };
         var myRadar = new Chart(
-            document.getElementById('radaranalytics')   //<canvas>
+            document.getElementById('radaranalytics'+index)   //<canvas>
             .getContext("2d")
         ).Radar(radarChartData, options);
     }
-
+/*
     $('#exportgraph').on('click', function(){
-        downloadCanvas(this, 'radaranalytics', 'radar.png');
+        downloadCanvas(this, 'radaranalytics4', 'radar4.png');
     });
-
+*/
     function downloadCanvas(link, canvasId, filename) {
         link.href = document.getElementById(canvasId).toDataURL();
         link.download = filename;/**/

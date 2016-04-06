@@ -683,8 +683,6 @@ class SimupollController extends Controller
     public function getJsonForGraphAction($simupoll)
     {
         $json = array();
-        $json['datasets'] = array();
-        $json['labels'] = array();
         $users = array();
         $allgalmeanlast = array();
         $allgalmean = array();
@@ -731,23 +729,26 @@ class SimupollController extends Controller
                             $juser['mean'][$userId][$periodId][] = 0;
                         }
                     }
+                    $json[$periodId]['graph']['labels'][] = $datas['row']['grouptitle'];
                 }
             }
 //echo '<pre>';var_dump($juser);echo '</pre>';
             $colors = array_map(array($this->simupollManager, 'rgb2hex'), SimupollController::$RGBCOLORS);
-            $inc = 0;
+
             foreach($datas['row']['period'] as $periodId => $period) {
-                $json['labels'][$periodId][] = $datas['row']['grouptitle'];
+                $inc = 0;
+                $json[$periodId]['graphtitle'] = "Statistiques pour ".$period;
                 //for group
-                $json['datasets'][$periodId][] = $this->simupollManager
+                $json[$periodId]['graph']['datasets'][] = $this->simupollManager
                     ->setObjectForRadarDataset(
                         'group',
                         $juser['mean'][0][$periodId],
                         $this->simupollManager->rgbacolor($colors[$inc])
                     );
+                $inc++;
                 //for user
                 foreach ($juser['name'] as $uid => $name) {
-                    $json['datasets'][$periodId][] = $this->simupollManager
+                    $json[$periodId]['graph']['datasets'][] = $this->simupollManager
                         ->setObjectForRadarDataset(
                             $name,
                             $juser['mean'][$uid][$periodId],
@@ -755,8 +756,8 @@ class SimupollController extends Controller
                         );
                     $inc++;
                 }
+//echo '<pre>';var_dump($json);echo '</pre>';
             }
-//echo '<pre>';var_dump($json['datasets']);echo '</pre>';die();
         }
         return new JsonResponse($json);
     }
