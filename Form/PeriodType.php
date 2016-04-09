@@ -19,6 +19,7 @@ class PeriodType extends AbstractType
             'format' => 'dd-MM-yyyy',
             'widget' => 'single_text',
             'input' => 'datetime',
+            'required' => true,
             'component' => true,
             'attr' => array(
                 'class' => 'datepicker input-small',

@@ -13,7 +13,7 @@
             <div class="modal-body">
                 <h3 class="panel-title">{{'period_delete'|trans}}</h3>
                 <form id="period-delete-form"
-                      action="{{ path('cpasimusante_simupoll_period_delete_form', {'idperiod':idperiod}) }}"
+                      action="{{ path('cpasimusante_simupoll_period_delete_form', {'idperiod':idperiod, 'sid':sid}) }}"
                       method="POST"
                         {{ form_enctype(form) }}
                 >

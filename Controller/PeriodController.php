@@ -89,13 +89,13 @@ class PeriodController extends Controller
      * Data for modal form for period add
      *
      * @EXT\Route(
-     *     "/add/form/{idperiod}/{sid}",
+     *     "/add/form/{sid}",
      *     name="cpasimusante_simupoll_period_add_form",
      *     options = {"expose"=true}
      * )
      * @EXT\Template("CPASimUSanteSimupollBundle:Period:addPeriod.html.twig")
      */
-    public function periodAddFormAction($idperiod, $sid)
+    public function periodAddFormAction($sid)
     {
         $form = $this->get('form.factory')
             ->create(new PeriodType());
@@ -109,29 +109,32 @@ class PeriodController extends Controller
      * Process period add
      *
      * @EXT\Route(
-     *     "/add/{idperiod}/{sid}",
-     *     name="cpasimusante_simupoll_period_add",
+     *     "/add/submit/{sid}",
+     *     name="cpasimusante_simupoll_period_submit",
      *     options = {"expose"=true}
      * )
      * @EXT\Method("POST")
      * @EXT\Template("CPASimUSanteSimupollBundle:Period:addPeriod.html.twig")
      */
-    public function periodAddAction(Request $request, $idperiod, $sid)
+    public function periodAddAction(Request $request, $sid)
     {
         $form = $this->get('form.factory')
             ->create(new PeriodType());
         $form->handleRequest($request);
-
+        $idperiod = 0;
         if ($form->isValid()) {
 
             $em = $this->getDoctrine()->getManager();
             $simupoll = $this->simupollManager->getSimupollById($sid);
             $newperiod = $form->getData();
+//echo '<pre>';var_dump($newperiod);echo '</pre>';
             //Add simupoll info
             $newperiod->setSimupoll($simupoll);
 
             $em->persist($newperiod);
             $em->flush();
+            $idperiod = $newperiod->getId();
+
             return new JsonResponse('success', 200);
         }
         else

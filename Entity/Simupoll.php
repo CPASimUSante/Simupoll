@@ -74,7 +74,6 @@ class Simupoll extends AbstractResource
         $this->questions[] = $question;
         $question->setSimupoll($this);
         return $this;
-
         /*
         $question->setSimupoll($this);
         $this->questions->add($question);

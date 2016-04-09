@@ -85,7 +85,7 @@ class Question
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -108,7 +108,7 @@ class Question
     /**
      * Get title
      *
-     * @return string 
+     * @return string
      */
     public function getTitle()
     {
@@ -154,7 +154,7 @@ class Question
     /**
      * Get category
      *
-     * @return \CPASimUSante\SimupollBundle\Entity\Category 
+     * @return \CPASimUSante\SimupollBundle\Entity\Category
      */
     public function getCategory()
     {

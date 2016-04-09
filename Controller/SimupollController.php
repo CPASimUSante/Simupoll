@@ -61,11 +61,11 @@ class SimupollController extends Controller
 
     /**
      * @DI\InjectParams({
-     *     "simupollManager" = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
-     *     "categoryManager" = @DI\Inject("cpasimusante.simupoll.category_manager"),
-     *     "periodManager" = @DI\Inject("cpasimusante.simupoll.period_manager"),
-     *     "statmanageManager" = @DI\Inject("cpasimusante.simupoll.statmanage_manager"),
-     *     "statcategorygroupManager" = @DI\Inject("cpasimusante.simupoll.statcategorygroup_manager")
+     *     "simupollManager"            = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
+     *     "categoryManager"            = @DI\Inject("cpasimusante.simupoll.category_manager"),
+     *     "periodManager"              = @DI\Inject("cpasimusante.simupoll.period_manager"),
+     *     "statmanageManager"          = @DI\Inject("cpasimusante.simupoll.statmanage_manager"),
+     *     "statcategorygroupManager"   = @DI\Inject("cpasimusante.simupoll.statcategorygroup_manager")
      * })
      *
      * @param SimupollManager   simupollManager
@@ -167,6 +167,7 @@ class SimupollController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
 
+        $workspace = $simupoll->getResourceNode()->getWorkspace();
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
 
@@ -188,10 +189,20 @@ class SimupollController extends Controller
         //is there a period set or is this the right period to answer?
         $opened = $this->periodManager->getOpenedPeriod($simupoll->getId());
 
+        //is there any response to this simupoll
+        $hasresponse = $this->simupollManager->hasResponse($simupoll);
+        
+        //is there any question for this simupoll
+        $hasquestion = $this->simupollManager->hasQuestion($simupoll);
+
         return array(
             '_resource'         => $simupoll,
+            '_workspace'        => $workspace,
             'opened'            => $opened,
-            'allowToCompose'    => $allowToCompose
+            'allowToCompose'    => $allowToCompose,
+            'simupollAdmin'     => $simupollAdmin,
+            'hasresponse'       => $hasresponse,
+            'hasquestion'       => $hasquestion
         );
     }
 
@@ -772,43 +783,27 @@ class SimupollController extends Controller
      */
     public function importSimupollAction(Request $request, Simupoll $simupoll)
     {
-        $request = $this->container->get('request');
+        $sid = $simupoll->getId();
+        $sim = $simupoll;
+//echo '<pre>$sim->getResourceNode()->getWorkspace()->getId';var_dump($sim->getResourceNode()->getWorkspace()->getId());echo '</pre>';
+        if ($request->isMethod('POST')) {
+            $questionfile = $request->files->get('questionfile');
+            $categoryfile = $request->files->get('categoryfile');
 
-        $sessionFlashBag = $this->session->getFlashBag();
-
-        $data = file_get_contents($file);
-        $lines = str_getcsv($data, PHP_EOL);
-        foreach ($lines as $line) {
-            //data separated with ;
-            $categories = str_getcsv($line, ';');
-        }
-
-        if (isset($categories)) {
-            $createdCategories = $this->simupollManager->importCategories($categories);
-
-            foreach ($createdCategories as $cats) {
-                $msg =  '<' . $cats . '> ';
-                $msg .= $this->translator->trans(
-                'has_been_created',
-                array(),
-                'platform'
-                );
-                $sessionFlashBag->add('success', $msg);
+            if (isset($questionfile)) {
+                //if ($questionfile->getMimeType() != 'text/csv')
+                $this->simupollManager->importFile($sid, $questionfile, 'question');
+            }
+            if (isset($categoryfile)) {
+                $user = $this->container->get('security.token_storage')
+                    ->getToken()->getUser();
+                $this->simupollManager->importFile($sid, $categoryfile, 'category', $user);
             }
         }
-        /*
-        $sid = $request->get('sid');
-        //the file input
-        $file = $request->files->get('simupollfile');
+echo '<pre>$sim->getResourceNode()->getWorkspace()->getId';var_dump($sim->getResourceNode()->getWorkspace()->getId());echo '</pre>';
 
-        if ($file->getMimeType() != 'text/csv') {
-            //return $this->importError('qti_format_warning', $sid);
-        }
-        */
         return array(
-            '_resource'     => $simupoll,
+            '_resource'     => $sim,
         );
     }
-
-
 }

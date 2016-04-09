@@ -22,7 +22,7 @@ class CategoryType extends AbstractType
             )
         );
     }
-    
+
     /**
      * @param OptionsResolverInterface $resolver
      */

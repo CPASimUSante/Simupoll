@@ -11,7 +11,8 @@
                 </br>
             </div>
             <div class="modal-body">
-                <h3 class="panel-title">{{'category_delete'|trans}}x</h3>
+                <h3 class="panel-title">{{'category_delete'|trans}}</h3>
+                <p>Attention, supprimer une catégorie qui a des enfants supprimera aussi ses enfants</p>
                 <form id="category-delete-form"
                       action="{{ path('cpasimusante_simupoll_category_delete_form', {'cid':cid}) }}"
                       method="POST"

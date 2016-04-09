@@ -11,7 +11,7 @@
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <div class="panel panel-default">
+    <div class="panel panel-default panel-simupoll">
         <div class="panel-heading">
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
@@ -21,16 +21,37 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
+            {# display the messsages - macros in core #}
+            <div>{{ macros.flashBox() }}</div>
+            <div class="well">
+                <p><b>Informations sur le format du fichier CSV catégories</b></p>
+                <p>Format :</p>
+                <ul><li>Les données d'une catégorie doivent être définies sur une ligne et séparées par un point virgule.</li>
+                    <li>Ordre : nom de la catégorie, nom de la catégorie parent. indiquer "null" pour la catégorie parent si la catégorie n'a pas de parent</li>
+                    <li>Vous ne devez pas ajouter un en-tête de fichier.</li>
+                </ul>
+            </div>
+            <div class="well">
+                <p><b>Informations sur le format du fichier CSV questions</b></p>
+                <p>Format :</p>
+                <ul><li>Les données d'une catégorie doivent être définies sur une ligne et séparées par un point virgule.</li>
+                    <li>Ordre : nom de la question, nom de la catégorie</li>
+                    <li>Vous ne devez pas ajouter un en-tête de fichier.</li>
+                </ul>
+            </div>
             <form id="simupollImportForm" enctype="multipart/form-data" method="post"
                   action="{{ path('cpasimusante_simupoll_import', { 'id': _resource.getId() }) }}">
-                <input id="simupollfile" class="form-control" name="simupollfile" type="file" required="true" />
-            </form>
+                <p><label>{{ 'question_file'|trans({}, 'resource') }}</label>
+                <input id="questionfile" class="form-control" name="questionfile" type="file" /></p>
+                <p><label>{{ 'category_file'|trans({}, 'resource') }}</label>
+                <input id="categoryfile" class="form-control" name="categoryfile" type="file" /></p>
         </div>
         <div class="panel-footer">
             <button type="button" class="btn btn-default">{{ 'cancel'|trans({}, 'platform') }}</button>
             <button type="submit" class="btn btn-primary">
                 {{ 'ok'|trans({}, 'platform') }}
             </button>
+            </form>
         </div>
     </div>
 {% endblock %}

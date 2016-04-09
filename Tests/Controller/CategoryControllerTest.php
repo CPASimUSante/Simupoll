@@ -19,6 +19,7 @@ class CategoryControllerTest extends TransactionalTestCase
     /** @var Persister */
     private $persist;
 
+    //standard setup
     protected function setUp()
     {
        //if use of setUp(), get parent setUp()

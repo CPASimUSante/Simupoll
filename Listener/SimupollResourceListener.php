@@ -64,8 +64,13 @@ class SimupollResourceListener extends ContainerAware
 
     public function onCopy(CopyResourceEvent $event)
     {
-        $newRes = null;
-        $event->setCopy($newRes);
+        $simupoll = $event->getResource();
+        $loggedUser = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+        $newSimupoll = null;
+        $newSimupoll = $this->container->get('cpasimusante.simupoll.simupoll_manager')
+            ->copySimupoll($simupoll, $loggedUser);
+        $event->setCopy($newSimupoll);
         $event->stopPropagation();
     }
 

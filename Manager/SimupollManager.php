@@ -5,11 +5,18 @@ namespace CPASimUSante\SimupollBundle\Manager;
 use JMS\DiExtraBundle\Annotation as DI;
 use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Claroline\CoreBundle\Entity\User;
 
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Question;
+use CPASimUSante\SimupollBundle\Entity\Category;
+use CPASimUSante\SimupollBundle\Entity\Period;
+use CPASimUSante\SimupollBundle\Entity\Proposition;
 use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
 use CPASimUSante\SimupollBundle\Controller\SimupollController;
-use Buzz\Browser;
 
 /**
  * Helper functions for Simupoll Actions
@@ -19,23 +26,63 @@ use Buzz\Browser;
 class SimupollManager
 {
     private $om;
+    private $container;
+    private $translator;
+    private $session;
 
     /**
      * @DI\InjectParams({
-     *     "om" = @DI\Inject("claroline.persistence.object_manager")
+     *     "om"         = @DI\Inject("claroline.persistence.object_manager"),
+     *     "container"  = @DI\Inject("service_container"),
+     *     "session"    = @DI\Inject("session"),
+     *     "translator" = @DI\Inject("translator")
      * })
      *
      * @param ObjectManager $om
      */
-    public function __construct(ObjectManager $om)
+    public function __construct(
+        ObjectManager $om,
+        ContainerInterface $container,
+        SessionInterface $session,
+        TranslatorInterface $translator
+        )
     {
-        $this->om = $om;
+        $this->om           = $om;
+        $this->container    = $container;
+        $this->translator   = $translator;
+        $this->session      = $session;
     }
 
     public function getSimupollById($sid)
     {
         return $this->om->getRepository('CPASimUSanteSimupollBundle:Simupoll')
             ->findOneById($sid);
+    }
+
+    /**
+     * Does the Simupoll has answer
+     *
+     * @param $simupoll Simupoll
+     * @return boolean
+     */
+    public function hasResponse(Simupoll $simupoll)
+    {
+        $answers = $this->om->getRepository('CPASimUSanteSimupollBundle:Paper')
+            ->findBySimupoll($simupoll);
+        return ($answers !== array()) ? true : false;
+    }
+
+    /**
+     * Does the Simupoll has question
+     *
+     * @param $simupoll Simupoll
+     * @return boolean
+     */
+    public function hasQuestion(Simupoll $simupoll)
+    {
+        $question = $this->om->getRepository('CPASimUSanteSimupollBundle:Question')
+            ->findBySimupoll($simupoll);
+        return ($question !== array()) ? true : false;
     }
 
     /**
@@ -631,52 +678,233 @@ class SimupollManager
         return $row;
     }
 
-    public function importCategories(array $categories)
+    public function importFile($sid, $file, $datatype, $user=null)
     {
-        $returnValues = array();
-     //Add
-     //use Claroline\CoreBundle\Persistence\ObjectManager;
-     //*     "objectManager"          = @DI\Inject("claroline.persistence.object_manager"),
-        $this->objectManager->clear();
-        $this->objectManager->startFlushSuite();
+        $sessionFlashBag = $this->session->getFlashBag();
+        $datalines = array();
 
-        foreach ($categories as $category) {
-            $categoryName = $category[0];
-            $parentName = $category[1];
-
-            $newCategory = new Category();
-            $newCategory->setName($catName);
-            $newCategory->setParent($parentName);
-            $newCategory->setSimupoll($simupoll);
-            $newCategory->setUser($user);
-
+        $data = file_get_contents($file);
+        $data = $this->container->get('claroline.utilities.misc')
+            ->formatCsvOutput($data);
+        $lines = str_getcsv($data, PHP_EOL);
+        foreach ($lines as $line) {
+            //data separated with ;
+            $datalines[] = str_getcsv($line, ';');
         }
-        $this->objectManager->endFlushSuite();
+
+        if ($datalines != array()) {
+            $createddata = array();
+//echo '<pre>$datalines= ';var_dump($datalines);echo '</pre>';
+            if ($datatype == 'question') {
+                $createddata = $this->importQuestions($sid, $datalines, $createddata);
+            } elseif ($datatype == 'category') {
+                $createddata = $this->importCategories($sid, $datalines, $user, $createddata);
+            }
+echo '<pre>$createddata= ';var_dump($createddata);echo '</pre>';
+            if (isset($createddata['ok'])) {
+                foreach ($createddata['ok'] as $created) {
+                    $msg =  '<' . $created . '> ';
+                    $msg .= $this->translator->trans(
+                    'has_been_created',
+                    array(),
+                    'platform'
+                    );
+                    $sessionFlashBag->add('success', $msg);
+                }
+            }
+
+            if (isset($createddata['nok'])) {
+                foreach ($createddata['nok'] as $created) {
+                    $msg =  '<' . $created . '> ';
+                    $msg .= $this->translator->trans(
+                    'has_not_been_created',
+                    array(),
+                    'resource'
+                    );
+                    $sessionFlashBag->add('error', $msg);
+                }
+            }
+        }
+    }
+
+    /**
+     * Import Questions
+     *
+     * @param $sid integer
+     * @param $questions array
+     * @return $returnValues array
+     */
+    public function importQuestions($sid, array $questions, $returnValues=array())
+    {
+        $this->om->startFlushSuite();
+
+        //cant use $simupoll entity directly because doesn't come from the same om
+        //would case doctrine error
+        $simupoll = $this->om
+            ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->findOneById($sid);
+
+        foreach ($questions as $question) {
+            $questionTitle = $question[0];
+            $questionCategoryName = $question[1];
+
+            $question = $this->om
+                ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+                ->findOneBy(array('title' => $questionTitle));
+
+echo '<pre>$question';var_dump($question);echo '</pre>';
+            if ($question === null) {
+                //get category
+                $category = $this->om
+                ->getRepository('CPASimUSanteSimupollBundle:Category')
+                ->findOneBy(array(
+                    'name'      => $questionCategoryName,
+                    'simupoll'  => $simupoll
+                ));
+                if ($category != null) {
+                    echo '$category->getId()='.$category->getId().'<br>';
+                    $newQuestion = new Question();
+                    $newQuestion->setTitle($questionTitle);
+                    $newQuestion->setCategory($category);
+                    $newQuestion->setOrderq(1);
+                    $newQuestion->setSimupoll($simupoll);
+                    $this->om->persist($newQuestion);
+                    $returnValues['ok'][] = 'Question : '.$questionTitle;
+                } else {
+                    $returnValues['nok'][] = 'Question : '.$questionTitle;
+                }
+            } else {
+                $returnValues['nok'][] = 'Question existe : '.$questionTitle;
+            }
+        }
+        $this->om->endFlushSuite();
 
         return $returnValues;
     }
 
-    public function importQuestions(array $questions)
+    /**
+     * Import categories
+     *
+     * @param $sid integer
+     * @param $categories array
+     * @param $user User
+     * @return $returnValues array
+     */
+    public function importCategories($sid, array $categories, User $user, $returnValues=array())
     {
-        $returnValues = array();
-     //Add
-     //use Claroline\CoreBundle\Persistence\ObjectManager;
-     //*     "objectManager"          = @DI\Inject("claroline.persistence.object_manager"),
-        $this->objectManager->clear();
-        $this->objectManager->startFlushSuite();
+        $this->om->startFlushSuite();
 
-        foreach ($questions as $question) {
-            $questionTitle = $question[0];
-            $questionCategory = $question[1];
-            $category = null;   //find entity
+        $simupoll = $this->om
+            ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->findOneById($sid);
 
-            $newQuestion = new Question();
-            $newQuestion->setTitle($questionTitle);
-            $newQuestion->setCategory($category);
-            $newQuestion->setSimupoll($simupoll);
+        $cats   = array();
+        $parents = array();
+        $children  = array();
+
+        foreach ($categories as $category) {
+            if (count($category) >1) {
+                $categoryName = $category[0];
+                $categoryParent = $category[1];
+                //does the category exists already ?
+                $cat = $this->om
+                ->getRepository('CPASimUSanteSimupollBundle:Category')
+                ->findOneBy(array(
+                    'name'      => $categoryName,
+                    'simupoll'  => $simupoll
+                ));
+                //if it doesn't
+                if ($cat === null) {
+                    //create category, with no parent
+                    $newCategory = new Category();
+                    $newCategory->setName($categoryName);
+                    $newCategory->setParent(null);
+                    $newCategory->setSimupoll($simupoll);
+                    $newCategory->setUser($user);
+                    $this->om->persist($newCategory);
+
+                    //save infos
+                    $cats[]     = $newCategory;
+                    $children[] = $categoryName;
+                    $parents[] = $categoryParent;
+
+                    $returnValues['ok'][] = 'Catégorie : '. $categoryName;
+                } else {
+                    $returnValues['nok'][] = 'Catégorie existe : '. $categoryName;
+                }
+            }
         }
-        $this->objectManager->endFlushSuite();
+        $this->om->endFlushSuite();
+
+        //update parent
+        $this->om->startFlushSuite();
+
+        //search for parent
+        foreach ($parents as $id => $parent) {
+echo '<pre>parent';echo $id;echo '</pre>';
+            if ($parent !== 'null') {
+echo 'not null<br>';
+                $pc = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+                ->findOneBy(array(
+                    'name'      => $parent,
+                    'simupoll'  => $simupoll
+                ));
+                //if parent is created
+                if ($pc !== null) {
+echo '<pre>parent';var_dump($cats[$id]->getId());echo '</pre>';
+                    $cats[$id]->setParent($pc);
+                    $this->om->persist($cats[$id]);
+                }
+            }
+        }
+        $this->om->endFlushSuite();
 
         return $returnValues;
+    }
+
+    /**
+     * Copy Simupoll - called by onCopy listener
+     *
+     * @param $simupoll Simupoll
+     * @param $loggedUser User
+     * @return $newSimupoll Simupoll
+     */
+    public function copySimupoll(Simupoll $simupoll, $loggedUser)
+    {
+        $newSimupoll = new Simupoll();
+        $newSimupoll->setTitle($simupoll->getTitle());
+
+        $questions = $simupoll->getQuestions();
+        $periods = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
+            ->findBySimupoll($simupoll);
+
+        foreach ($periods as $period) {
+            $newPeriod = new Period();
+            $newPeriod->setSimupoll($newSimupoll);
+            $newPeriod->setStart($period->getStart());
+            $newPeriod->setStop($period->getStop());
+            $newPeriod->setTitle($period->getTitle());
+            $this->om->persist($newPeriod);
+        }
+
+        foreach ($questions as $question) {
+            $newQuestion = new Question();
+            $newQuestion->setSimupoll($newSimupoll);
+            $newQuestion->setTitle($question->getTitle());
+            $newQuestion->setOrderq($question->getOrderq());
+            $newQuestion->setCategory($question->getCategory());
+            $this->om->persist($newQuestion);
+
+            $propositions = $question->getPropositions();
+            foreach ($propositions as $proposition) {
+                $newProposition = new Proposition();
+                $newProposition->setQuestion($newQuestion);
+                $newProposition->setChoice($proposition->getChoice());
+                $newProposition->setMark($proposition->getMark());
+                $this->om->persist($newProposition);
+            }
+        }
+
+        return $newSimupoll;
     }
 }

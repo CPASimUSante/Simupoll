@@ -32,7 +32,7 @@
         var sid = $(this).data('sid');
         event.preventDefault();
         modal.confirmRequest(
-            Routing.generate('cpasimusante_simupoll_period_delete_form', {'idperiod': idperiod}),    //url
+            Routing.generate('cpasimusante_simupoll_period_delete_form', {'idperiod': idperiod, 'sid':sid}),    //url
             refreshPage,                                                              //successHandler
             undefined,                                                                //successParameter
             Translator.trans('period_delete_confirm', {}, 'resource'),              //content

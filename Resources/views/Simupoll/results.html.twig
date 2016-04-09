@@ -11,7 +11,7 @@
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <div class="panel panel-default">
+    <div class="panel panel-default panel-simupoll">
         <div class="panel-heading">
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
@@ -23,21 +23,21 @@
             <hr>
 
             {% if allowToCompose == 1 %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stat_setup', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-cogs"></i> {{ 'setup_results_simupoll' | trans }}
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stat_setup', {'id': _resource.getId() }) }}" title="{{ 'setup_results_simupoll' | trans }}">
+                    <i class="fa fa-cogs"></i> <span>{{ 'setup_results_simupoll' | trans }}</span>
                 </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_allhtml', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-table"></i> {{ 'display_results_simupoll' | trans }}
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_allhtml', {'id': _resource.getId() }) }}" title="{{ 'display_results_simupoll' | trans }}">
+                    <i class="fa fa-table"></i> <span>{{ 'display_results_simupoll' | trans }}</span>
                 </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_csv', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-upload"></i> {{ 'export_csv_simupoll' | trans }}
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_csv', {'id': _resource.getId() }) }}" title="{{ 'export_csv_simupoll' | trans }}">
+                    <i class="fa fa-upload"></i> <span>{{ 'export_csv_simupoll' | trans }}</span>
                 </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_graph_show', {'id': _resource.getId() }) }}">
-                    <i class="fa fa-bar-chart"></i> {{ 'show_graphics_simupoll' | trans }}
+                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_graph_show', {'id': _resource.getId() }) }}" title="{{ 'show_graphics_simupoll' | trans }}">
+                    <i class="fa fa-bar-chart"></i> <span>{{ 'show_graphics_simupoll' | trans }}</span>
                 </a>
-                <a class="btn btn-primary" target="_blank" href="{{ path('cpasimusante_simupoll_stats_json', {'id': _resource.getId() }) }}">
+                <!--<a class="btn btn-primary" target="_blank" href="{{ path('cpasimusante_simupoll_stats_json', {'id': _resource.getId() }) }}">
                     <i class="fa fa-bar-chart"></i> {{ 'test' | trans }}
-                </a>
+                </a>-->
             {% endif %}
         </div>
     </div>
