@@ -28,7 +28,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  * @link       http://simusante.com
  *
  * @EXT\Route(
- *      name    = "cpasimusante_period",
+ *      name    = "cpasimusante_simupoll_period",
  * )
  */
 class PeriodController extends Controller

@@ -191,9 +191,12 @@ class SimupollController extends Controller
 
         //is there any response to this simupoll
         $hasresponse = $this->simupollManager->hasResponse($simupoll);
-        
+
         //is there any question for this simupoll
         $hasquestion = $this->simupollManager->hasQuestion($simupoll);
+
+        //is there any category for this simupoll
+        $hascategory = $this->simupollManager->hasCategory($simupoll);
 
         return array(
             '_resource'         => $simupoll,
@@ -202,7 +205,8 @@ class SimupollController extends Controller
             'allowToCompose'    => $allowToCompose,
             'simupollAdmin'     => $simupollAdmin,
             'hasresponse'       => $hasresponse,
-            'hasquestion'       => $hasquestion
+            'hasquestion'       => $hasquestion,
+            'hascategory'       => $hascategory
         );
     }
 
@@ -800,7 +804,7 @@ class SimupollController extends Controller
                 $this->simupollManager->importFile($sid, $categoryfile, 'category', $user);
             }
         }
-echo '<pre>$sim->getResourceNode()->getWorkspace()->getId';var_dump($sim->getResourceNode()->getWorkspace()->getId());echo '</pre>';
+//echo '<pre>$sim->getResourceNode()->getWorkspace()->getId';var_dump($sim->getResourceNode()->getWorkspace()->getId());echo '</pre>';
 
         return array(
             '_resource'     => $sim,

@@ -29,6 +29,13 @@ class Simupoll extends AbstractResource
     private $title;
 
     /**
+     * @var string $description
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $description;
+
+    /**
      * @var Questions[]
      *
      * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\Question", mappedBy="simupoll", cascade={"all"})
@@ -98,5 +105,25 @@ class Simupoll extends AbstractResource
     public function getQuestions()
     {
         return $this->questions;
+    }
+
+    /**
+     * Set description
+     *
+     * @param string $description
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+    }
+
+    /**
+     * Get description
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
     }
 }

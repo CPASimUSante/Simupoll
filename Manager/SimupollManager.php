@@ -86,6 +86,19 @@ class SimupollManager
     }
 
     /**
+     * Does the Simupoll has category
+     *
+     * @param $simupoll Simupoll
+     * @return boolean
+     */
+    public function hasCategory(Simupoll $simupoll)
+    {
+        $category = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+            ->findBySimupoll($simupoll);
+        return ($category !== array()) ? true : false;
+    }
+
+    /**
      * Array of categories to get stats from
      *
      * @param $categories string list of categories (c1,c2;c3,c4;c5)
@@ -694,13 +707,13 @@ class SimupollManager
 
         if ($datalines != array()) {
             $createddata = array();
-//echo '<pre>$datalines= ';var_dump($datalines);echo '</pre>';
+
             if ($datatype == 'question') {
                 $createddata = $this->importQuestions($sid, $datalines, $createddata);
             } elseif ($datatype == 'category') {
                 $createddata = $this->importCategories($sid, $datalines, $user, $createddata);
             }
-echo '<pre>$createddata= ';var_dump($createddata);echo '</pre>';
+
             if (isset($createddata['ok'])) {
                 foreach ($createddata['ok'] as $created) {
                     $msg =  '<' . $created . '> ';
@@ -713,13 +726,29 @@ echo '<pre>$createddata= ';var_dump($createddata);echo '</pre>';
                 }
             }
 
-            if (isset($createddata['nok'])) {
-                foreach ($createddata['nok'] as $created) {
-                    $msg =  '<' . $created . '> ';
-                    $msg .= $this->translator->trans(
-                    'has_not_been_created',
-                    array(),
-                    'resource'
+            if (isset($createddata['nokq'])) {
+                foreach ($createddata['nokq'] as $created) {
+                    $msg = $this->translator->trans(
+                        'question_not_created',
+                        array('%questionname%' => $created),'resource'
+                    );
+                    $sessionFlashBag->add('error', $msg);
+                }
+            }
+            if (isset($createddata['nokc'])) {
+                foreach ($createddata['nokc'] as $created) {
+                    $msg = $this->translator->trans(
+                        'category_not_created',
+                        array('%categoryname%' => $created),'resource'
+                    );
+                    $sessionFlashBag->add('error', $msg);
+                }
+            }
+            if (isset($createddata['nokqc'])) {
+                foreach ($createddata['nokqc'] as $created) {
+                    $msg = $this->translator->trans(
+                        'question_category_missing',
+                        array('%questionname%' => $created[0], '%categoryname%' => $created[1]),'resource'
                     );
                     $sessionFlashBag->add('error', $msg);
                 }
@@ -749,10 +778,12 @@ echo '<pre>$createddata= ';var_dump($createddata);echo '</pre>';
             $questionCategoryName = $question[1];
 
             $question = $this->om
-                ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
-                ->findOneBy(array('title' => $questionTitle));
+                ->getRepository('CPASimUSanteSimupollBundle:Question')
+                ->findOneBy(array(
+                    'title'     => $questionTitle,
+                    'simupoll'  => $simupoll
+                ));
 
-echo '<pre>$question';var_dump($question);echo '</pre>';
             if ($question === null) {
                 //get category
                 $category = $this->om
@@ -762,7 +793,6 @@ echo '<pre>$question';var_dump($question);echo '</pre>';
                     'simupoll'  => $simupoll
                 ));
                 if ($category != null) {
-                    echo '$category->getId()='.$category->getId().'<br>';
                     $newQuestion = new Question();
                     $newQuestion->setTitle($questionTitle);
                     $newQuestion->setCategory($category);
@@ -771,10 +801,10 @@ echo '<pre>$question';var_dump($question);echo '</pre>';
                     $this->om->persist($newQuestion);
                     $returnValues['ok'][] = 'Question : '.$questionTitle;
                 } else {
-                    $returnValues['nok'][] = 'Question : '.$questionTitle;
+                    $returnValues['nokqc'][] = array($questionTitle, $questionCategoryName);
                 }
             } else {
-                $returnValues['nok'][] = 'Question existe : '.$questionTitle;
+                $returnValues['nokq'][] = $questionTitle;
             }
         }
         $this->om->endFlushSuite();
@@ -830,7 +860,7 @@ echo '<pre>$question';var_dump($question);echo '</pre>';
 
                     $returnValues['ok'][] = 'Catégorie : '. $categoryName;
                 } else {
-                    $returnValues['nok'][] = 'Catégorie existe : '. $categoryName;
+                    $returnValues['nokc'][] = $categoryName;
                 }
             }
         }
@@ -841,9 +871,7 @@ echo '<pre>$question';var_dump($question);echo '</pre>';
 
         //search for parent
         foreach ($parents as $id => $parent) {
-echo '<pre>parent';echo $id;echo '</pre>';
             if ($parent !== 'null') {
-echo 'not null<br>';
                 $pc = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
                 ->findOneBy(array(
                     'name'      => $parent,
@@ -851,7 +879,6 @@ echo 'not null<br>';
                 ));
                 //if parent is created
                 if ($pc !== null) {
-echo '<pre>parent';var_dump($cats[$id]->getId());echo '</pre>';
                     $cats[$id]->setParent($pc);
                     $this->om->persist($cats[$id]);
                 }

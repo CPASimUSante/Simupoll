@@ -42,6 +42,12 @@ class SimupollType extends AbstractType
         //To avoid displaying those fields in Simupoll resource creation modal
         if ($options['inside']) {
             $builder
+                ->add('description', 'tinymce', array(
+                    'theme_options' => array('label_width' => 'col-md-1', 'control_width' => 'col-md-11'),
+                    'attr' => array(
+                          'id' => 'cpasimusante_simupoll_description'
+                        )
+                    ))
                 ->add(
                     'questions', 'collection', array(
                         'type'              => new QuestionType($simupoll),

@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 
 use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Pagerfanta;
@@ -43,19 +44,27 @@ use Pagerfanta\Pagerfanta;
 class PaperController extends Controller
 {
     private $paperManager;
+    private $session;
+    private $translator;
 
     /**
      * @DI\InjectParams({
-     *     "paperManager" = @DI\Inject("cpasimusante.simupoll.paper_manager")
+     *     "paperManager" = @DI\Inject("cpasimusante.simupoll.paper_manager"),
+     *     "session"    = @DI\Inject("session"),
+     *     "translator" = @DI\Inject("translator")
      * })
      *
      * @param paperManager   paperManager
      */
     public function __construct(
-        PaperManager $paperManager
+        PaperManager $paperManager,
+        SessionInterface $session,
+        TranslatorInterface $translator
     )
     {
         $this->paperManager   = $paperManager;
+        $this->session        = $session;
+        $this->translator     = $translator;
     }
 
     /**
@@ -72,6 +81,7 @@ class PaperController extends Controller
      */
      public function openAction(Request $request, Simupoll $simupoll)
      {
+         $sessionFlashBag = $this->session->getFlashBag();
          $workspace = $simupoll->getResourceNode()->getWorkspace();
          $user = $this->container->get('security.token_storage')
              ->getToken()->getUser();
@@ -148,6 +158,8 @@ class PaperController extends Controller
                  }
              }
          } else {
+             $msg = $this->translator->trans('organization_not_set',array(),'resource');
+             $sessionFlashBag->add('error', $msg);
              //get out
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }

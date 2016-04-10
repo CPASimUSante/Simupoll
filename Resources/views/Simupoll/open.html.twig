@@ -22,6 +22,11 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans({}) }}
             </a>
             <hr>
+            {# display the messsages - macros defined in core #}
+            <div>{{ macros.flashBox() }}</div>
+            {% if not opened %}
+                <div class="well">Attention, actuellement, les périodes définies ne permettent pas de répondre au Simupoll</div>
+            {% endif %}
             {% if is_granted('ADMINISTRATE', _resource) %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}" title="{{ 'manage_categories' | trans }}">
                     <i class="fa fa-cogs"></i> <span>{{ 'manage_categories' | trans }}</span>
@@ -29,14 +34,14 @@
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_period_manage', { 'id': _resource.id }) }}" title="{{ 'manage_periods' | trans }}">
                     <i class="fa fa-cogs"></i> <span>{{ 'manage_periods' | trans }}</span>
                 </a>
-                {% if opened %}
+                {% if opened and hascategory %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_edit', { 'id': _resource.id }) }}" title="{{ 'edit_simupoll' | trans }}">
                     <i class="fa fa-pencil"></i> <span>{{ 'edit_simupoll' | trans }}</span>
                 </a>
-                {% endif %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_organize', { 'id': _resource.id }) }}" title="{{ 'organize_simupoll' | trans }}">
                     <i class="fa fa-cogs"></i> <span>{{ 'organize_simupoll' | trans }}</span>
                 </a>
+                {% endif %}
             {% endif %}
 
             {% if allowToCompose == 1 %}
@@ -45,13 +50,13 @@
             </a>
             {% endif %}
 
-            {% if opened and hasquestion %}
+            {% if opened and hasquestion and hascategory %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_paper', { 'id': _resource.id }) }}" title="{{ 'compose' | trans }}">
                     <i class="fa fa-check-square-o"></i> <span>{{ 'compose' | trans }}</span>
                 </a>
             {% endif %}
 
-            {% if is_granted('IS_AUTHENTICATED_FULLY') and opened and hasresponse %}
+            {% if is_granted('IS_AUTHENTICATED_FULLY') and hasresponse and hascategory %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_results', { 'id': _resource.id }) }}" title="{{ 'results' | trans }}">
                     <i class="fa fa-list"></i> <span>{{ 'results' | trans }}</span>
                 </a>
