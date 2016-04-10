@@ -5,6 +5,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
 
 use CPASimUSante\SimupollBundle\Manager\PaperManager;
+use CPASimUSante\SimupollBundle\Manager\PeriodManager;
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
@@ -20,9 +21,6 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-
-use Pagerfanta\Adapter\ArrayAdapter;
-use Pagerfanta\Pagerfanta;
 
 /**
  * Class PaperController
@@ -44,25 +42,30 @@ use Pagerfanta\Pagerfanta;
 class PaperController extends Controller
 {
     private $paperManager;
+    private $periodManager;
     private $session;
     private $translator;
 
     /**
      * @DI\InjectParams({
-     *     "paperManager" = @DI\Inject("cpasimusante.simupoll.paper_manager"),
-     *     "session"    = @DI\Inject("session"),
-     *     "translator" = @DI\Inject("translator")
+     *     "paperManager"   = @DI\Inject("cpasimusante.simupoll.paper_manager"),
+     *     "periodManager"   = @DI\Inject("cpasimusante.simupoll.period_manager"),
+     *     "session"        = @DI\Inject("session"),
+     *     "translator"     = @DI\Inject("translator")
      * })
      *
-     * @param paperManager   paperManager
+     * @param paperManager   PaperManager
+     * @param periodManager   PeriodManager
      */
     public function __construct(
         PaperManager $paperManager,
+        PeriodManager $periodManager,
         SessionInterface $session,
         TranslatorInterface $translator
     )
     {
         $this->paperManager   = $paperManager;
+        $this->periodManager  = $periodManager;
         $this->session        = $session;
         $this->translator     = $translator;
     }
@@ -83,6 +86,8 @@ class PaperController extends Controller
      {
          $sessionFlashBag = $this->session->getFlashBag();
          $workspace = $simupoll->getResourceNode()->getWorkspace();
+         $session = $request->getSession();
+         $em = $this->getDoctrine()->getManager();
          $user = $this->container->get('security.token_storage')
              ->getToken()->getUser();
          if (is_string($user)) {
@@ -92,17 +97,11 @@ class PaperController extends Controller
          }
          $uid = $user->getId();
          $sid = $simupoll->getId();
-         //$periods = array('id', 'title')
-         $periods = array();
          $arrPapersIds = array();
          $arrPeriodsIds = array();
          $categorybounds = array();
          $answers = null;
          $maxNumPaper = 0;
-
-         $session = $request->getSession();
-         $em = $this->getDoctrine()->getManager();
-
          $current_page = 1;
          $total_page = 1;
          $previous_category = -1;
@@ -110,14 +109,7 @@ class PaperController extends Controller
          $next_category = -1;
 
          //get all periods for the Simupoll
-         $period_list = $em->getRepository('CPASimUSanteSimupollBundle:Period')
-             ->findBySimupoll($sid);
-        foreach ($period_list as $period) {
-            $periods['id'][] = $period->getId();
-            $periods['title'][] = $period->getTitle();
-            $periods['entity'][] = $period;
-        }
-
+        $periods = $this->periodManager->getPeriods($sid);
 /*
          //1 - is the simupoll opened now ? = between start-stop in Period
          //TODO : should not be needed, if the answer button is not shown
@@ -158,43 +150,14 @@ class PaperController extends Controller
                  }
              }
          } else {
+             //no organization set : get out
              $msg = $this->translator->trans('organization_not_set',array(),'resource');
              $sessionFlashBag->add('error', $msg);
-             //get out
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }
 
-echo '<pre>$periods[id]=';var_dump($periods['id']);echo '</pre>';echo ' user_id='.$uid;echo ' simupoll_id='.$sid;
-/*
-        //3 - Get paper ids (list of id)
-        //periodIds >= paperIds = sessionIds
-        $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-            ->findByUserAndSimupoll($uid, $sid);
-        if ($papers != array()) {
-            foreach ($papers as $paper) {
-                $periodId = $paper->getPeriod()->getId();
-                $arrPapersIds[$periodId] = $paper->getId();
-                $saved_periods[] = $periodId;
-            }
-        }
-        $maxNumPaper = count($papers);
+//echo '<pre>$periods[id]=';var_dump($periods['id']);echo '</pre>';echo ' user_id='.$uid;echo ' simupoll_id='.$sid;
 
-        //paper already created, and simupaper session exists
-        //$session->get('simupaper') = paperid1-periodid1;paperid2-periodid2...
-        if ($session->get('simupaper') != null) {
-            $tmps = explode(';', $session->get('simupaper'));
-            foreach ($tmps as $tmp) {
-                $t = explode('-', $tmp);
-                $session_papersIds[$t[1]] = $t[0];
-                $session_periods[] = $t[1];
-            }
-            //list of corresponding papers
-            $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
-                ->findPapersByUserAndIds($uid, $session_papersIds);
-echo 'session exists';
-            // if (count($arrPapersIds) != count($session_papersIds))
-        }
-*/
         //3 - Get paper ids (list of id)
         //periodIds >= paperIds = sessionIds
         //paper already created, and simupaper session exists
@@ -214,12 +177,12 @@ echo '<br>session exists<br>';echo $session->get('simupaper');echo '<br><pre>$ar
                 ->findByUserAndSimupoll($uid, $sid);
             if ($papers != array()) {
                 foreach ($papers as $paper) {
-                    $periodId = $paper->getPeriod()->getId();
-                    $arrPapersIds[$periodId] = $paper->getId();
-                    $arrPeriodsIds[] = $periodId;
+                    $periodId                   = $paper->getPeriod()->getId();
+                    $arrPapersIds[$periodId]    = $paper->getId();
+                    $arrPeriodsIds[]            = $periodId;
                 }
             }
-echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump(array_keys($arrPapersIds));echo '</pre>';
+echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump($arrPapersIds);echo '</pre>';
             $maxNumPaper = count($papers);
         }
 
@@ -249,15 +212,8 @@ echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump(a
 */
          //4 - the save part
          if ($request->isMethod('POST')) {
-             $next_category = $request->request->get('next');
-             $current_category = $request->request->get('current');
-
-// $choices = $request->request->get('choice');
-// echo '<pre>$choices=';var_dump($choices);echo '</pre>';
-// foreach($choices as $key => $ch) {
-//
-// }
-// die();
+             $next_category     = $request->request->get('next');
+             $current_category  = $request->request->get('current');
 
 echo '<br>IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
              //4 - 1 save paper
@@ -270,7 +226,10 @@ echo $per_id.' -key='.$key.'<br>';
                  if (!array_key_exists($per_id, $arrPapersIds)) {
 echo 'new paper, period='.$per_id.'<br>';
                      $maxNumPaper = $maxNumPaper + 1;
-                     //Create paper
+                     //save the paper
+                     $paper = $this->paperManager
+                        ->savePaper($user, $simupoll, $periods['entity'][$key], $maxNumPaper);
+                     /*
                      $paper = new Paper();
                      $paper->setUser($user);
                      $paper->setStart(new \DateTime());
@@ -279,15 +238,17 @@ echo 'new paper, period='.$per_id.'<br>';
                      $paper->setNumPaper($maxNumPaper);
                      $em->persist($paper);
                      $em->flush();
+                     */
                      $arrPaper[$per_id] = $paper;
+                     //session data
                      $tmp[] = $paper->getId().'-'.$per_id;
                  } else {
 echo 'paper exists, period='.$per_id.'<br>';
                      $arrPaper[$per_id] = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
                          ->findOneById($arrPapersIds[$per_id]);
+                    //session data
                      $tmp[] = $arrPapersIds[$per_id].'-'.$per_id;
                  }
-
              }
 echo '<pre>$arrPaper =<br>';var_dump(array_keys($arrPaper));echo '</pre>';
 //die();
@@ -319,6 +280,8 @@ echo '<pre>$arrPaper =<br>';var_dump(array_keys($arrPaper));echo '</pre>';
                  }
 
                 //Then, save the answers
+                //$this->paperManager->saveAnswers($choices, $arrPaper);
+
                  foreach($choices as $key => $propo) {
                      //retrieve data from $key : question_id - period_id and $propo : proposition_id
                      $atmp  = explode('-', $key);
@@ -330,12 +293,15 @@ echo '<pre>$arrPaper =<br>';var_dump(array_keys($arrPaper));echo '</pre>';
                      // get paper
                      $thepaper = $arrPaper[$per_id];
 echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre>';
-                     $answer = new Answer();
-                     $answer->setPaper($thepaper);
-                     $answer->setQuestion($proposition->getQuestion());
-                     $answer->setAnswer($proposition->getId().';');
-                     $answer->setMark($proposition->getMark());
-                     $em->persist($answer);
+                    //save answer
+                    if (is_object($arrPaper[$per_id])) {
+                         $answer = new Answer();
+                         $answer->setPaper($thepaper);
+                         $answer->setQuestion($proposition->getQuestion());
+                         $answer->setAnswer($proposition->getId().';');
+                         $answer->setMark($proposition->getMark());
+                         $em->persist($answer);
+                    }
                  }
                  $em->flush();
              }
@@ -348,6 +314,7 @@ echo '2- current_category '.$current_category.' next_category '.$next_category.'
          $tmp_current = $current_category;
          $tmp_next = $next_category;
          $tmp_answers = array();
+
          if ($choice == 2) {
              if ($next_category == -1) {$current_page = $total_page;}
              if ($current_category == -1) {$current_page = 1;}
@@ -403,16 +370,21 @@ echo '4- current_category '.$current_category.' next_category '.$next_category.'
              $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
                  ->getCategoriesBetweenLft($sid, $current_category, $next_category);
 echo '<pre>cats=';foreach($categories as $c){var_dump($c->getId());}echo '</pre>'; //OK
+
              //find questions and answers for these categories
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                 ->getQuestionsWithCategories($sid, $current_category, $next_category);
+            $answers = $this->paperManager
+                ->getAnswers($arrPapersIds, $sid, $answers, $current_category, $next_category);
+/*
             $answers = array();
             foreach ($arrPapersIds as $paperId) {
                 $answers = $this->paperManager
                     ->getAnswerDataForPaperInCategorylist($sid, $paperId, $answers, $current_category, $next_category);
             }
+            */
             //$answers = array_merge($tmp_answers);
-echo '<pre>$answers=';var_dump(count($answers));echo '</pre>'; //OK
+echo '<pre>$answers partial =';var_dump($answers);echo '</pre>'; //OK
          //case : all questions shown
          } else {
              //get all categories
@@ -421,24 +393,24 @@ echo '<pre>$answers=';var_dump(count($answers));echo '</pre>'; //OK
                      array('simupoll' => $simupoll),
                      array('lft' => 'ASC')
                  );
-
+/*
              foreach ($arrPapersIds as $paperId) {
-                 $tmp_answers[$paperId] = $this->paperManager
-                     ->getAnswerDataForPaperInCategorylist($sid, $paperId, $current_category, $next_category);
+                 $tmp_answers = $this->paperManager
+                     ->getAnswerDataForPaperInCategorylist($sid, $paperId, $tmp_answers, $current_category, $next_category);
              }
+*/
+             $tmp_answers = $this->paperManager
+                 ->getAnswers($arrPapersIds, $sid, $tmp_answers, $current_category, $next_category);
             $answers = array_merge($tmp_answers);
-            //  $limit = (int)$choiceData;
-            //  $offset = 0; //TODO
-
+echo '$answers all =<br><pre>';var_dump($answers);echo '</pre><br>';
              //get all questions and propositions
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                  ->getQuestionsWithCategories($sid);
-                 //->getQuestionsWithAnswers($sid, $pid, $limit, $offset);
-                 //only from categories
          }
 
 echo '5- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
 echo '<pre>$arrPapersIds';var_dump($arrPapersIds);echo '</pre>';
+echo '<pre>$periods';var_dump($periods['current']);echo '</pre>';
 
          return array(
              'choice'           => $choice,
@@ -452,8 +424,7 @@ echo '<pre>$arrPapersIds';var_dump($arrPapersIds);echo '</pre>';
              'current'          => $current_category,
              'periods'          => $periods,    //array of all periods (id, title) for the simupoll
              'workspace'        => $workspace,
-             '_resource'        => $simupoll,
-             //'pager'            => $pagerfanta
+             '_resource'        => $simupoll
          );
      }
 
@@ -488,16 +459,10 @@ echo '<pre>$arrPapersIds';var_dump($arrPapersIds);echo '</pre>';
             $uid = $user->getId();
 
             //get NumPaper for the simupoll / user
-            $dql = 'SELECT max(p.numPaper) FROM CPASimUSante\SimupollBundle\Entity\Paper p '
-                . 'WHERE p.simupoll='.$sid.' AND p.user='.$uid;
-            $query = $em->createQuery($dql);
-            $maxNumPaper = $query->getSingleScalarResult();
+            $maxNumPaper = $this->paperManager->getMaxNumPaper($sid, $uid);
 
             //Verify if it exists a not finished paper for the user
-            $paper = $this->getDoctrine()
-                ->getManager()
-                ->getRepository('CPASimUSanteSimupollBundle:Paper')
-                ->getPaper($uid, $sid);
+            //$paper = $this->paperManager->gePaper($sid, $uid);
 
             //list of answers
             $choices = $request->request->get('choice');
@@ -536,128 +501,5 @@ echo '<pre>$arrPapersIds';var_dump($arrPapersIds);echo '</pre>';
             $data = $choices;
             return new JsonResponse($data);
         }
-    }
-
-    /**
-     * Lists all Paper entities.
-     *
-     * @EXT\Route(
-     *      "/papers/{id}/{page}/{all}",
-     *      name="cpasimusante_simupoll_results_show",
-     *      defaults={ "page" = 1, "all" = 0 },
-     *      requirements={},
-     *      options={"expose"=true}
-     * )
-     * @EXT\Template("CPASimUSanteSimupollBundle:Paper:list.html.twig")
-     *
-     * @access public
-     *
-     * @param integer $simupoll id of Simupoll
-     * @param integer $page for the pagination, page destination
-     * @param boolean $all for use or not use the pagination
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function indexAction($simupoll, $page, $all)
-    {
-        $nbUserPaper = 0;
-        $retryButton = false;
-        $nbAttemptAllowed = -1;
-        $exerciseSer = $this->container->get('ujm.exercise_services');
-
-        $arrayMarkPapers = array();
-
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
-
-        $em = $this->getDoctrine()->getManager();
-
-        $workspace = $simupoll->getResourceNode()->getWorkspace();
-
-        $exoAdmin = $exerciseSer->isExerciseAdmin($simupoll);
-
-        $this->checkAccess($simupoll);
-
-        if ($exoAdmin === true) {
-            $paper = $this->getDoctrine()
-                ->getManager()
-                ->getRepository('UJMExoBundle:Paper')
-                ->getExerciseAllPapers($simupoll->getId());
-            $nbUserPaper = $exerciseSer->getNbPaper($user->getId(),
-                $simupoll->getId());
-        } else {
-            $paper = $this->getDoctrine()
-                ->getManager()
-                ->getRepository('UJMExoBundle:Paper')
-                ->getExerciseUserPapers($user->getId(), $simupoll->getId());
-            $nbUserPaper = count($paper);
-        }
-
-        // Pagination of the paper list
-        if ($all == 1) {
-            $max = count($paper);
-        } else {
-            $max = 10; // Max per page
-        }
-
-        $adapter = new ArrayAdapter($paper);
-        $pagerfanta = new Pagerfanta($adapter);
-
-        try {
-            $papers = $pagerfanta
-                ->setMaxPerPage($max)
-                ->setCurrentPage($page)
-                ->getCurrentPageResults();
-        } catch (\Pagerfanta\Exception\NotValidCurrentPageException $e) {
-            throw $this->createNotFoundException("Cette page n'existe pas.");
-        }
-
-        if (count($paper) > 0) {
-            $display = $this->ctrlDisplayPaper($user, $paper[0]);
-        } else {
-            $display = 'all';
-        }
-
-        foreach ($paper as $p) {
-            $arrayMarkPapers[$p->getId()] = $this->container->get('ujm.exercise_services')->getInfosPaper($p);
-        }
-
-        if (($exerciseSer->controlDate($exoAdmin, $simupoll) === true)
-            && ($exerciseSer->controlMaxAttemps($simupoll, $user, $exoAdmin) === true)
-            && ( ($simupoll->getPublished() === true) || ($exoAdmin == 1) )
-        ) {
-            $retryButton = true;
-        }
-
-        if ($simupoll->getMaxAttempts() > 0) {
-            if ($exoAdmin === false) {
-                $nbAttemptAllowed = $simupoll->getMaxAttempts() - count($paper);
-            }
-        }
-
-        $badgesInfoUser = $exerciseSer->badgesInfoUser(
-            $user->getId(), $simupoll->getResourceNode()->getId(),
-            $this->container->getParameter('locale'));
-
-        $nbQuestions = $em->getRepository('CPASimUSanteSimupollBundle:SimupollGroupQuestion')
-            ->getCountQuestion($simupoll->getId());
-
-        return $this->render(
-            'UJMExoBundle:Paper:index.html.twig',
-            array(
-                'workspace'        => $workspace,
-                'papers'           => $papers,
-                'isAdmin'          => $exoAdmin,
-                'pager'            => $pagerfanta,
-                'exoID'            => $simupoll->getId(),
-                'display'          => $display,
-                'retryButton'      => $retryButton,
-                'nbAttemptAllowed' => $nbAttemptAllowed,
-                'badgesInfoUser'   => $badgesInfoUser,
-                'nbUserPaper'      => $nbUserPaper,
-                'nbQuestions'      => $nbQuestions['nbq'],
-                '_resource'        => $simupoll,
-                'arrayMarkPapers'  => $arrayMarkPapers
-            )
-        );
     }
 }

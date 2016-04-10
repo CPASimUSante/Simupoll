@@ -26,7 +26,6 @@
             <div id="messagediv"></div>
             <p>Page {{ page }} / {{ total }}</p>
             {% for category in categories %}
-{#lft:{{ category.lft }} current{{ current }} next{{ next }}<br>#}
                     <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
                     {% for question in questions %}
                         {# "hack" needed because the query result are different whether there's an answer or not #}
@@ -39,18 +38,21 @@
                                     {{ periods.title[periodid] }}
                                     <ul class="simuproposition">
                                         {% for proposition in thequestion.propositions %}
-
                                             {% set checked = "" %}
                                             {% set radiokey = thequestion.id ~ '-' ~ period %}
-                                            {% if pids|length > 0
-                                                and radiokey in answers|keys
+                                            {% if radiokey in answers|keys
                                                 and regexTwig('/' ~ proposition.id ~ ';/', answers[radiokey]) > 0
                                             %}
                                                 {% set checked = "checked" %}
                                             {% endif %}
-
                                             <li>
-                                                <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                                {#disable the radio when not current period#}
+                                                {% if periods.current[periodid] == false %}
+                                                    <input type="radio" class="propositionchoice" {{ checked }} disabled />
+                                                    <input type="hidden" class="propositionchoicehidden" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" />
+                                                {% else %}
+                                                    <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
+                                                {% endif %}
                                                 <label>{{ proposition.choice }}</label>
                                             </li>
                                         {% endfor %}
@@ -61,7 +63,6 @@
                         {% endif %}
                     {% endfor %}{# for question in questions #}
             {% endfor %}{#for category in categories#}
-{{ page }}
 {#
             {% if pager.haveToPaginate %}
                 <div class="text-center panel-footer">
@@ -116,8 +117,6 @@
 
             //if we're in choice = 2 (= display by categories)
             if ($('#nextpage').length != 0) {
-console.log("$('#nextpage').length != 0");
-
                 $('#nextpage').on('click', function(event){
 console.log("#nextpage submit");
                     event.preventDefault();
@@ -127,7 +126,6 @@ console.log("#nextpage submit");
                 });
             }
             if ($('#prevpage').length != 0) {
-console.log("$('#prevpage').length != 0");
                 $('#prevpage').on('click', function(event){
 console.log("#prevpage submit");
                     event.preventDefault();

@@ -255,6 +255,8 @@ class SimupollController extends Controller
             }
 
             if ($request->isMethod('POST')) {
+                //to avoid bug in simupoll compose if we change the choice
+                if (null !== $this->get('session')->get('simupaper')){$this->get('session')->remove('simupaper');}
                 $choice = $request->request->get('questdisp');
                 if ($choice == 0) {
                     $choiceData = '';

@@ -9,6 +9,8 @@ use Claroline\CoreBundle\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Request;
 
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Answer;
+use CPASimUSante\SimupollBundle\Entity\Paper;
 
 /**
  * Helper functions for papers
@@ -30,12 +32,26 @@ class PaperManager
     {
         $this->om = $om;
     }
+    /**
+     * get list of answers to be reused in form
+     *
+     * @return array $answers
+     */
+     public function getAnswers($arrPapersIds, $sid, $answers, $current_category, $next_category)
+     {
+         $answers = array();
+         foreach ($arrPapersIds as $paperId) {
+             $answers = $this->getAnswerDataForPaperInCategorylist($sid, $paperId, $answers, $current_category, $next_category);
+         }
+         return $answers;
+     }
 
     /**
-     * Find questions and answers for categories
+     * Find answers for categories
      *
      * @param $simupoll integer
      * @param $pid
+     * @param $answers
      * @param $current_category
      * @param $next_category
      * @return array('questions', 'answers');
@@ -44,111 +60,88 @@ class PaperManager
     {
         $answersList = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getAnswersForQuestions($sid, $pid, $current_category, $next_category);
-
-        //$answers = array();
         if ($answersList != null) {
             foreach($answersList as $a) {
                 $answers[$a['qid'].'-'. $a['period']] = $a['answer'];
             }
         }
-//echo '<pre>$answers=';var_dump($answers);echo '</pre>'; //OK
         return $answers;
     }
 
     /**
-     * Find questions and answers for categories
-     * @param Request $request
-     * @param Simupoll $simupoll
-     * @param $pid
-     * @param $categorybounds
-     * @param $current_category
-     * @param $next_category
-     * @return array('questions', 'answers');
+     *
+     * @param $sid integer
+     * @param $uid integer user id
+     * @return mixed integer | null
      */
-    public function setQuestionDataForPaperInCategorylist(Request $request, Simupoll $simupoll, $pid, $categorybounds, $current_category, $next_category)
+    public function getMaxNumPaper($sid, $uid)
     {
-        //$session = $request->getSession();
+        $dql = 'SELECT max(p.numPaper) FROM CPASimUSante\SimupollBundle\Entity\Paper p '
+            . 'WHERE p.simupoll='.$sid.' AND p.user='.$uid;
+        $query = $this->om->createQuery($dql);
+        return $query->getSingleScalarResult();
+    }
 
+    /**
+     *
+     * @param $sid integer
+     * @param $uid integer user id
+     * @return mixed integer | null
+     */
+    public function getPaper($sid, $uid)
+    {
+        return $this->om->getRepository('CPASimUSanteSimupollBundle:Paper')
+            ->getPaper($uid, $sid);
+    }
 
-/*
-        $answers = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-            ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, $current_category, $next_category);
-        $answ = array();
-        if ($answers != null) {
-            foreach ($answers as $answer) {
-                //var_dump($answer[0]->getId());
-                var_dump($answer->getAnswer());
-                die();
-                $answ[$answer[0]->getId()] = $answer->getId();
+    /**
+     * Save Paper
+     * @return Paper $paper
+     */
+     public function savePaper($user, $simupoll, $period, $maxNumPaper)
+     {
+         $paper = new Paper();
+         $paper->setUser($user);
+         $paper->setStart(new \DateTime());
+         $paper->setSimupoll($simupoll);
+         $paper->setPeriod($period);
+         $paper->setNumPaper($maxNumPaper);
+         $this->om->persist($paper);
+         $this->om->flush();
+         return $paper;
+     }
+
+     /**
+      * Save Answers
+      *
+      * @param $choices array list of answers (checked radioboxes values)
+      * @param $arrPaper array array of saved paper
+      * @return void
+      */
+     public function saveAnswers($choices, $arrPaper)
+     {
+         //Then, save the answers
+         foreach($choices as $key => $propo) {
+             //retrieve data from $key : question_id - period_id and $propo : proposition_id
+             $atmp  = explode('-', $key);
+             $quest_id = $atmp[0];
+             $per_id = $atmp[1];
+             //get proposition
+             $proposition = $this->om->getRepository('CPASimUSanteSimupollBundle:Proposition')
+                ->findOneById($propo);
+             // get paper
+             $thepaper = $arrPaper[$per_id];
+echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre><br>';
+             if (is_object($arrPaper[$per_id])) {
+                //save answer
+                $answer = new Answer();
+                $answer->setPaper($thepaper);
+                $answer->setQuestion($proposition->getQuestion());
+                $answer->setAnswer($proposition->getId().';');
+                $answer->setMark($proposition->getMark());
+                $this->om->persist($answer);
             }
         }
-        */
-
-        $answersList = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
-            ->getAnswersForQuestions($simupoll->getId(), $pid, $current_category, $next_category);
-
-        $answers = array();
-        if ($answersList != null) {
-            foreach($answersList as $a) {
-                $answers[$a['qid']] = array('id' => $a['id'], 'answer' => $a['answer']);
-            }
-        }
-
-        /*
-           $answers = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-            ->getQuestionsInCategories($simupoll->getId(), $pid, $current_category, $next_category);
-        */
-
-        /*
-        //we have catpaper session
-        if ($session->get('catpaper') != null) {
-echo 'x1';
-            if (count($categorybounds) > 1) {
-echo 'x2';
-                $keys = array_keys($categorybounds);
-                //we didn't reach the end
-                $prev = $session->get('catpaper')['next'];
-                if (isset($keys[array_search($prev, $categorybounds)+1])) {
-echo 'x3';
-                    $next_category = $categorybounds[$keys[array_search($prev, $categorybounds)+1]];
-                    $current_category = $prev;
-                //last category
-                } else {
-echo 'x4';
-                    $next_category = -1;
-                    $current_category = $session->get('catpaper')['next'];  //finished
-                }
-                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, $prev, $next_category);
-            } else {
-echo 'x5';
-                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                    ->findBy(array('simupoll' => $simupoll));
-            }
-            //we don't have catpaper session : we don't know where we are
-        } else {
-echo 'x6';                      //OK
-            //no bounds = Only root : get all questions !
-            if (count($categorybounds) == 1) {
-echo 'x7';
-                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                    ->findBy(array('simupoll' => $simupoll));
-                //bounds exist : get questions
-            } else {
-echo 'x8';
-                $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
-                    ->getQuestionsWithAnswersInCategories($simupoll->getId(), $pid, 0, $categorybounds[1]);
-                $next_category = $categorybounds[1];
-                $current_category = 0;
-            }
-        }
-        */
-
-
-        //foreach ($questions as $question) {echo $question[0]->getTitle().'<br>';}echo 'xxx';
-        //echo $questions;
-        //die();
-        //echo '<pre>';var_dump($questions);echo '</pre>';die();
-        return array('questions'=> $questions, 'answers' => $answers);
+        $this->om->flush();
     }
 }

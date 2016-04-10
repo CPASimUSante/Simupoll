@@ -61,4 +61,31 @@ class PeriodManager
         $opened = ($isOpenedPeriod > 0) ? true : false;
         return $opened;
     }
+
+    /**
+     * @param integer $sid Simipoll id
+     * @return array list of periods array('id', 'title', 'entity')
+     */
+    public function getPeriods($sid)
+    {
+        $now = new \DateTime();
+        $now->setTime(0, 0, 0);
+
+        $periods = array();
+        $period_list = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
+            ->findBySimupoll($sid);
+        foreach ($period_list as $period) {
+           $periods['id'][]     = $period->getId();
+           $periods['title'][]  = $period->getTitle();
+           $periods['entity'][] = $period;
+
+           if (($period->getStart()->format("Y-m-d") <= $now->format("Y-m-d")) &&
+                ($period->getStop()->format("Y-m-d") >= $now->format("Y-m-d"))) {
+                $periods['current'][] = true;
+            } else {
+                $periods['current'][] = false;
+            }
+       }
+       return $periods;
+    }
 }
