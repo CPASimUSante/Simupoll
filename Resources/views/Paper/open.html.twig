@@ -24,6 +24,9 @@
             <hr>
 
             <div id="messagediv"></div>
+            {% if _resource.getDescription() != '' %}
+                <div class="well">{{_resource.getDescription()|raw}}</div>
+            {% endif %}
             <p>Page {{ page }} / {{ total }}</p>
             {% for category in categories %}
                     <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
@@ -63,16 +66,6 @@
                         {% endif %}
                     {% endfor %}{# for question in questions #}
             {% endfor %}{#for category in categories#}
-{#
-            {% if pager.haveToPaginate %}
-                <div class="text-center panel-footer">
-                    {{ pagerfanta(pager, 'twitter_bootstrap_translated', {'routeName': 'cpasimusante_simupoll_paper',
-                        'routeParams': {  } }) }}
-                </div>
-            {% else%}
-                xxx
-            {% endif %}
-#}
         </div>
 
         <div class="panel-footer">
@@ -102,15 +95,12 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
-    <style>
-        .simuproposition li{display: inline}
-    </style>
 {% endblock %}
 
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-   {# <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll.js') }}'></script> #}
+   {# <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollPaper.js') }}'></script> #}
     <script type="text/javascript">
         var translation= window.Translator;
         $(document).ready(function() {

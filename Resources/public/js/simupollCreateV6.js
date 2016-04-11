@@ -6,8 +6,7 @@
     var $collectionQuestionHolder = $('ul.questiongroup');
     var $addQuestionLink = $('<a href="#" class="add_question_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('question_add', {}, 'resource') +'</a>');
     var $newQuestionLink = $('<li></li>').append($addQuestionLink);
-    var indexPr = [];
-    var indexQ;
+
     // add the "add a question" anchor and li to the tags ul
     $collectionQuestionHolder.append($newQuestionLink);
 
@@ -21,9 +20,8 @@
         e.preventDefault();
 
         // add a new proposition form
-        indexQ = addQuestionForm($collectionQuestionHolder, $newQuestionLink);
+        var indexQ = addQuestionForm($collectionQuestionHolder, $newQuestionLink);
 
-        if (indexPr[indexQ] == undefined){indexPr[indexQ] = 0;}
         //Proposition management
         var $collectionPropositionHolder = $('#liquestion'+indexQ).find('.propositiongroup');
         var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('proposition_add', {}, 'resource')+'</a>');
@@ -36,10 +34,9 @@
         $addPropositionLink.on('click', function(e) {
             // prevent the link from creating a "#" on the URL
             e.preventDefault();
-console.log('$collectionQuestionHolder.on(click .add_question_link');
-console.log(indexPr);
+
             // add a new proposition form
-            indexPr[indexQ] = addPropositionForm($collectionPropositionHolder, $newPropositionLink, indexQ);
+            addPropositionForm($collectionPropositionHolder, $newPropositionLink);
         });
 
     });
@@ -58,13 +55,6 @@ console.log(indexPr);
         var propositionGroup = $(this);
         var $addPropositionLink = $('<a href="#" class="add_proposition_link btn btn-info"><span class="fa fa-plus"></span> '+translation.trans('proposition_add', {}, 'resource')+'</a>');
         var $newPropositionLink = $('<li></li>').append($addPropositionLink);
-        //get number of already created propositions
-        var propositionCount = $(this).find('.proposition').length;
-        //get question index
-        var iQ = $(this).data('question');
-        //Set data index for propositionGroup
-        propositionGroup.data('index', propositionCount);
-
         propositionGroup.append($newPropositionLink);
         //add a new proposition
         $addPropositionLink.on('click', function(e) {
@@ -72,18 +62,17 @@ console.log(indexPr);
             e.preventDefault();
 
             // add a new proposition form
-            indexPr[iQ] = addPropositionForm(propositionGroup, $newPropositionLink, indexQ);
+            addPropositionForm(propositionGroup, $newPropositionLink);
         });
     });
-
     //add question button
     function addQuestionForm($collectionQuestionHolder, $newQuestionLink) {
         //1 - Get the data-prototype
         var prototype = $collectionQuestionHolder.data('prototype');
 //console.log('addQuestionForm---------------');console.log(prototype);
         //2 - get the new index
-        indexQ = $collectionQuestionHolder.data('index');
-//console.log('indexQ='+indexQ);
+        var indexQ = $collectionQuestionHolder.data('index');
+console.log('indexQ='+indexQ);
         //3 - Replace '$$name$$' in the prototype's HTML to
         // instead be a number based on how many propositions we have
         var newForm = prototype.replace(/__question_proto__/g, indexQ);
@@ -123,24 +112,25 @@ console.log(indexPr);
     }
 
     //add proposition button
-    function addPropositionForm($collectionPropositionHolder, $newPropositionLink, indexQ) {
+    function addPropositionForm($collectionPropositionHolder, $newPropositionLink) {
         // Get the data-prototype
         var prototype = $collectionPropositionHolder.data('prototype');
-//console.log('$collectionPropositionHolder');console.log($collectionPropositionHolder);
-//console.log("addPropositionForm---------------\n");console.log(prototype);
+console.log('$collectionPropositionHolder');console.log($collectionPropositionHolder);
+console.log('addPropositionForm---------------');console.log(prototype);
         // get the new index
-        indexPr[indexQ] = $collectionPropositionHolder.data('index');
-        if (typeof indexPr[indexQ] == 'undefined'){indexPr[indexQ] = 0;}
+        var indexP = $collectionPropositionHolder.data('index');
+        //if (typeof indexP == 'undefined'){indexP = 0;}
+console.log("indexP="+indexP);
 
         // Replace '$$name$$' in the prototype's HTML to
         // instead be a number based on how many propositions we have
-        var newForm = prototype.replace(/__proposition_proto__/g, indexPr[indexQ]);
+        var newForm = prototype.replace(/__proposition_proto__/g, indexP);
 
         // increase the index with one for the next proposition
-        $collectionPropositionHolder.data('index', indexPr[indexQ] + 1);
+        $collectionPropositionHolder.data('index', indexP + 1);
 
         // Display the form in the page in an li, before the "Add a Proposition" link li
-        var $newPropositionFormLi = $('<li class="proposition" id="liproposition'+indexPr[indexQ]+'"></li>').append(newForm);
+        var $newPropositionFormLi = $('<li class="proposition"></li>').append(newForm);
 
         $newPropositionLink.before($newPropositionFormLi);
 
@@ -154,7 +144,7 @@ console.log(indexPr);
             return false;
         });
 
-        return indexPr[indexQ];
+        return indexP;
     }
 
     //remove proposition button

@@ -7,6 +7,7 @@ li.proposition table {margin:0}
 .propositiongroup li:last-child{padding: 8px}
 .containerradar{width: 100%;position:relative}
 p.simuquestion {font-weight: bold;text-decoration: underline;}
+.simuproposition li{display: inline}
 @media screen and (max-width: 640px) {
      .panel-simupoll .btn span{display: none}
 }

@@ -19,7 +19,7 @@
     </table>
 {% endmacro %}
 
-{% macro question_prototype(form) %}
+{% macro question_prototype(form, questionId) %}
     <table class="table">
         <tr>
             <td class="question_label">{{ form_label(form.title) }}</td>
@@ -32,7 +32,7 @@
         <tr>
             <td class="question_label">{{ form_label(form.propositions) }}</td>
             <td class="question_widget">
-                <ul class="propositiongroup"
+                <ul class="propositiongroup" data-question="{{questionId}}"
                     data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}">
                     {# Add already saved propositions #}
                     {% for proposition in form.propositions %}
@@ -64,10 +64,10 @@
                 </p>
                 <h3>{{ 'simupoll_question_add'|trans({}, 'resource') }}</h3>
                 <ul class="questiongroup"
-                    data-prototype="{{ _self.question_prototype(form.questions.vars.prototype)|e }}">
+                    data-prototype="{{ _self.question_prototype(form.questions.vars.prototype, 0)|e }}">
                     {# Add already saved questions #}
                     {% for question in form.questions %}
-                        <li class="question" id="liquestion{{ loop.index -1 }}">{{ _self.question_prototype(question) }}</li>
+                        <li class="question" id="liquestion{{ loop.index -1 }}">{{ _self.question_prototype(question, (loop.index -1)) }}</li>
                     {% endfor %}
                 </ul>
             </div>
