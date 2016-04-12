@@ -204,7 +204,7 @@ class CategoryController extends Controller
         $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
 
         $form = $this->get('form.factory')
-            ->create(new CategoryType($simupoll, $category), $category, array('inside'=>true));
+            ->create(new CategoryType(), $category);
         $form->handleRequest($request);
 
         if ($form->isValid()) {

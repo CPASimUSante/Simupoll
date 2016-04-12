@@ -212,7 +212,7 @@ class Category
      */
     public function getIndentedName()
     {
-        return str_repeat("--", $this->lvl) . $this->name;
+        return str_repeat("----", $this->lvl) . $this->name;
         //return str_repeat($this->getParent()." > ", $this->lvl) . $this->name;
     }
 }

@@ -1,8 +1,6 @@
 - add tests
-- fix manage simupoll
 - add import for questions, categories  -> wip
 - add export    -> wip
 - fix empty start / end period (validation)
-- add disable radiobutton for periods not now
-- add description field to simupoll creation
 - go for AJS, to be like other Claro bunldes :-(
+- fix copy resource

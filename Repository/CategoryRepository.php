@@ -2,7 +2,9 @@
 
 namespace CPASimUSante\SimupollBundle\Repository;
 
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\EntityRepository;
+use CPASimUSante\SimupollBundle\Entity\Paper;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 
@@ -121,6 +123,35 @@ class CategoryRepository extends NestedTreeRepository
         $qb->setParameter(1, $sid);
         //echo $qb->getQuery()->getSQL();
         $result = $qb->getQuery()->getResult();
+        //simplifies the result array
         return array_column($result, "id");
+    }
+
+    /**
+     * Prepares the QueryBuilder for the modification of category
+     * shows only categories not children of $category
+     *
+     * @param $simupoll Paper
+     * @param $category Category
+     * @return $qb QueryBuilder
+     */
+    public function getCategoriesWithoutChildren($simupoll, $category)
+    {
+        //QB for the node and its children
+         $qb_notin = $this->getChildrenQueryBuilder($category, false, null, 'ASC', true);
+         $result_notin = $qb_notin->getQuery()->getResult();
+         $not_ids = array();
+        foreach ($result_notin as $key => $value) {
+            $not_ids[] = $value->getId();
+        }
+        $ids = implode(',', $not_ids);
+
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = ?1')
+            ->andWhere('c.id NOT IN ('.$ids.')')
+            ->setParameter(1, $simupoll);
+        return $qb;
     }
 }
