@@ -20,6 +20,9 @@ graph_export: 'Save graph'
 group_name: 'Group name'
 group_title: 'Name of group inc'
 
+mark_not_set: 'There is a problem with propositions / marks for question %questionname%'
+organization_not_set: 'The Organisation has not been set'
+
 period_add : 'Add a period'
 period_delete: 'Delete period'
 period_delete_confirm: 'Confirm delete'

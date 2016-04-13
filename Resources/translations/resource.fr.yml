@@ -21,6 +21,7 @@ graph_export: 'Enregistrer le graphique'
 group_name: 'Nom du groupe'
 group_title: 'Intitulé du groupe inc'
 
+mark_not_set: 'Il y a un problème avec les propositions / points attribués pour la question %questionname%'
 organization_not_set: 'L''organisation n''a pas été définie'
 
 period_add : 'Ajouter une période'

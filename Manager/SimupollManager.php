@@ -691,6 +691,14 @@ class SimupollManager
         return $row;
     }
 
+    /**
+     * manage import of files in Simupoll
+     *
+     * @param $sid integer  Simupoll id
+     * @param $file resource
+     * @param $datatype string ('question' or 'category')
+     * @return void
+     */
     public function importFile($sid, $file, $datatype, $user=null)
     {
         $sessionFlashBag = $this->session->getFlashBag();
@@ -725,7 +733,7 @@ class SimupollManager
                     $sessionFlashBag->add('success', $msg);
                 }
             }
-
+            //manage error display
             if (isset($createddata['nokq'])) {
                 foreach ($createddata['nokq'] as $created) {
                     $msg = $this->translator->trans(
@@ -753,6 +761,15 @@ class SimupollManager
                     $sessionFlashBag->add('error', $msg);
                 }
             }
+            if (isset($createddata['nokqp'])) {
+                foreach ($createddata['nokqp'] as $created) {
+                    $msg = $this->translator->trans(
+                        'mark_not_set',
+                        array('%questionname%' => $created),'resource'
+                    );
+                    $sessionFlashBag->add('error', $msg);
+                }
+            }
         }
     }
 
@@ -768,15 +785,17 @@ class SimupollManager
         $this->om->startFlushSuite();
 
         //cant use $simupoll entity directly because doesn't come from the same om
-        //would case doctrine error
+        //would cause doctrine error
         $simupoll = $this->om
             ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
             ->findOneById($sid);
 
-        foreach ($questions as $question) {
-            $questionTitle = $question[0];
-            $questionCategoryName = $question[1];
+        foreach ($questions as $questionProposition) {
+            $questionTitle = $questionProposition[0];
+            $questionCategoryName = $questionProposition[1];
+            $countQ = count($questionProposition);
 
+            //does the question exists ?
             $question = $this->om
                 ->getRepository('CPASimUSanteSimupollBundle:Question')
                 ->findOneBy(array(
@@ -793,12 +812,34 @@ class SimupollManager
                     'simupoll'  => $simupoll
                 ));
                 if ($category != null) {
+                    //add question
                     $newQuestion = new Question();
                     $newQuestion->setTitle($questionTitle);
                     $newQuestion->setCategory($category);
                     $newQuestion->setOrderq(1);
                     $newQuestion->setSimupoll($simupoll);
                     $this->om->persist($newQuestion);
+
+                    //add propositions
+                    if ($countQ>2) {
+                        //get propositions
+                        $propositions = array_slice($questionProposition, 2);
+                        $countP = count($propositions);
+
+                        for ($inc=0;$inc <$countP;$inc+=2) {
+                            //if there is a score for each proposition
+                            if (($countP%2 == 0 && $inc == $countP-1) || isset($propositions[($inc+1)])) {
+                                $newProposition = new Proposition();
+                                $newProposition->setQuestion($newQuestion);
+                                $newProposition->setChoice($propositions[$inc]);
+                                $newProposition->setMark($propositions[($inc+1)]);
+                                $this->om->persist($newProposition);
+                            }
+                        }
+                        if ($countP%2 !=0)
+                            $returnValues['nokqp'][] = $questionTitle;
+                    }
+
                     $returnValues['ok'][] = 'Question : '.$questionTitle;
                 } else {
                     $returnValues['nokqc'][] = array($questionTitle, $questionCategoryName);
