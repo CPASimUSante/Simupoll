@@ -1,5 +1,4 @@
 - add tests
-- add import for questions, categories  -> wip
 - add export    -> wip
 - fix empty start / end period (validation)
 - go for AJS, to be like other Claro bunldes :-(

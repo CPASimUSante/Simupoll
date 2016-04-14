@@ -941,11 +941,15 @@ class SimupollManager
     {
         $newSimupoll = new Simupoll();
         $newSimupoll->setTitle($simupoll->getTitle());
+        $this->om->persist($newSimupoll);
 
         $questions = $simupoll->getQuestions();
         $periods = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
             ->findBySimupoll($simupoll);
+        $categories = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+            ->findBySimupoll($simupoll);
 
+        //copy period
         foreach ($periods as $period) {
             $newPeriod = new Period();
             $newPeriod->setSimupoll($newSimupoll);
@@ -955,6 +959,33 @@ class SimupollManager
             $this->om->persist($newPeriod);
         }
 
+        $nc = [];
+        $pc = [];
+        foreach ($categories as $category) {
+            $newCategory = new Category();
+            $newCategory->setName($category->getName());
+            $newCategory->setUser($category->getUser());
+            $newCategory->setSimupoll($newSimupoll);
+            $newCategory->setParent(null);
+            $this->om->persist($newCategory);
+
+            if (null !== $category->getParent()) {
+                $pc[$category->getId()] = array('nc'=> $newCategory, 'pid'=> $category->getParent()->getId()) ;
+            } else {
+                $pc[$category->getId()] = array('nc'=> $newCategory, 'pid'=> null) ;
+            }
+        }
+
+        foreach ($pc as $oldid => $cats) {
+            if (isset($pc[$cats['pid']])) {
+                $cats['nc']->setParent($pc[$cats['pid']]['nc']);
+            } else {
+                $cats['nc']->setParent(null);
+            }
+            $this->om->persist($cats['nc']);
+        }
+
+        //copy questions
         foreach ($questions as $question) {
             $newQuestion = new Question();
             $newQuestion->setSimupoll($newSimupoll);
@@ -963,6 +994,7 @@ class SimupollManager
             $newQuestion->setCategory($question->getCategory());
             $this->om->persist($newQuestion);
 
+            //copy propositions
             $propositions = $question->getPropositions();
             foreach ($propositions as $proposition) {
                 $newProposition = new Proposition();
