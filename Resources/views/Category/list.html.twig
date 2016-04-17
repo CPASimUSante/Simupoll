@@ -1,12 +1,4 @@
-{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
-
-{% if isDesktop() %}
-    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
-{% else %}
-    {% set workspace = _resource.getResourceNode().getWorkspace() %}
-{% endif %}
-
-{% extends layout %}
+{% extends "CPASimUSanteSimupollBundle::layout.html.twig" %}
 
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
@@ -16,7 +8,8 @@
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
 
-        <div class="panel-body" id="category_content">
+        <div class="panel-body" id="category_content" data-ng-app="CategoryApp">
+            <category></category>
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
@@ -30,13 +23,8 @@
     </div>
 {% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
-{% endblock %}
-
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollCategory.js') }}'></script>
+    <script type="text/javascript" src='{{ hotAsset('dist/cpasimusante-simupoll-category.js') }}'></script>
 {% endblock %}

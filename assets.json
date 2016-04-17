@@ -1,0 +1,7 @@
+{
+  "webpack": {
+    "entry": {
+      "category": "public/js/Category/category.module"
+    }
+  }
+}

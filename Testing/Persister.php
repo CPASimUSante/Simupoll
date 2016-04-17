@@ -38,6 +38,22 @@ class Persister
         $this->om = $om;
     }
 
+    /**
+     * @param string $name
+     * @return Role
+     */
+    public function role($name) {
+        $role = new Role();
+        $role->setName($name);
+        $role->setTranslationKey($name);
+        $this->om->persist($role);
+
+        return $role;
+    }
+
+    /**
+     * Set a user
+     */
     public function user($username)
     {
         $user = new User();
@@ -69,18 +85,21 @@ class Persister
         return $user;
     }
 
-    public function category($cname, $user, $simupoll)
+    /**
+     * Set a category
+     */
+    public function category($category_name, $user, $simupoll)
     {
         $category = new Category();
-        $category->setName($cname);
+        $category->setName($category_name);
         $category->setUser($user);
         $category->setSimupoll($simupoll);
         $this->om->persist($category);
-        return $user;
+        return $category;
     }
 
     /**
-    * needed to create a functional simupoll resource
+    * set a functional simupoll resource
     */
     public function simupoll($title, User $creator)
     {

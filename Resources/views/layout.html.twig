@@ -4,7 +4,7 @@
     {# Claroline CSS #}
     {{ parent() }}
 
-    {# Exercise Player styles #}
+    {# Simupoll styles #}
     {% stylesheets debug=false filter='cssmin' output='bundles/cpasimusantesimupoll/css/ng-simupoll.css'
         '@CPASimUSanteSimupollBundle/Resources/public/css/simupoll.css'
     %}
@@ -12,9 +12,7 @@
     {% endstylesheets %}
 {% endblock %}
 
-{% block content %}
-
-{% endblock %}
+{% block content %}{% endblock %}
 
 {% block javascripts %}
     {# Claroline JS #}
@@ -35,7 +33,7 @@
     {% endjavascripts %}
 
     {# Angular UI #}
-    {% javascripts debug=false filter='jsmin' output='vendor/ujmexo/cpasimusante-simupoll-ui.js'
+    {% javascripts debug=false filter='jsmin' output='vendor/cpasimusantesimupoll/cpasimusante-simupoll-angular-ui.js'
         '@InnovaAngularUIBootstrapBundle/Resources/public/js/*'
         '@InnovaAngularUITinyMCEBundle/Resources/public/js/*'
         '@InnovaAngularUITranslationBundle/Resources/public/js/*'
@@ -51,7 +49,5 @@
 
         AngularApp.webDir        = "{{ asset('') }}";
         AngularApp.locale        = "{{ app.request.locale ~ '_' ~ app.request.locale|upper }}";
-
-
     </script>
 {% endblock %}

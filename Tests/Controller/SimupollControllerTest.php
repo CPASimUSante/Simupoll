@@ -11,7 +11,7 @@ use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Testing\Persister;
 
-class CategoryControllerTest extends TransactionalTestCase
+class SimupollControllerTest extends TransactionalTestCase
 {
     use RequestTrait;
     /** @var ObjectManager */
@@ -41,13 +41,13 @@ class CategoryControllerTest extends TransactionalTestCase
         $this->om->flush();
     }
 
-    public function testCategoryFound()
+    public function testUserCanAdministrate()
     {
         $simupoll = $this->persist->simupoll('simupoll1', $this->john);
         $category = $this->persist->category('category1', $this->john, $simupoll);
         $this->om->flush();
 
-        $this->request('GET', "/simupoll/category/categories/{$simupoll->getId()}");
-        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->request('GET', "/simupoll/open/{$simupoll->getId()}", $this->jane);
+        $this->assertEquals(403, $this->client->getResponse()->getStatusCode());
     }
 }
