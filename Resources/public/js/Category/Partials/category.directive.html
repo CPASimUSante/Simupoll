@@ -1,19 +1,8 @@
-<div class="panel panel-default">
-    <div class="panel-heading clearfix">
-        <h3 class="panel-title pull-left">HEAD</h3>
+<div class="categorytree">
+    <div data-ng-if="CategoryController.tree!=''">
+        <table class="table"> {{ CategoryController.tree | unsafe }}</table>
     </div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-md-12">
-                BODY
-            </div>
-        </div>
-    </div>
-    <div class="panel-footer">
-        <div class="row center-text">
-            <div class="col-md-12">
-                FOOTER
-            </div>
-        </div>
+    <div data-ng-if="CategoryController.tree==''">
+        <a class="btn btn-primary btn-sm category-add-btn" data-id="0" data-sid="CategoryController.sid" href="#"><i class="fa fa-plus"></i>{{ 'category_root_add'|trans:{}:'resource' }}</a>
     </div>
 </div>

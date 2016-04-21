@@ -87,7 +87,7 @@ class CategoryController extends Controller
         return array(
             '_resource' => $simupoll,
             'sid'       => $sid,
-            'tree2'     => $tree
+            'tree'      => $tree
         );
     }
 

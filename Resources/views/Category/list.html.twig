@@ -1,24 +1,19 @@
 {% extends "CPASimUSanteSimupollBundle::layout.html.twig" %}
 
-{% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}xx{% endblock %}
+{% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}yy</h3>
+            <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
 
         <div class="panel-body" id="category_content" data-ng-app="CategoryApp">
-            <category></category>
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-            {% if (tree2 != '') %}
-               <table class="table"> {{ tree2 |raw }}</table>
-            {% else %}
-                <a class="btn btn-primary btn-sm category-add-btn" data-id="0" data-sid="{{ sid }}" href="#"><i class="fa fa-plus"></i> {{ 'category_root_add'|trans({}, 'resource') }}</a>
-            {% endif %}
+            <category data-tree="{{ tree }}" data-sid="{{sid}}"></category>
         </div>
     </div>
 {% endblock %}
