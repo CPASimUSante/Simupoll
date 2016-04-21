@@ -131,7 +131,7 @@ class PaperManager
                 ->findOneById($propo);
              // get paper
              $thepaper = $arrPaper[$per_id];
-echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre><br>';
+//echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre><br>';
              if (is_object($arrPaper[$per_id])) {
                 //save answer
                 $answer = new Answer();

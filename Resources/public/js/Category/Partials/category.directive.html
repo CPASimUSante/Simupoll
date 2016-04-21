@@ -1,8 +1,13 @@
 <div class="categorytree">
-    <div data-ng-if="CategoryController.tree!=''">
-        <table class="table"> {{ CategoryController.tree | unsafe }}</table>
+    <div data-ng-if="CategoryController.tree!=[]">
+        <table class="table">
+            <!--<div data-ng-bind-html="{{CategoryController.tree}}">-->
+            <tr ng-repeat="branch in CategoryController.tree">
+                <td>{{branch.id}}</td><td>{{branch.lvl}}</td><td>{{branch.name}}</td><!-- -->
+            </tr>
+        </table>
     </div>
-    <div data-ng-if="CategoryController.tree==''">
+    <div data-ng-if="CategoryController.tree==[]">
         <a class="btn btn-primary btn-sm category-add-btn" data-id="0" data-sid="CategoryController.sid" href="#"><i class="fa fa-plus"></i>{{ 'category_root_add'|trans:{}:'resource' }}</a>
     </div>
 </div>

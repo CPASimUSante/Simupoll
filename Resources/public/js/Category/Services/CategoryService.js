@@ -8,5 +8,7 @@ export default class CategoryService {
         this.$q         = $q;
         this.$scope     = $scope;
     }
-
+    getCategories(sid) {
+        return this.$http.get('/categories/'+sid);
+    }
 }

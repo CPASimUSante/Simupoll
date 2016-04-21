@@ -124,6 +124,18 @@ class CategoryManager
 
         return $repo->buildTree($query->getArrayResult(), $options);
     }
+    
+    /**
+     * Get array of entity for Use in AJS
+     * @param $simupoll Simupoll
+     * @return array of entities
+     */
+    public function getCategoryTreeNg(Simupoll $simupoll)
+    {
+        //Custom query to display only tree from this resource
+        $query = $this->getCategoryBySimupoll($simupoll);
+        return $query->getArrayResult();
+    }
 
     /**
     * @param $simupoll Simupoll

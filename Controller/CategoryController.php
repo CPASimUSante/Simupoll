@@ -82,14 +82,30 @@ class CategoryController extends Controller
     {
         $sid = $simupoll->getId();
 
-        $tree = $this->categoryManager->getCategoryTree($simupoll, $sid);
-
+        //$tree = $this->categoryManager->getCategoryTree($simupoll, $sid);
+        $tree = $this->categoryManager->getCategoryTreeNg($simupoll);
+//die(var_dump(json_encode($tree)));
         return array(
             '_resource' => $simupoll,
             'sid'       => $sid,
-            'tree'      => $tree
+            'tree'      => json_encode($tree)
         );
     }
+
+    /**
+     * Json list of categories
+     * @EXT\Route(
+     *      "/categories/{id}",
+     *      name="cpasimusante_simupoll_category_all",
+     *      requirements={},
+     *      options={"expose"=true}
+     * )
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
+     */
+     public function getAllCategories(Simupoll $simupoll) {
+         $tree = $this->categoryManager->getCategoryTreeNg($simupoll);
+         return new JsonResponse($tree);
+     }
 
     /**
      * Data for modal form for category add

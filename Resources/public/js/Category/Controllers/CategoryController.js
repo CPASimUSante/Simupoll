@@ -5,12 +5,12 @@ export default class CategoryController {
         this.$window            = $window;
         this.$scope             = $scope;
         this.CategoryService    = CategoryService;
-        this.tree               = {};
+        this.tree               = '';
         this.sid                = 0;
     }
-    
+
     init(tree, sid) {
-        this.tree = tree;
-        this.sid = sid;
+        this.tree   = JSON.parse(tree);
+        this.sid    = sid;
     }
 }

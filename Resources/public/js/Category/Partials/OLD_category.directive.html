@@ -1,0 +1,8 @@
+<div class="categorytree">
+    <div data-ng-if="CategoryController.tree!=''">
+        {{ CategoryController.sid }}<table class="table"> {{ CategoryController.tree }}</table>
+    </div>
+    <div data-ng-if="CategoryController.tree==''">
+        <a class="btn btn-primary btn-sm category-add-btn" data-id="0" data-sid="CategoryController.sid" href="#"><i class="fa fa-plus"></i>{{ 'category_root_add'|trans:{}:'resource' }}</a>
+    </div>
+</div>
