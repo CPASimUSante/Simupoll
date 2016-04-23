@@ -35,6 +35,8 @@ pick_users: '1- Sélectionner les utilisateurs'
 proposition_add: 'Ajouter une proposition'
 proposition_delete: 'Supprimer la proposition'
 proposition_value: 'Les propositions'
+proposition_choice: 'Proposition'
+proposition_mark: 'Score'
 
 question_add: 'Ajouter une question'
 question_all: 'Toutes les questions'

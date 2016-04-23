@@ -1,0 +1,26 @@
+<div class="simupollcreator">
+    <form name="simupollCreatorForm">
+        <div class="form-group" data-ng-class="{ 'has-error': (simupollCreatorForm.$submitted || simupollCreatorForm.name.$dirty) && !simupollCreatorForm.name.$valid }">
+            <label for="name">{{ 'description'|trans }}</label>
+            <textarea data-ui-tinymce="SimupollCreatorController.tinymceOptions" data-before-unload="off" class="form-control" name="description"
+                data-ng-model="SimupollCreatorController.description"></textarea>
+        </div>
+
+        <div class="questions">
+            <ul class="questiongroup">
+                <li class="questiongroup-li"
+                    data-ng-repeat="question in SimupollCreatorController.simupollquestions"
+                    questions-list>
+                </li>
+            </ul>
+
+            <div class="btn-group" role="group">
+                <button type="button" data-ng-click="SimupollCreatorController.addQuestion()" class="btn btn-sm btn-primary">
+                    <span class="fa fa-plus"></span>
+                    <span>{{ 'question_add'|trans:{}:'resource' }}</span>
+                </button>
+            </div>
+
+        </div>
+    </form>
+</div>

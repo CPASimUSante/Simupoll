@@ -1,0 +1,32 @@
+<div class="simupoll-question" >
+    <div>
+        <label class="control-label col-md-4 required">{{ 'question_title'|trans:{}:'resource' }} :</label>
+        <div class="col-md-6 question-title">
+            <input class="form-control" name="question-title"
+                   data-ng-class="question-title" data-ng-model="question.title"
+                   type="text" required field-validation />
+        </div>
+        <div class="col-md-2">
+            <button type="button" data-ng-click="SimupollCreatorController.deleteQuestion(question.id)"
+                class="btn btn-sm btn-danger text-right">
+                <span class="fa fa-trash"></span>
+                <span>{{ 'question_delete'|trans:{}:'resource' }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="btn-group" role="group">
+        <button type="button" data-ng-click="SimupollCreatorController.addProposition(question)"
+        class="btn btn-sm btn-primary text-right">
+            <span class="fa fa-plus"></span>
+            <span>{{ 'proposition_add'|trans:{}:'resource' }}</span>
+        </button>
+    </div>
+
+    <ul class="propositions">
+        <li class="simupoll-propositions"
+            data-ng-repeat="(pid, proposition) in question.propositions"
+            propositions-list>
+        </li>
+    </ul>
+</div>

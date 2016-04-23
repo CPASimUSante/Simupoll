@@ -34,6 +34,8 @@ pick_users: '1- Pick users'
 proposition_add: 'Add a proposition'
 proposition_delete: 'Delete proposition'
 proposition_value: 'Propositions'
+proposition_choice: 'Proposition'
+proposition_mark: 'Mark'
 
 question_add: 'Add question'
 question_all: 'All questions'
