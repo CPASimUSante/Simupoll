@@ -82,9 +82,8 @@ class CategoryController extends Controller
     {
         $sid = $simupoll->getId();
 
-        //$tree = $this->categoryManager->getCategoryTree($simupoll, $sid);
         $tree = $this->categoryManager->getCategoryTreeNg($simupoll);
-//die(var_dump(json_encode($tree)));
+
         return array(
             '_resource' => $simupoll,
             'sid'       => $sid,

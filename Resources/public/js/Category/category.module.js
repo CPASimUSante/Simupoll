@@ -1,37 +1,43 @@
-
 /**
  * CategoryApp
  */
-//import classes called in dependency injection
-//no need for angular / ui import
-import categoryDirective from './Directives/categoryDirective'
-import CategoryService from './Services/CategoryService'
 
-const dependencies = [
+//import classes called in dependency injection
+//for $uibModal
+import {} from 'angular-bootstrap'
+//no need for angular & ui import
+import categoryDirective from './Directives/categoryDirective'
+import categoryService from './Services/CategoryService'
+import categoryController from './Controllers/CategoryController'
+
+// Category module
+angular
+.module('CategoryApp', [
     'ngSanitize',
     'ngRoute',
-    //'angular-loading-bar',
     'ui.bootstrap',
     'ui.translation'
-];
-// category module
-angular
-.module('CategoryApp', dependencies)
-/*.config([
-    'cfpLoadingBarProvider',
-    function CategoryAppConfig(cfpLoadingBarProvider) {
-        // please wait spinner config
-        cfpLoadingBarProvider.latencyThreshold = 200;
-        cfpLoadingBarProvider.includeBar = false;
-        cfpLoadingBarProvider.spinnerTemplate = '<div class="loading">Loading&#8230;</div>';
-    }
-])*/
-//Import directive & main service
-.directive('category', () => new categoryDirective)
-.service('CategoryService', () => new CategoryService)
+])
+.service('CategoryService', [
+    '$http',
+    '$q',
+    categoryService
+])
+.factory('categoryModal', [
+    '$uibModal',
+    $modal => ({
+      open: template => $modal.open({ template })
+    })
+  ])
+.controller('CategoryController', [
+//    'categoryModal',
+    'CategoryService',
+    categoryController
+])
+.directive('category', () => new categoryDirective('CategoryController'))
 .filter(
     'unsafe',
     function ($sce) {
         return $sce.trustAsHtml;
     }
-);
+)

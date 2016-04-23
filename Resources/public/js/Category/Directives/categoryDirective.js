@@ -1,8 +1,7 @@
-import CategoryController from '../Controllers/CategoryController'
+//import CategoryController from '../Controllers/CategoryController'
 
-//export class => usable as a module
 export default class categoryDirective {
-    constructor(tree, sid) {
+    constructor(CategoryController) {
         //class => use this
         this.restrict       ='E';
         this.replace        = true;

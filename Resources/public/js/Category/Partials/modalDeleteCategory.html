@@ -1,0 +1,22 @@
+<form name="categoryDeleteForm" novalidate>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </br>
+    </div>
+    <div class="modal-body">
+        <h3 class="panel-title">{{'category_delete'|trans:{}:'resource')}}</h3>
+        <pre>Attention, supprimer une catégorie qui a des enfants supprimera aussi ses enfants</pre>
+    </div>
+    <div class="modal-footer">
+        <button type="button"
+            class="btn btn-default"
+            data-dismiss="modal">
+        {{ 'cancel'|trans:{}:'platform' }}
+        </button>
+        <button type="submit"
+            class="btn btn-primary"
+            data-ng-click="CategoryController.deleteCategory(categoryDeleteForm)">
+        {{ 'create'|trans:{}:'platform' }}
+        </button>
+    </div>
+</form>

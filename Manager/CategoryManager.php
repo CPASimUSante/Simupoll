@@ -124,7 +124,7 @@ class CategoryManager
 
         return $repo->buildTree($query->getArrayResult(), $options);
     }
-    
+
     /**
      * Get array of entity for Use in AJS
      * @param $simupoll Simupoll
@@ -134,7 +134,14 @@ class CategoryManager
     {
         //Custom query to display only tree from this resource
         $query = $this->getCategoryBySimupoll($simupoll);
-        return $query->getArrayResult();
+        $results = $query->getArrayResult();
+        //add the indent here
+        if ($results != array()) {
+            foreach ($results as $key => $result) {
+                $results[$key]['indent'] = str_repeat("=",($result['lvl'])*2);
+            }
+        }
+        return $results;
     }
 
     /**

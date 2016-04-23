@@ -1,0 +1,33 @@
+<form name="categoryEditForm" novalidate>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </br>
+    </div>
+    <div class="modal-body">
+        <h3 class="panel-title">{{'category_edit'|trans:{}:'resource')}}</h3>
+        <div class="form-group" data-ng-class="{ 'has-error': (categoryEditForm.$submitted || categoryEditForm.name.$dirty) && !categoryEditForm.name.$valid }">
+            <label for="name">{{ 'name'|trans }}</label>
+            <input type="text" name="name" class="form-control"
+                data-ng-model="CategoryController.addedCategory.name"
+                data-valid-name
+                required />
+            <p class="help-block"
+                data-ng-if="(categoryEditForm.$submitted || categoryEditForm.name.$dirty) && categoryEditForm.name.$error.required">
+                {{ 'errors.not_blank'|trans:'resource' }}
+            </p>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button"
+            class="btn btn-default"
+            data-dismiss="modal">
+        {{ 'cancel'|trans:{}:'platform' }}
+        </button>
+        <button type="submit"
+            class="btn btn-primary"
+            data-ng-disabled="!categoryEditForm.$valid"
+            data-ng-click="CategoryController.editCategory(categoryEditForm)">
+        {{ 'create'|trans:{}:'platform' }}
+        </button>
+    </div>
+</form>

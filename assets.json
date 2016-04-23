@@ -1,7 +1,8 @@
 {
   "webpack": {
     "entry": {
-      "category": "public/js/Category/category.module"
+      "category": "public/js/Category/category.module",
+      "period": "public/js/Period/period.module"
     }
   }
 }

@@ -1,17 +1,9 @@
-{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
-
-{% if isDesktop() %}
-    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
-{% else %}
-    {% set workspace = _resource.getResourceNode().getWorkspace() %}
-{% endif %}
-
-{% extends layout %}
+{% extends "CPASimUSanteSimupollBundle::layout.html.twig" %}
 
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <div class="panel panel-default">
+    <div class="panel panel-default" data-ng-app="PeriodApp">
         <div class="panel-heading">
             <h3 class="panel-title">Périodes</h3>
         </div>
@@ -21,6 +13,8 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
+            <period data-periods="{{ periods }}" data-sid="{{ sid }}"></period>
+            <!--
             <table class="table">
                 <tr>
                     <th>{{ 'period_title'|trans({}, 'resource') }}</th>
@@ -40,17 +34,13 @@
                 {% endfor %}
             </table>
             <a class="btn btn-primary btn-sm period-add-btn" data-sid="{{ sid }}" href="#"><i class="fa fa-plus"></i> {{ 'period_add'|trans({}, 'resource') }}</a>
+        -->
         </div>
     </div>
-{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
 {% endblock %}
 
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupollPeriod.js') }}'></script>
+    <script type="text/javascript" src='{{ hotAsset('dist/cpasimusante-simupoll-period.js') }}'></script>
 {% endblock %}
