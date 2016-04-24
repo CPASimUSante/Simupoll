@@ -1,14 +1,20 @@
-{% extends "CPASimUSanteSimupollBundle::layout.html.twig" %}
+{% set layout = 'ClarolineCoreBundle:Workspace:layout.html.twig' %}
+
+{% if isDesktop() %}
+    {% set layout = 'ClarolineCoreBundle:Desktop:layout.html.twig' %}
+{% endif %}
+
+{% extends layout %}
 
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <div class="panel panel-default">
+    <div class="panel panel-default" data-ng-app="CategoryApp">
         <div class="panel-heading">
             <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
         </div>
 
-        <div class="panel-body" id="category_content" data-ng-app="CategoryApp">
+        <div class="panel-body" id="category_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
@@ -21,5 +27,10 @@
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-    <script type="text/javascript" src='{{ hotAsset('dist/cpasimusante-simupoll-category.js') }}'></script>
+    <script src="{{ url('bazinga_jstranslation_js', { 'domain': 'resource' }) }}"></script>
+    <script>
+        AngularApp = {}
+        AngularApp.webDir = "{{asset('')}}"
+    </script>
+    <script src='{{ hotAsset('dist/cpasimusante-simupoll-category.js') }}'></script>
 {% endblock %}

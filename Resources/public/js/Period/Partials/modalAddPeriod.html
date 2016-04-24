@@ -1,18 +1,20 @@
-<form name="categoryAddForm" novalidate>
+<form name="periodAddForm" novalidate>
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        </br>
+        <button type="button" class="close"
+            data-dismiss="modal">
+            <span aria-hidden="true" data-ng-click="PeriodController.cancel(periodAddForm)">&times;</span>
+        </button>
+        <h3 class="panel-title">{{'period_add'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
-        <h3 class="panel-title">{{'category_add'|trans:{}:'resource')}}</h3>
-        <div class="form-group" data-ng-class="{ 'has-error': (categoryAddForm.$submitted || categoryAddForm.name.$dirty) && !categoryAddForm.name.$valid }">
+        <div class="form-group" data-ng-class="{ 'has-error': (periodAddForm.$submitted || periodAddForm.name.$dirty) && !periodAddForm.name.$valid }">
             <label for="name">{{ 'name'|trans }}</label>
             <input id="name" type="text" name="name" class="form-control"
-                data-ng-model="CategoryController.addedCategory.name"
+                data-ng-model="PeriodController.addedPeriod.name"
                 data-valid-name
                 required />
             <p class="help-block"
-                data-ng-if="(categoryAddForm.$submitted || categoryAddForm.name.$dirty) && categoryAddForm.name.$error.required">
+                data-ng-if="(periodAddForm.$submitted || periodAddForm.name.$dirty) && periodAddForm.name.$error.required">
                 {{ 'errors.not_blank'|trans:'resource' }}
             </p>
         </div>
@@ -25,8 +27,8 @@
         </button>
         <button type="submit"
             class="btn btn-primary"
-            data-ng-disabled="!categoryAddForm.$valid"
-            data-ng-click="CategoryController.addCategory(categoryAddForm)">
+            data-ng-disabled="!periodAddForm.$valid"
+            data-ng-click="PeriodController.doAddPeriod(periodAddForm)">
         {{ 'create'|trans:{}:'platform' }}
         </button>
     </div>

@@ -11,9 +11,14 @@
             <td>{{ period.title }}</td>
             <td>{{ period.start.date|date:"d/m/Y" }}</td>
             <td>{{ period.stop.date|date:"d/m/Y" }}</td>
-            <td><a class="btn btn-primary btn-sm period-modify-btn" data-ng-click="PeriodController.showEditPeriodForm(period.id, PeriodController.sid)">{{ 'edit'|trans:{}:'platform' }}</a></td>
-            <td><a class="btn btn-danger btn-sm period-delete-btn" data-ng-click="PeriodController.showDeletePeriodForm(period.id, PeriodController.sid)"><i class="fa fa-trash"></i></a></td>
+            <td><a class="btn btn-primary btn-sm period-modify-btn"
+                data-ng-click="PeriodController.showEditPeriodForm(period, PeriodController.sid)">{{ 'edit'|trans:{}:'platform' }}</a>
+            </td>
+            <td><a class="btn btn-danger btn-sm period-delete-btn"
+                data-ng-click="PeriodController.showDeletePeriodForm(period, PeriodController.sid)"><i class="fa fa-trash"></i></a>
+            </td>
         </tr>
     </table>
-    <a class="btn btn-primary btn-sm period-add-btn" data-ng-click="PeriodController.showAddPeriodForm(period.id, PeriodController.sid)"><i class="fa fa-plus"></i> {{ 'period_add'|trans:{}:'resource' }}</a>
+    <a class="btn btn-primary btn-sm period-add-btn"
+        data-ng-click="PeriodController.showAddPeriodForm()"><i class="fa fa-plus"></i> {{ 'period_add'|trans:{}:'resource' }}</a>
 </div>

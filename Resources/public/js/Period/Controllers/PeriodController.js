@@ -5,14 +5,15 @@ import deletePeriodTemplate from '../Partials/modalDeletePeriod.html'
 
 export default class PeriodController {
 //no import of Angular stuff ($window, $scope…)
-//    constructor($window, $scope, periodModal, PeriodService) {
-    constructor(PeriodService) {
+    constructor(periodModal) {
         //declaration of variables
         this.periods            = ''
         this.sid                = 0
         this.addedPeriod        = {}
         this.editedPeriod       = {}
-        //this._modalFactory      = periodModal
+        this.errors             = []
+        this.errorMessage       = null
+        this._modalFactory      = periodModal
         this._modalInstance     = null
     }
 
@@ -21,32 +22,47 @@ export default class PeriodController {
         this.sid       = sid
     }
 
-    showAddPeriodForm (period) {
+    showAddPeriodForm () {
       this._modal(addPeriodTemplate)
     }
 
-    showEditPeriodForm (period) {
+    doAddPeriod(form) {
+console.log('add')
+        if (form.$valid) {
+            this._resetForm(form)
+            this._closeModal()
+        }
+    }
+
+    showEditPeriodForm (period, sid) {
     //   this.editedPeriod.original = period
     //   this.editedPeriod.newValue = period.name
       this._modal(editPeriodTemplate)
     }
 
+    doEditPeriod(form) {
+console.log('edit')
+        if (form.$valid) {
+            this._resetForm(form)
+            this._closeModal()
+        }
+    }
+
     showDeletePeriodForm (period) {
-    //   this.editedPeriod.original = period
-    //   this.editedPeriod.newValue = period.name
       this._modal(deletePeriodTemplate)
     }
-    
-    editPeriod(sid) {
-        console.log('edited');
-    }
 
-    addPeriod(sid) {
-        console.log('add');
-    }
-
-    deletePeriod(sid) {
+    doDeletePeriod(sid) {
         console.log('deleted');
+    }
+
+    //close X modal
+    cancel (form) {
+console.log('close')
+      if (form) {
+        this._resetForm(form)
+      }
+      this._modalInstance.dismiss()
     }
 
     _modal (template, errorMessage, errors) {
@@ -60,6 +76,13 @@ export default class PeriodController {
     }
 
     _closeModal () {
-      this._modalInstance.close()
+        this._modalInstance.close()
+    }
+
+    _resetForm (form) {
+      this.errorMessage = null
+      this.errors = []
+      form.$setPristine()
+      form.$setUntouched()
     }
 }

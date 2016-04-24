@@ -1,10 +1,10 @@
-<form name="periodDeleteForm" novalidate>
+<form name="propositionDeleteForm" novalidate>
     <div class="modal-header">
         <button type="button" class="close"
             data-dismiss="modal">
-            <span aria-hidden="true" data-ng-click="PeriodController.cancel(periodDeleteForm)">&times;</span>
+            <span aria-hidden="true" data-ng-click="SimupollCreatorController.cancel(propositionDeleteForm)">&times;</span>
         </button>
-        <h3 class="panel-title">{{'period_delete'|trans:{}:'resource'}}</h3>
+        <h3 class="panel-title">{{'proposition_delete'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
     </div>
@@ -16,7 +16,7 @@
         </button>
         <button type="submit"
             class="btn btn-primary"
-            data-ng-click="PeriodController.doDeletePeriod(periodDeleteForm)">
+            data-ng-click="SimupollCreatorController.doDeleteProposition(propositionDeleteForm)">
         {{ 'create'|trans:{}:'platform' }}
         </button>
     </div>

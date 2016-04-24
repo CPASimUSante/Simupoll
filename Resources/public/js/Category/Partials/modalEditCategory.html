@@ -1,10 +1,12 @@
 <form name="categoryEditForm" novalidate>
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        </br>
+        <button type="button" class="close"
+            data-dismiss="modal">
+            <span aria-hidden="true" data-ng-click="CategoryController.cancel(categoryEditForm)">&times;</span>
+        </button>
+        <h3 class="panel-title">{{'category_modify'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
-        <h3 class="panel-title">{{'category_edit'|trans:{}:'resource')}}</h3>
         <div class="form-group" data-ng-class="{ 'has-error': (categoryEditForm.$submitted || categoryEditForm.name.$dirty) && !categoryEditForm.name.$valid }">
             <label for="name">{{ 'name'|trans }}</label>
             <input type="text" name="name" class="form-control"
@@ -26,7 +28,7 @@
         <button type="submit"
             class="btn btn-primary"
             data-ng-disabled="!categoryEditForm.$valid"
-            data-ng-click="CategoryController.editCategory(categoryEditForm)">
+            data-ng-click="CategoryController.doEditCategory(categoryEditForm)">
         {{ 'create'|trans:{}:'platform' }}
         </button>
     </div>

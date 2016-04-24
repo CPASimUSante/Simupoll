@@ -1,10 +1,12 @@
 <form name="periodEditForm" novalidate>
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        </br>
+        <button type="button" class="close"
+            data-dismiss="modal">
+            <span aria-hidden="true" data-ng-click="PeriodController.cancel(periodDeleteForm)">&times;</span>
+        </button>
+        <h3 class="panel-title">{{'period_edit'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
-        <h3 class="panel-title">{{'period_edit'|trans:{}:'resource')}}</h3>
         <div class="form-group" data-ng-class="{ 'has-error': (periodEditForm.$submitted || periodEditForm.name.$dirty) && !periodEditForm.name.$valid }">
             <label for="name">{{ 'name'|trans }}</label>
             <input type="text" name="name" class="form-control"
@@ -26,7 +28,7 @@
         <button type="submit"
             class="btn btn-primary"
             data-ng-disabled="!periodEditForm.$valid"
-            data-ng-click="PeriodController.editPeriod(periodEditForm)">
+            data-ng-click="PeriodController.doEditPeriod(periodEditForm)">
         {{ 'create'|trans:{}:'platform' }}
         </button>
     </div>

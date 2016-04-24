@@ -1,6 +1,11 @@
-export default class SimupollCreatorController {
-    constructor() {
+//the template for modals
+import addQuestionTemplate from '../Partials/questions-list.html'
+import addPropositionTemplate from '../Partials/propositions-list.html'
+import deleteQuestionTemplate from '../Partials/modalDeleteQuestion.html'
+import deletePropositionTemplate from '../Partials/modalDeleteProposition.html'
 
+export default class SimupollCreatorController {
+    constructor(simupolCreatorModal) {
         // Initialize TinyMCE
         let tinymce               = window.tinymce
         tinymce.claroline.init    = tinymce.claroline.init || {}
@@ -34,6 +39,12 @@ export default class SimupollCreatorController {
         this.tinymceOptions.trusted = true
         this.tinymceOptions.format = 'html'
 
+        //modal variables
+        this.errors             = []
+        this.errorMessage       = null
+        this._modalFactory      = simupolCreatorModal
+        this._modalInstance     = null
+
         //questions / propositions
         this.dd = 'ABC';
         let simupollquestions = [
@@ -44,19 +55,57 @@ export default class SimupollCreatorController {
         this.simupollquestions = simupollquestions
     }
 
-    addProposition(question) {
+    doAddQuestion() {
 
     }
 
-    removeProposition(question) {
+    showDeleteQuestion(question) {
+        this._modal(deleteQuestionTemplate)
+    }
+
+    doDeleteQuestion(question) {
 
     }
 
-    addQuestion(question) {
+    doAddProposition(question) {
 
     }
 
-    deleteQuestion(question) {
+    showDeleteProposition(question) {
+        this._modal(deletePropositionTemplate)
+    }
 
+    doDeleteProposition(question) {
+
+    }
+
+    //close X modal
+    cancel (form) {
+console.log('close')
+      if (form) {
+        this._resetForm(form)
+      }
+      this._modalInstance.dismiss()
+    }
+
+    _modal (template, errorMessage, errors) {
+      if (errorMessage) {
+        this.errorMessage = errorMessage
+      }
+      if (errors) {
+        this.errors = errors
+      }
+      this._modalInstance = this._modalFactory.open(template)
+    }
+
+    _closeModal () {
+        this._modalInstance.close()
+    }
+
+    _resetForm (form) {
+      this.errorMessage = null
+      this.errors = []
+      form.$setPristine()
+      form.$setUntouched()
     }
 }
