@@ -2,25 +2,21 @@
 import addCategoryTemplate from '../Partials/modalAddCategory.html'
 import editCategoryTemplate from '../Partials/modalEditCategory.html'
 import deleteCategoryTemplate from '../Partials/modalDeleteCategory.html'
+import errorTemplate from '../../Common/Partials/modalError.html'
 
 export default class CategoryController {
-//no import of Angular stuff ($window, $scope…)
+    //no import of Angular stuff ($window, $scope…)
     constructor(CategoryService, categoryModal) {
         //declaration of variables
-        this.CategoryService    = CategoryService
-        this.tree               = ''
-        this.sid                = 0
+        this.tree               = CategoryService.getTree()
+        this.sid                = CategoryService.getSid()
         this.addedCategory      = {}
         this.editedCategory     = {}
         this.errors             = []
         this.errorMessage       = null
         this._modalFactory      = categoryModal
         this._modalInstance     = null
-    }
-
-    init(tree, sid) {
-        this.tree   = JSON.parse(tree)
-        this.sid    = sid
+        this._service           = CategoryService
     }
 
     showAddCategoryForm () {
@@ -28,7 +24,10 @@ export default class CategoryController {
     }
 
     doAddCategory(form) {
-console.log('add')
+console.log('do add')
+        this._service.addCategory(this.addedCategory, () => {
+            this._modal(errorTemplate, 'errors.mark.creation_failure')
+        })
         if (form.$valid) {
             this._resetForm(form)
             this._closeModal()
@@ -60,7 +59,6 @@ console.log('deleted')
 
     //close X modal
     cancel (form) {
-console.log('close')
       if (form) {
         this._resetForm(form)
       }

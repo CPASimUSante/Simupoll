@@ -3,15 +3,16 @@
         <button type="button" class="close"
             data-dismiss="modal"
             aria-label="{{ 'close'|trans }}">
-            <span aria-hidden="true" data-ng-click="CategoryController.cancel(categoryAddForm)">&times;</span>
+            <span aria-hidden="true" data-ng-click="vm.cancel(categoryAddForm)">&times;</span>
         </button>
         <h3 class="panel-title">{{'category_add'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
         <div class="form-group" data-ng-class="{ 'has-error': (categoryAddForm.$submitted || categoryAddForm.name.$dirty) && !categoryAddForm.name.$valid }">
             <label for="name">{{ 'name'|trans }}</label>
-            <input id="name" type="text" name="name" class="form-control"
-                data-ng-model="CategoryController.addedCategory.name"
+            <input id="name" type="text"
+                name="name" class="form-control"
+                data-ng-model="vm.addedCategory.name"
                 data-valid-name
                 required />
             <p class="help-block"
@@ -23,13 +24,14 @@
     <div class="modal-footer">
         <button type="button"
             class="btn btn-default"
-            data-dismiss="modal">
+            data-dismiss="modal"
+            data-ng-click="vm.cancel(categoryAddForm)">
             {{ 'cancel'|trans:{}:'platform' }}
         </button>
         <button type="submit"
             class="btn btn-primary"
             data-ng-disabled="!categoryAddForm.$valid"
-            data-ng-click="CategoryController.doAddCategory(categoryAddForm)">
+            data-ng-click="vm.doAddCategory(categoryAddForm)">
             {{ 'create'|trans:{}:'platform' }}
         </button>
     </div>

@@ -19,7 +19,7 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-            <category data-tree="{{ tree }}" data-sid="{{ sid }}"></category>
+            <category></category>
         </div>
     </div>
 {% endblock %}
@@ -31,6 +31,8 @@
     <script>
         AngularApp = {}
         AngularApp.webDir = "{{asset('')}}"
+        window.simupollTree = {{ tree|json_encode|raw }}
+        window.simupollSid = {{ sid }}
     </script>
     <script src='{{ hotAsset('dist/cpasimusante-simupoll-category.js') }}'></script>
 {% endblock %}
