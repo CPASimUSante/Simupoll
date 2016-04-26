@@ -8,16 +8,31 @@ export default class CategoryService {
         this._sid       = CategoryService._getGlobal('simupollSid')
     }
 
-    getCategories() {
-        return this.$http.get('/categories/'+this._sid)
-    }
-
     getTree () {
       return this._tree
     }
 
     getSid () {
       return this._sid
+    }
+
+    deleteCategory (category, onFail) {
+      const url = Routing.generate('simupoll_delete_category', {
+        cid: category.id
+      })
+
+      this._deleteCategory(category)
+
+      this.$http
+        .delete(url)
+        .then(null, () => {
+          this._tree.push(category)
+          onFail()
+        })
+    }
+
+    _deleteCategory (category) {
+      this._tree.splice(this._tree.indexOf(category), 1)
     }
 
     //defined in template script

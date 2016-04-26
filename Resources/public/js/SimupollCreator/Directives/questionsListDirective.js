@@ -1,6 +1,6 @@
 export default class questionsListDirective {
-    constructor() {
+    constructor(questionsListTemplate) {
         this.restrict       ='A'
-        this.templateUrl    = AngularApp.webDir + 'bundles/cpasimusantesimupoll/js/SimupollCreator/Partials/questions-list.html'
+        this.template       = questionsListTemplate
     }
 }

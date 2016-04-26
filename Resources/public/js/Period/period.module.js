@@ -9,6 +9,7 @@ import {} from 'angular-bootstrap'
 import {} from 'bootstrap-datepicker'
 //import {} from 'bootstrap-daterangepicker'
 
+import periodTemplate from './Partials/period.directive.html'
 import periodDirective from './Directives/periodDirective'
 import periodService from './Services/PeriodService'
 import periodController from './Controllers/PeriodController'
@@ -36,7 +37,7 @@ angular
         'periodModal',
         periodController
     ])
-    .directive('period', () => new periodDirective('PeriodController'))
+    .directive('period', () => new periodDirective('PeriodController', periodTemplate))
     //translations
     .filter('trans', () => (string, domain = 'platform') =>
         Translator.trans(string, domain)

@@ -5,6 +5,7 @@ namespace CPASimUSante\SimupollBundle\Manager;
 use JMS\DiExtraBundle\Annotation as DI;
 use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Claroline\CoreBundle\Entity\User;
 
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Category;
@@ -234,5 +235,18 @@ class CategoryManager
             $categoryList = json_decode($list);
         }
         return $categoryList;
+    }
+
+    /**
+     * Deletes a category.
+     *
+     * @param integer $cid
+     * @param User $user
+     */
+    public function deleteCategory($cid, User $user)
+    {
+        $category = $this->getCategoryByIdAndUser($cid, $user);
+        $this->om->remove($category);
+        $this->om->flush();
     }
 }

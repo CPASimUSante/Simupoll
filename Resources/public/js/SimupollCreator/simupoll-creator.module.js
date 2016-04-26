@@ -8,8 +8,11 @@ import angular from 'angular/index'
 import {} from 'angular-bootstrap'
 import {} from 'angular-ui-tinymce'
 
+import questionsListTemplate from './Partials/questions-list.html'
 import questionsListDirective from './Directives/questionsListDirective'
+import propositionsListTemplate from './Partials/propositions-list.html'
 import propositionsListDirective from './Directives/propositionsListDirective'
+import simupollCreatorTemplate from './Partials/simupollCreator.directive.html'
 import simupollCreatorDirective from './Directives/simupollCreatorDirective'
 import simupollCreatorController from './Controllers/SimupollCreatorController'
 import simupollCreatorService from './Services/SimupollCreatorService'
@@ -38,11 +41,11 @@ angular
         simupollCreatorController
     ])
     //displays the propositions loop
-    .directive('propositionsList', () => new propositionsListDirective)
+    .directive('propositionsList', () => new propositionsListDirective(propositionsListTemplate))
     //displays the questions loop
-    .directive('questionsList', () => new questionsListDirective)
+    .directive('questionsList', () => new questionsListDirective(questionsListTemplate))
     //main directive
-    .directive('simupollCreator', () => new simupollCreatorDirective('SimupollCreatorController'))
+    .directive('simupollCreator', () => new simupollCreatorDirective('SimupollCreatorController', simupollCreatorTemplate))
     //translations
     .filter('trans', () => (string, domain = 'platform') =>
         Translator.trans(string, domain)

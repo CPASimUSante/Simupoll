@@ -12,6 +12,8 @@ export default class CategoryController {
         this.sid                = CategoryService.getSid()
         this.addedCategory      = {}
         this.editedCategory     = {}
+        //variable containing the category to be deleted
+        this._deletedCategory   = null
         this.errors             = []
         this.errorMessage       = null
         this._modalFactory      = categoryModal
@@ -47,11 +49,16 @@ console.log('edit')
         }
     }
 
-    showDeleteCategory(category, sid) {
+    showDeleteCategory(category) {
+        this._deletedCategory = category
         this._modal(deleteCategoryTemplate)
     }
 
-    doDeleteCategory(sid) {
+    doDeleteCategory() {
+        this._service.deleteCategory(
+          this._deletedCategory,
+          () => this._modal(errorTemplate, 'category_suppression_failure')
+        )
         this._closeModal()
     }
 

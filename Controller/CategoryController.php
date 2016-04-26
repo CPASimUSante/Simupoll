@@ -235,4 +235,21 @@ class CategoryController extends Controller
             'sid'     => $sid
         );
     }
+
+    /**
+     * @EXT\Route("/category/{cid}", name="simupoll_delete_category", options = {"expose"=true})
+     * @EXT\Method("DELETE")
+     *
+     * @param integer $cid
+     *
+     * @return JsonResponse
+     */
+    public function deleteCategoryAction($cid)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        //$this->assertCanEdit($category->getResult());
+        $this->categoryManager->deleteCategory($cid, $user);
+
+        return new JsonResponse('', 204);
+    }
 }
