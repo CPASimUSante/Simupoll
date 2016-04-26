@@ -24,7 +24,6 @@ export default class CategoryController {
     }
 
     doAddCategory(form) {
-console.log('do add')
         this._service.addCategory(this.addedCategory, () => {
             this._modal(errorTemplate, 'errors.mark.creation_failure')
         })
@@ -53,7 +52,6 @@ console.log('edit')
     }
 
     doDeleteCategory(sid) {
-console.log('deleted')
         this._closeModal()
     }
 

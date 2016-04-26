@@ -24,13 +24,13 @@
             class="btn btn-default"
             data-dismiss="modal"
             data-ng-click="vm.cancel(categoryEditForm)">
-        {{ 'cancel'|trans:{}:'platform' }}
+            {{ 'cancel'|trans:{}:'platform' }}
         </button>
         <button type="submit"
             class="btn btn-primary"
             data-ng-disabled="!categoryEditForm.$valid"
             data-ng-click="vm.doEditCategory(categoryEditForm)">
-        {{ 'create'|trans:{}:'platform' }}
+            {{ 'edit'|trans:{}:'platform' }}
         </button>
     </div>
 </form>

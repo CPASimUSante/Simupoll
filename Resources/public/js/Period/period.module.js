@@ -10,6 +10,7 @@ import {} from 'bootstrap-datepicker'
 //import {} from 'bootstrap-daterangepicker'
 
 import periodDirective from './Directives/periodDirective'
+import periodService from './Services/PeriodService'
 import periodController from './Controllers/PeriodController'
 
 //import classes called in dependency injection
@@ -17,6 +18,11 @@ import periodController from './Controllers/PeriodController'
 angular
     .module('PeriodApp', [
         'ui.bootstrap'
+    ])
+    .service('PeriodService', [
+        '$http',
+        '$q',
+        periodService
     ])
     //modal management
     .factory('periodModal', [
@@ -26,6 +32,7 @@ angular
         })
       ])
     .controller('PeriodController', [
+        'PeriodService',
         'periodModal',
         periodController
     ])

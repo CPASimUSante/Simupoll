@@ -19,7 +19,7 @@
                 <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
             </a>
             <hr>
-            <period data-periods="{{ periods }}" data-sid="{{ sid }}"></period>
+            <period></period>
         </div>
     </div>
 {% endblock %}
@@ -31,6 +31,8 @@
     <script>
         AngularApp = {}
         AngularApp.webDir = "{{asset('')}}"
+        window.simupollPeriods = {{ periods|json_encode|raw }}
+        window.simupollSid = {{ sid }}
     </script>
     <script src='{{ hotAsset('dist/cpasimusante-simupoll-period.js') }}'></script>
 {% endblock %}

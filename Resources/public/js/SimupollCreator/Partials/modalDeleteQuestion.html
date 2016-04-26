@@ -2,7 +2,7 @@
     <div class="modal-header">
         <button type="button" class="close"
             data-dismiss="modal">
-            <span aria-hidden="true" data-ng-click="SimupollCreatorController.cancel(questionDeleteForm)">&times;</span>
+            <span aria-hidden="true" data-ng-click="vm.cancel(questionDeleteForm)">&times;</span>
         </button>
         <h3 class="panel-title">{{'question_delete'|trans:{}:'resource'}}</h3>
     </div>
@@ -11,13 +11,14 @@
     <div class="modal-footer">
         <button type="button"
             class="btn btn-default"
-            data-dismiss="modal">
-        {{ 'cancel'|trans:{}:'platform' }}
+            data-dismiss="modal"
+             data-ng-click="vm.cancel(questionDeleteForm)">
+            {{ 'cancel'|trans:{}:'platform' }}
         </button>
         <button type="submit"
             class="btn btn-primary"
-            data-ng-click="SimupollCreatorController.doDeleteQuestion(questionDeleteForm)">
-        {{ 'create'|trans:{}:'platform' }}
+            data-ng-click="vm.doDeleteQuestion(questionDeleteForm)">
+            {{ 'delete'|trans:{}:'platform' }}
         </button>
     </div>
 </form>

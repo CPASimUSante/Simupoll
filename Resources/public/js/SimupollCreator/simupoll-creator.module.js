@@ -12,12 +12,18 @@ import questionsListDirective from './Directives/questionsListDirective'
 import propositionsListDirective from './Directives/propositionsListDirective'
 import simupollCreatorDirective from './Directives/simupollCreatorDirective'
 import simupollCreatorController from './Controllers/SimupollCreatorController'
+import simupollCreatorService from './Services/SimupollCreatorService'
 
 //import classes called in dependency injection
 angular
     .module('SimupollCreatorApp', [
         'ui.bootstrap',
         'ui.tinymce'
+    ])
+    .service('SimupollCreatorService', [
+        '$http',
+        '$q',
+        simupollCreatorService
     ])
     //modal management
     .factory('simupollCreatorModal', [
@@ -27,6 +33,7 @@ angular
         })
       ])
     .controller('SimupollCreatorController', [
+        'SimupollCreatorService',
         'simupollCreatorModal',
         simupollCreatorController
     ])

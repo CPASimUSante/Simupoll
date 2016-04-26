@@ -3,9 +3,10 @@ import addQuestionTemplate from '../Partials/questions-list.html'
 import addPropositionTemplate from '../Partials/propositions-list.html'
 import deleteQuestionTemplate from '../Partials/modalDeleteQuestion.html'
 import deletePropositionTemplate from '../Partials/modalDeleteProposition.html'
+import errorTemplate from '../../Common/Partials/modalError.html'
 
 export default class SimupollCreatorController {
-    constructor(simupolCreatorModal) {
+    constructor(SimupollCreatorService, simupollCreatorModal) {
         // Initialize TinyMCE
         let tinymce               = window.tinymce
         tinymce.claroline.init    = tinymce.claroline.init || {}
@@ -42,8 +43,9 @@ export default class SimupollCreatorController {
         //modal variables
         this.errors             = []
         this.errorMessage       = null
-        this._modalFactory      = simupolCreatorModal
+        this._modalFactory      = simupollCreatorModal
         this._modalInstance     = null
+        this._service           = SimupollCreatorService
 
         //questions / propositions
         this.dd = 'ABC';
@@ -53,6 +55,10 @@ export default class SimupollCreatorController {
             {'title':'title3','id':3,'propositions':[{'choice':1,'mark':4},{'choice':2,'mark':5},{'choice':3,'mark':6}]},
         ]
         this.simupollquestions = simupollquestions
+    }
+
+    inlineAddQuestion() {
+        console.log('inlineadd');
     }
 
     doAddQuestion() {
@@ -67,8 +73,11 @@ export default class SimupollCreatorController {
 
     }
 
-    doAddProposition(question) {
-
+    doAddProposition(form) {
+        if (form.$valid) {
+            this._resetForm(form)
+            this._closeModal()
+        }
     }
 
     showDeleteProposition(question) {
@@ -76,7 +85,7 @@ export default class SimupollCreatorController {
     }
 
     doDeleteProposition(question) {
-
+        this._closeModal()
     }
 
     //close X modal

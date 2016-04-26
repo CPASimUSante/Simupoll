@@ -81,7 +81,7 @@ class PeriodController extends Controller
         return array(
             '_resource' => $simupoll,
             'sid'       => $sid,
-            'periods'   => json_encode($periods)
+            'periods'   => $periods
         );
     }
 

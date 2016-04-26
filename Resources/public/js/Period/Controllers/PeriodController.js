@@ -2,24 +2,21 @@
 import addPeriodTemplate from '../Partials/modalAddPeriod.html'
 import editPeriodTemplate from '../Partials/modalEditPeriod.html'
 import deletePeriodTemplate from '../Partials/modalDeletePeriod.html'
+import errorTemplate from '../../Common/Partials/modalError.html'
 
 export default class PeriodController {
-//no import of Angular stuff ($window, $scope…)
-    constructor(periodModal) {
+    //no import of Angular stuff ($window, $scope…)
+    constructor(PeriodService, periodModal) {
         //declaration of variables
-        this.periods            = ''
-        this.sid                = 0
+        this.periods            = PeriodService.getPeriods()
+        this.sid                = PeriodService.getSid()
         this.addedPeriod        = {}
         this.editedPeriod       = {}
         this.errors             = []
         this.errorMessage       = null
         this._modalFactory      = periodModal
         this._modalInstance     = null
-    }
-
-    init(periods, sid) {
-        this.periods   = JSON.parse(periods)
-        this.sid       = sid
+        this._service           = PeriodService
     }
 
     showAddPeriodForm () {
@@ -27,7 +24,9 @@ export default class PeriodController {
     }
 
     doAddPeriod(form) {
-console.log('add')
+        this._service.addCategory(this.addedCategory, () => {
+            this._modal(errorTemplate, 'errors.mark.creation_failure')
+        })
         if (form.$valid) {
             this._resetForm(form)
             this._closeModal()
@@ -53,12 +52,11 @@ console.log('edit')
     }
 
     doDeletePeriod(sid) {
-        console.log('deleted');
+        this._closeModal()
     }
 
     //close X modal
     cancel (form) {
-console.log('close')
       if (form) {
         this._resetForm(form)
       }

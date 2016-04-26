@@ -7,19 +7,19 @@
         <h3 class="panel-title">{{'category_delete'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
-        <pre>Attention, supprimer une catégorie qui a des enfants supprimera aussi ses enfants</pre>
+        <div class="alert alert-danger">{{'category_delete_warning'|trans:{}:'resource'}}</div>
     </div>
     <div class="modal-footer">
         <button type="button"
             class="btn btn-default"
             data-dismiss="modal"
             data-ng-click="vm.cancel(categoryDeleteForm)">
-        {{ 'cancel'|trans:{}:'platform' }}
+            {{ 'cancel'|trans:{}:'platform' }}
         </button>
         <button type="submit"
             class="btn btn-primary"
             data-ng-click="vm.doDeleteCategory()">
-        {{ 'create'|trans:{}:'platform' }}
+            {{ 'delete'|trans:{}:'platform' }}
         </button>
     </div>
 </form>
