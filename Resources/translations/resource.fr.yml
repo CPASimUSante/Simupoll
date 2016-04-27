@@ -1,6 +1,7 @@
 answer_saved: 'Vos réponses ont été enregistrées'
 
 category_add: 'Ajouter une categorie'
+category_add_failure: 'Erreur lors de l''ajout de la catégorie'
 category_choice: 'Choisissez une catégorie'
 category_delete: 'Supprimer la catégorie'
 category_delete_confirm: 'Souhaitez vous supprimer cette catégorie ?'
@@ -8,6 +9,7 @@ category_delete_warning: 'Attention, supprimer une catégorie qui a des enfants 
 category_delete_failure: 'Erreur lors de la suppression de la catégorie'
 category_file: 'Fichier csv Catégorie'
 category_modify: 'Modifier la catégorie'
+category_modification_failure: 'Erreur lors de la modification de la catégorie'
 category_name: 'Nom de la catégorie'
 category_not_created: 'La catégorie %categoryname% n''a pas été créée : déja présente'
 category_root_add: 'Ajouter une catégorie racine'
@@ -18,6 +20,8 @@ cpasimusante_simupoll_description: 'Description'
 date_end: 'Fin'
 date_start: 'Début'
 
+error_not_blank : 'Le champ ne peut être vide'
+
 graph_show: 'Afficher le graphique'
 graph_export: 'Enregistrer le graphique'
 group_name: 'Nom du groupe'
@@ -27,8 +31,12 @@ mark_not_set: 'Il y a un problème avec les propositions / points attribués pou
 organization_not_set: 'L''organisation n''a pas été définie'
 
 period_add : 'Ajouter une période'
+period_add_failure: 'Erreur lors de l''ajout de la période'
 period_delete: 'Suppression de la période'
 period_delete_confirm: 'Confirmer la suppression'
+period_delete_failure: 'Erreur lors de la suppression de la période'
+period_delete_warning: 'Souhaitez-vous supprimer la période ?'
+period_edit_failure: 'Erreur lors de la modification de la période'
 period_modify: 'Modifier la période'
 period_start: 'Début de la période'
 period_stop : 'Fin de la période'

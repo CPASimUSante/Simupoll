@@ -11,7 +11,7 @@
                 </td>
                 <td class="col-md-1"><a class="btn btn-primary btn-sm category-add-btn"
                     title="{{ 'category_add'|trans:{}:'resource' }}"
-                    data-ng-click="vm.showAddCategoryForm()"><i class="fa fa-plus"></i></a>
+                    data-ng-click="vm.showAddCategoryForm(category)"><i class="fa fa-plus"></i></a>
                 </td>
                 <td class="col-md-1"><a class="btn btn-danger btn-sm category-delete-btn"
                     title="{{ 'category_delete'|trans:{}:'resource' }}"
@@ -24,7 +24,7 @@
     <div data-ng-if="vm.tree==[]">
         <a class="btn btn-primary btn-sm category-add-btn"
             data-id="0" data-sid="{{vm.sid}}"
-            data-ng-click="vm.showAddCategoryForm()"><i class="fa fa-plus"></i>
+            data-ng-click="vm.showAddCategoryForm(0)"><i class="fa fa-plus"></i>
             {{ 'category_root_add'|trans:{}:'resource' }}
         </a>
     </div>

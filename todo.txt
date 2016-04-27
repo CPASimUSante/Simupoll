@@ -3,3 +3,8 @@
 - fix empty start / end period (validation)
 - go for AJS, to be like other Claro bunldes :-(
 - fix copy resource
+
+
+Bugs, AJS :
+- periods : add period => pb with timestamp (CET -2) => J -> J-1
+- period : delete period after creation => error

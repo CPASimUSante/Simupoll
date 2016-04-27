@@ -2,10 +2,11 @@
 export default class CategoryService {
     constructor($http, $q) {
         //declaration of variables
-        this.$http      = $http
-        this.$q         = $q
-        this._tree      = CategoryService._getGlobal('simupollTree')
-        this._sid       = CategoryService._getGlobal('simupollSid')
+        this.$http          = $http
+        this.$q             = $q
+        this._tree          = CategoryService._getGlobal('simupollTree')
+        this._sid           = CategoryService._getGlobal('simupollSid')
+        this._parentTree    = []
     }
 
     getTree () {
@@ -14,6 +15,78 @@ export default class CategoryService {
 
     getSid () {
       return this._sid
+    }
+
+    /**
+     * Retrieve all parent category possible
+     */
+    getParentCategoriesFor(category, mod) {
+        let result = []
+        const url = Routing.generate('simupoll_parent_category', {
+          cid: category.id,
+          sid: this._sid
+        })
+
+        this.$http
+          .get(url, {})
+          .then(
+            response => {
+                result = response.data
+                // mod
+                // return this._parentTree
+             },
+            () => {
+                console.log('Error in category list retrieving')
+              }
+          )
+        //return this._parentTree
+        //console.log(this._tree)
+        //return this._tree
+    }
+
+    addCategory (props, category, onFail) {
+      const result = { name: category.indent+'== '+props.name }
+      const url = Routing.generate('simupoll_add_category', {
+        sid: this._sid
+      })
+      //first, display new element, at the correct position
+      this._tree.splice((this._tree.indexOf(category))+1, 0, result)
+
+      //then, do the background save
+      this.$http
+        //pass variables to controller
+        .post(url, { name: props.name, cid:category.id })
+        .then(
+          response => { result.id = response.data },
+          //and check if it's alright
+          () => {
+            this._deleteCategory(result)
+            onFail()
+            }
+        )
+    }
+
+    editCategory (originalCategory, newName, newParent, onFail) {
+        //if no change, do nothing
+      if (originalCategory.name === newName) {
+        return
+      }
+
+      //save original value
+      const originalName = originalCategory.name
+      const url = Routing.generate('simupoll_edit_category', {
+        id: originalCategory.id
+      })
+
+      originalCategory.name = newName
+
+      this.$http
+        .put(url, { name: newName, parentcategory: newParent })
+        //if error, rollback
+        .then(null, () => {
+          originalCategory.name = originalName
+          onFail()
+        })
     }
 
     deleteCategory (category, onFail) {

@@ -202,4 +202,114 @@ class PeriodController extends Controller
             'sid'     => $sid
         );
     }
+
+
+    /**
+     * Calls from Angular
+     */
+
+     /**
+      * @EXT\Route("/period/delete/{pid}/{sid}", name="simupoll_delete_period", options = {"expose"=true})
+      * @EXT\Method("DELETE")
+      *
+      * @param integer $pid
+      * @param integer $sid
+      *
+      * @return JsonResponse
+      */
+     public function deletePeriod($pid, $sid)
+     {
+         //$this->assertCanEdit($category->getResult());
+         $this->periodManager->deletePeriod($pid, $sid);
+
+         return new JsonResponse('', 204);
+     }
+
+     /**
+      * @EXT\Route("/period/add/{sid}", name="simupoll_add_period", options = {"expose"=true})
+      * @EXT\Method("POST")
+      *
+      * @param Request $request
+      * @param integer $sid
+      *
+      * @return JsonResponse
+      */
+     public function addPeriodAction(Request $request, $sid)
+     {
+         //$this->assertCanEdit($category->getResult());
+         //retrive the data passed through the AJS CategoryService
+         $periodTitle = $request->request->get('title', false);
+         $periodStart = $request->request->get('start', false);
+         $periodStop = $request->request->get('stop', false);
+         //create response
+         $response = new JsonResponse();
+         //test if data is ok
+         if (!($periodTitle === false || $periodStart === false || $periodStop === false)) {
+             if ($periodTitle == '') {
+                 $response->setData('Period title is not valid');
+                 $response->setStatusCode(422);
+             } else {
+                 if ($periodStart == '') {
+                     $response->setData('Period start is not valid');
+                     $response->setStatusCode(422);
+                 } else {
+                     if ($periodStop == '') {
+                         $response->setData('Period stop is not valid');
+                         $response->setStatusCode(422);
+                     } else {
+                         $this->periodManager->addPeriod($sid, $periodTitle, $periodStart, $periodStop);
+                         //$response->setData($category->getId());
+                     }
+                 }
+             }
+         } else {
+             $response->setData('All fields must be filled');
+             $response->setStatusCode(422);
+         }
+
+         return $response;
+     }
+
+     /**
+      * @EXT\Route("/edit/{pid}/{sid}", name="simupoll_edit_period")
+      * @EXT\Method("PUT")
+      *
+      * @param Request $request
+      * @param Period    $period
+      *
+      * @return JsonResponse
+      */
+     public function editCategoryAction(Request $request, Period $period)
+     {
+         //$this->assertCanEdit($category->getResult());
+         $periodTitle = $request->request->get('title', false);
+         $periodStart = $request->request->get('start', false);
+         $periodStop = $request->request->get('stop', false);
+         $response = new JsonResponse();
+
+         if (!($periodTitle === false || $periodStart === false || $periodStop === false)) {
+             if ($periodTitle == '') {
+                 $response->setData('Period title is not valid');
+                 $response->setStatusCode(422);
+             } else {
+                 if ($periodStart == '') {
+                     $response->setData('Period start is not valid');
+                     $response->setStatusCode(422);
+                 } else {
+                     if ($periodStop == '') {
+                         $response->setData('Period stop is not valid');
+                         $response->setStatusCode(422);
+                     } else {
+                         $this->periodManager->updatePeriod($period, $sid, $periodTitle, $periodStart, $periodStop);
+                         //$response->setData($category->getId());
+                     }
+                 }
+             }
+         } else {
+             $response->setData('All fields must be filled');
+             $response->setStatusCode(422);
+         }
+
+         return $response;
+     }
 }

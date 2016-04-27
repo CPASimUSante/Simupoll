@@ -9,7 +9,10 @@ export default class CategoryController {
     constructor(CategoryService, categoryModal) {
         //declaration of variables
         this.tree               = CategoryService.getTree()
+        this.parentTree         = {}
         this.sid                = CategoryService.getSid()
+        this.currentCategory    = {}
+        this.currentParent      = {}
         this.addedCategory      = {}
         this.editedCategory     = {}
         //variable containing the category to be deleted
@@ -21,13 +24,14 @@ export default class CategoryController {
         this._service           = CategoryService
     }
 
-    showAddCategoryForm () {
-      this._modal(addCategoryTemplate)
+    showAddCategoryForm(category) {
+        this.currentCategory = category
+        this._modal(addCategoryTemplate)
     }
 
     doAddCategory(form) {
-        this._service.addCategory(this.addedCategory, () => {
-            this._modal(errorTemplate, 'errors.mark.creation_failure')
+        this._service.addCategory(this.addedCategory, this.currentCategory, () => {
+            this._modal(errorTemplate, 'category_add_failure')
         })
         if (form.$valid) {
             this._resetForm(form)
@@ -35,15 +39,23 @@ export default class CategoryController {
         }
     }
 
-    showEditCategoryForm (category, sid) {
-    //   this.editedCategory.original = category
-    //   this.editedCategory.newValue = category.name
-      this._modal(editCategoryTemplate)
+    showEditCategoryForm(category, sid) {
+        //save original variables values
+        this.editedCategory.original = category
+        this.editedCategory.newName = category.name
+        //get possible parent categories for this category
+        const mod = this._modal(editCategoryTemplate)
+        this.parentTree = this._service.getParentCategoriesFor(category, mod)
+        //this._modal(editCategoryTemplate)
     }
 
     doEditCategory(form) {
-console.log('edit')
         if (form.$valid) {
+            this._service.editCategory(
+                this.editedCategory.original,
+                this.editedCategory.newName,
+                () => this._modal(errorTemplate, 'category_edition_failure')
+            )
             this._resetForm(form)
             this._closeModal()
         }
@@ -57,20 +69,20 @@ console.log('edit')
     doDeleteCategory() {
         this._service.deleteCategory(
           this._deletedCategory,
-          () => this._modal(errorTemplate, 'category_suppression_failure')
+          () => this._modal(errorTemplate, 'category_delete_failure')
         )
         this._closeModal()
     }
 
     //close X modal
-    cancel (form) {
+    cancel(form) {
       if (form) {
         this._resetForm(form)
       }
       this._modalInstance.dismiss()
     }
 
-    _modal (template, errorMessage, errors) {
+    _modal(template, errorMessage, errors) {
         if (errorMessage) {
             this.errorMessage = errorMessage
         }
@@ -80,11 +92,11 @@ console.log('edit')
         this._modalInstance = this._modalFactory.open(template)
     }
 
-    _closeModal () {
+    _closeModal() {
         this._modalInstance.close()
     }
 
-    _resetForm (form) {
+    _resetForm(form) {
       this.errorMessage = null
       this.errors = []
       form.$setPristine()

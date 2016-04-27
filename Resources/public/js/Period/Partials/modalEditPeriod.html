@@ -4,18 +4,56 @@
             data-dismiss="modal">
             <span aria-hidden="true" data-ng-click="vm.cancel(periodEditForm)">&times;</span>
         </button>
-        <h3 class="panel-title">{{'period_edit'|trans:{}:'resource'}}</h3>
+        <h3 class="panel-title">{{'period_modify'|trans:{}:'resource'}}</h3>
     </div>
     <div class="modal-body">
-        <div class="form-group" data-ng-class="{ 'has-error': (periodEditForm.$submitted || periodEditForm.name.$dirty) && !periodEditForm.name.$valid }">
-            <label for="name">{{ 'name'|trans }}</label>
-            <input type="text" name="name" class="form-control"
-                data-ng-model="vm.addedPeriod.name"
-                data-valid-name
+        <div class="form-group" data-ng-class="{ 'has-error': (periodEditForm.$submitted || periodEditForm.title.$dirty) && !periodEditForm.title.$valid }">
+            <label for="name">{{ 'period_title'|trans }}</label>
+            <input type="text" name="title" class="form-control"
+                data-ng-model="vm.editedPeriod.title"
+                data-valid-title
                 required />
             <p class="help-block"
-                data-ng-if="(periodEditForm.$submitted || periodEditForm.name.$dirty) && periodEditForm.name.$error.required">
+                data-ng-if="(periodEditForm.$submitted || periodEditForm.title.$dirty) && periodEditForm.title.$error.required">
                 {{ 'errors.not_blank'|trans:'resource' }}
+            </p>
+        </div>
+        <div class="form-group" data-ng-class="{ 'has-error': (periodEditForm.$submitted || periodEditForm.start.$dirty) && !periodEditForm.start.$valid }">
+            <label for="start">{{ 'period_start'|trans:'resource' }}</label>
+            <p class="input-group">
+                <input id="start" type="text" name="start" class="form-control"
+                    uib-datepicker-popup="dd/MM/yyyy"
+                    datepicker-options="vm.datepickerOptions"
+                    is-open="vm.popupStart.opened"
+                    data-ng-model="vm.editedPeriod.start"
+                    data-valid-date
+                    required />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" ng-click="vm.pickerStart()"><i class="fa fa-calendar"></i></button>
+                </span>
+            </p>
+            <p class="help-block"
+                data-ng-if="(periodEditForm.$submitted || periodEditForm.start.$dirty) && periodEditForm.start.$error.required">
+                {{ 'error_not_blank'|trans:'resource' }}
+            </p>
+        </div>
+        <div class="form-group" data-ng-class="{ 'has-error': (periodEditForm.$submitted || periodEditForm.stop.$dirty) && !periodEditForm.stop.$valid }">
+            <label for="stop">{{ 'period_stop'|trans:'resource' }}</label>
+            <p class="input-group">
+                <input id="stop" type="text" name="stop" class="form-control"
+                    uib-datepicker-popup="dd/MM/yyyy"
+                    datepicker-options="vm.datepickerOptions"
+                    is-open="vm.popupStop.opened"
+                    data-ng-model="vm.editedPeriod.stop"
+                    data-valid-date
+                    required />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" ng-click="vm.pickerStop()"><i class="fa fa-calendar"></i></button>
+                </span>
+            </p>
+            <p class="help-block"
+                data-ng-if="(periodEditForm.$submitted || periodEditForm.stop.$dirty) && periodEditForm.stop.$error.required">
+                {{ 'error_not_blank'|trans:'resource' }}
             </p>
         </div>
     </div>

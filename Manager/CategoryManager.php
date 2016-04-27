@@ -18,17 +18,24 @@ use CPASimUSante\SimupollBundle\Entity\Category;
 class CategoryManager
 {
     private $om;
+    private $simupollManager;
 
     /**
      * @DI\InjectParams({
-     *     "om" = @DI\Inject("claroline.persistence.object_manager")
+     *     "om"                 = @DI\Inject("claroline.persistence.object_manager"),
+     *     "simupollManager"    = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
      * })
      *
      * @param ObjectManager $om
+     * @param SimupollManager   simupollManager
      */
-    public function __construct(ObjectManager $om)
+    public function __construct(
+        ObjectManager $om,
+        SimupollManager $simupollManager
+        )
     {
-        $this->om = $om;
+        $this->om               = $om;
+        $this->simupollManager  = $simupollManager;
     }
 
     public function getCategoryByIdAndUser($cid, $user)
@@ -39,6 +46,19 @@ class CategoryManager
                     'id'=>$cid,
                     'user'=>$user
                 ));
+    }
+
+    public function getParentCategories($simupoll, $category)
+    {
+        $results = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+            ->getParentCategories($simupoll, $category);
+        //add the indent here
+        if ($results != array()) {
+            foreach ($results as $key => $result) {
+                $results[$key]['indent'] = str_repeat("=",($result['lvl'])*2);
+            }
+        }
+        return $results;
     }
 
     public function getCategoryBySimupoll(Simupoll $simupoll)
@@ -247,6 +267,56 @@ class CategoryManager
     {
         $category = $this->getCategoryByIdAndUser($cid, $user);
         $this->om->remove($category);
+        $this->om->flush();
+    }
+
+    /**
+     * Adds a category.
+     *
+     * @param integer $sid
+     * @param integer $cid
+     * @param User $user
+     * @param string $categoryName
+     */
+    public function addCategory($sid, $cid, User $user, $categoryName='')
+    {
+        $simupoll = $this->simupollManager->getSimupollById($sid);
+        $newCategory = new Category();
+        $newCategory->setName($categoryName);
+        //Add simupoll info
+        $newCategory->setSimupoll($simupoll);
+        if ($cid != 0) {
+            $parent_category = $this->getCategoryByIdAndUser($cid, $user);
+        }
+        else {
+            $parent_category = null;
+        }
+        $newCategory->setParent($parent_category);
+        $newCategory->setUser($user);
+        $this->om->persist($newCategory);
+        $this->om->flush();
+    }
+
+    /**
+     * Update a category
+     *
+     * @param integer $cid
+     * @param User $user
+     * @param string $categoryName
+     * @param integer $parent_cid
+     */
+    public function updateCategory($cid, User $user, $categoryName, $parent_cid)
+    {
+        $editedCategory = $this->getCategoryByIdAndUser($cid, $user);
+        $editedCategory->setName($categoryName);
+        if ($parent_cid != 0) {
+            $parent_category = $this->getCategoryByIdAndUser($parent_cid, $user);
+        }
+        else {
+            $parent_category = null;
+        }
+        $editedCategory->setParent($parent_category);
+        $this->om->persist($editedCategory);
         $this->om->flush();
     }
 }

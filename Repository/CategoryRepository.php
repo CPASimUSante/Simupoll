@@ -145,7 +145,7 @@ class CategoryRepository extends NestedTreeRepository
             $not_ids[] = $value->getId();
         }
         $ids = implode(',', $not_ids);
-
+        //TODO : can't do this in 1 query
         $qb = $this->_em->createQueryBuilder();
         $qb->select('c')
             ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
@@ -153,5 +153,11 @@ class CategoryRepository extends NestedTreeRepository
             ->andWhere('c.id NOT IN ('.$ids.')')
             ->setParameter(1, $simupoll);
         return $qb;
+    }
+
+    public function getParentCategories($simupoll, $category)
+    {
+        $qb = $this->getCategoriesWithoutChildren($simupoll, $category);
+        return $qb->getQuery()->getArrayResult();
     }
 }

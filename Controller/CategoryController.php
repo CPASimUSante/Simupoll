@@ -57,7 +57,7 @@ class CategoryController extends Controller
     {
       $this->simupollManager = $simupollManager;
       $this->categoryManager = $categoryManager;
-      $this->tokenStorage = $tokenStorage;
+      $this->tokenStorage    = $tokenStorage;
     }
 
     /**
@@ -237,6 +237,74 @@ class CategoryController extends Controller
     }
 
     /**
+     * @EXT\Route("/category/add/{sid}", name="simupoll_add_category", options = {"expose"=true})
+     * @EXT\Method("POST")
+     *
+     * @param Request $request
+     * @param integer $sid
+     *
+     * @return JsonResponse
+     */
+    public function addCategoryAction(Request $request, $sid)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        //$this->assertCanEdit($category->getResult());
+        //retrive the data passed through the AJS CategoryService
+        $cid = $request->request->get('cid');
+        $categoryName = $request->request->get('name', false);
+        //create response
+        $response = new JsonResponse();
+        //test if data is ok
+        if ($categoryName !== false) {
+            if ($categoryName == '') {
+                $response->setData('Category is not valid');
+                $response->setStatusCode(422);
+            } else {
+                $this->categoryManager->addCategory($sid, $cid, $user, $categoryName);
+                //$response->setData($category->getId());
+            }
+        } else {
+            $response->setData('Field "name" is missing');
+            $response->setStatusCode(422);
+        }
+
+        return $response;
+    }
+
+    /**
+     * @EXT\Route("/category/{id}", name="simupoll_edit_category")
+     * @EXT\Method("PUT")
+     *
+     * @param Request $request
+     * @param Category    $category
+     *
+     * @return JsonResponse
+     */
+    public function editCategoryAction(Request $request, Category $category)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        //$this->assertCanEdit($category->getResult());
+        $newParent = $request->request->get('parentcategory', false);
+        $newName = $request->request->get('name', false);
+        $response = new JsonResponse();
+
+        if ($newName !== false) {
+            if ($newName === '') {//TODO : test may be improved
+                $response->setData('Category is not valid');
+                $response->setStatusCode(422);
+            } else {
+                $this->manager->updateCategory($category, $user, $newName, $newParent);
+                $response->setStatusCode(204);
+            }
+        } else {
+            $response->setData('Field "name" is missing');
+            $response->setStatusCode(422);
+        }
+
+        return $response;
+    }
+
+    /**
      * @EXT\Route("/category/{cid}", name="simupoll_delete_category", options = {"expose"=true})
      * @EXT\Method("DELETE")
      *
@@ -251,5 +319,33 @@ class CategoryController extends Controller
         $this->categoryManager->deleteCategory($cid, $user);
 
         return new JsonResponse('', 204);
+    }
+
+    /**
+     * @EXT\Route("/parent/{cid}/simupoll/{sid}", name="simupoll_parent_category", options = {"expose"=true})
+     * @EXT\Method("GET")
+     *
+     * @param integer $cid
+     *
+     * @return JsonResponse
+     */
+    public function getParentCategoryAction($cid, $sid)
+    {
+        //$this->assertCanEdit($category->getResult());
+        $user = $this->tokenStorage->getToken()->getUser();
+        $simupoll = $this->simupollManager->getSimupollById($sid);
+        $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
+        $data = $this->categoryManager->getParentCategories($simupoll, $category);
+        
+        return new JsonResponse($data, 200);
+    }
+
+    private function assertCanEdit(Category $category)
+    {
+        //"checker" = @DI\Inject("security.authorization_checker")
+        //AuthorizationCheckerInterface $checker
+        if (!$this->checker->isGranted('EDIT', $category)) {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

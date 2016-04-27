@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
+use CPASimUSante\SimupollBundle\Entity\Period;
 
 /**
  * Helper functions for periods
@@ -16,17 +17,24 @@ use CPASimUSante\SimupollBundle\Entity\Simupoll;
 class PeriodManager
 {
     private $om;
+    private $simupollManager;
 
     /**
      * @DI\InjectParams({
-     *     "om" = @DI\Inject("claroline.persistence.object_manager")
+     *     "om"                 = @DI\Inject("claroline.persistence.object_manager"),
+     *     "simupollManager"    = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
      * })
      *
      * @param ObjectManager $om
+     * @param SimupollManager   simupollManager
      */
-    public function __construct(ObjectManager $om)
+     public function __construct(
+         ObjectManager $om,
+         SimupollManager $simupollManager
+         )
     {
-        $this->om = $om;
+        $this->om               = $om;
+        $this->simupollManager  = $simupollManager;
     }
 
     public function getPeriodBySimupollAndId($idperiod, $sid)
@@ -87,5 +95,56 @@ class PeriodManager
             }
        }
        return $periods;
+    }
+
+    /**
+     * Deletes a period
+     *
+     * @param integer $pid
+     * @param integer $sid
+     */
+    function deletePeriod($pid, $sid)
+    {
+        $period = $this->getPeriodBySimupollAndId($pid, $sid);
+        $this->om->remove($period);
+        $this->om->flush();
+    }
+
+    /**
+     * Adds a period
+     *
+     * @param integer $sid
+     * @param string $categoryName
+     */
+    public function addPeriod($sid, $periodTitle, $periodStart, $periodStop)
+    {
+        $simupoll = $this->simupollManager->getSimupollById($sid);
+        $newPeriod = new Period();
+        $newPeriod->setTitle($periodTitle);
+        $newPeriod->setStart(new \DateTime($periodStart));
+        $newPeriod->setStop(new \DateTime($periodStop));
+        //Add simupoll info
+        $newPeriod->setSimupoll($simupoll);
+        $this->om->persist($newPeriod);
+        $this->om->flush();
+    }
+
+    /**
+     * Update a period
+     *
+     * @param integer $pid
+     * @param integer $sid
+     * @param string $periodTitle
+     * @param string $periodStart
+     * @param string $periodStop
+     */
+    public function updatePeriod($pid, $sid, $periodTitle, $periodStart, $periodStop)
+    {
+        $editedPeriod = $this->getPeriodBySimupollAndId($pid, $sid);
+        $editedPeriod->setTitle($periodTitle);
+        $editedPeriod->setStart(new \DateTime($periodStart));
+        $editedPeriod->setStop(new \DateTime($periodStop));
+        $this->om->persist($editedPeriod);
+        $this->om->flush();
     }
 }

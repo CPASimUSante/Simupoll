@@ -1,6 +1,7 @@
 answer_saved: 'Vos réponses ont été enregistrées'
 
 category_add: 'Add a category'
+category_add_failure: 'Failure to add the category'
 category_choice: 'Choose category'
 category_delete: 'Supprimer la category'
 category_delete_confirm: 'Confirm to delete this category ?'
@@ -8,6 +9,7 @@ category_delete_warning: 'Attention, supprimer une catégorie qui a des enfants 
 category_delete_failure: 'Failure to delete the category'
 category_file: 'Category csv file'
 category_modify: 'Category modify'
+category_modification_failure: 'Failure to edit category'
 category_name: 'Category name'
 category_not_created: 'The category %categoryname% has not been created : it''s already there'
 category_root_add: 'Add a root category'
@@ -18,6 +20,8 @@ cpasimusante_simupoll_description: Description
 date_end: 'End'
 date_start: 'Start'
 
+error_not_blank : The field can''t be blank'
+
 graph_show: 'Show graph'
 graph_export: 'Save graph'
 group_name: 'Group name'
@@ -27,8 +31,12 @@ mark_not_set: 'There is a problem with propositions / marks for question %questi
 organization_not_set: 'The Organisation has not been set'
 
 period_add : 'Add a period'
+category_add_failure: 'Failure to add the period'
 period_delete: 'Delete period'
 period_delete_confirm: 'Confirm delete'
+period_delete_failure: 'Failure to delete period'
+period_delete_warning: 'Do you really want to delete this period ?'
+period_edit_failure: 'Failure to edit period'
 period_modify: 'Modify period'
 period_start: 'Period start'
 period_stop : 'Period end'

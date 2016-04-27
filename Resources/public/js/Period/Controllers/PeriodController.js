@@ -7,11 +7,19 @@ import errorTemplate from '../../Common/Partials/modalError.html'
 export default class PeriodController {
     //no import of Angular stuff ($window, $scope…)
     constructor(PeriodService, periodModal) {
+        this.datepickerOptions = {langage: 'fr-FR'}
+        this.popupStart = {}
+        this.popupStop = {}
+        this.popupStart.opened = false
+        this.popupStop.opened = false
+
         //declaration of variables
         this.periods            = PeriodService.getPeriods()
         this.sid                = PeriodService.getSid()
+        this.currentPeriod      = {}
         this.addedPeriod        = {}
         this.editedPeriod       = {}
+        this._deletedPeriod     = null
         this.errors             = []
         this.errorMessage       = null
         this._modalFactory      = periodModal
@@ -19,13 +27,21 @@ export default class PeriodController {
         this._service           = PeriodService
     }
 
-    showAddPeriodForm () {
-      this._modal(addPeriodTemplate)
+    pickerStart() {
+        this.popupStart.opened = true
+    }
+    pickerStop() {
+        this.popupStop.opened = true
+    }
+
+    showAddPeriod (period) {
+        this.currentPeriod = period
+        this._modal(addPeriodTemplate)
     }
 
     doAddPeriod(form) {
-        this._service.addCategory(this.addedCategory, () => {
-            this._modal(errorTemplate, 'errors.mark.creation_failure')
+        this._service.addPeriod(this.addedPeriod, this.currentPeriod, () => {
+            this._modal(errorTemplate, 'period_add_failure')
         })
         if (form.$valid) {
             this._resetForm(form)
@@ -33,25 +49,39 @@ export default class PeriodController {
         }
     }
 
-    showEditPeriodForm (period, sid) {
-    //   this.editedPeriod.original = period
-    //   this.editedPeriod.newValue = period.name
-      this._modal(editPeriodTemplate)
+    showEditPeriod (period, sid) {
+        //save original variables values
+        this.editedPeriod.original = period
+        this.editedPeriod.title = period.title
+        this.editedPeriod.start = period.start
+        this.editedPeriod.stop = period.stop
+        this._modal(editPeriodTemplate)
     }
 
     doEditPeriod(form) {
-console.log('edit')
         if (form.$valid) {
+            this._service.editPeriod(
+                this.editedPeriod.original,
+                this.editedPeriod.title,
+                this.editedPeriod.start,
+                this.editedPeriod.stop,
+                () => this._modal(errorTemplate, 'period_edit_failure')
+            )
             this._resetForm(form)
             this._closeModal()
         }
     }
 
-    showDeletePeriodForm (period) {
-      this._modal(deletePeriodTemplate)
+    showDeletePeriod (period) {
+        this._deletedPeriod = period
+        this._modal(deletePeriodTemplate)
     }
 
     doDeletePeriod(sid) {
+        this._service.deletePeriod(
+          this._deletedPeriod,
+          () => this._modal(errorTemplate, 'period_delete_failure')
+        )
         this._closeModal()
     }
 

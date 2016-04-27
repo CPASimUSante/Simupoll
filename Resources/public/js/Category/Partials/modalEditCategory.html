@@ -10,13 +10,19 @@
         <div class="form-group" data-ng-class="{ 'has-error': (categoryEditForm.$submitted || categoryEditForm.name.$dirty) && !categoryEditForm.name.$valid }">
             <label for="name">{{ 'name'|trans }}</label>
             <input type="text" name="name" class="form-control"
-                data-ng-model="vm.addedCategory.name"
-                data-valid-name
+                data-ng-model="vm.editedCategory.newName"
                 required />
             <p class="help-block"
                 data-ng-if="(categoryEditForm.$submitted || categoryEditForm.name.$dirty) && categoryEditForm.name.$error.required">
-                {{ 'errors.not_blank'|trans:'resource' }}
+                {{ 'error_not_blank'|trans:'resource' }}
             </p>
+        </div>
+        <div class="form-group" data-ng-class="{ 'has-error': (categoryEditForm.$submitted || categoryEditForm.parent.$dirty) && !categoryEditForm.parent.$valid }">
+            <label for="parent">{{ 'category_modify'|trans:{}:'resource' }}</label>
+            <select name="parent" class="form-control"
+                data-ng-model="vm.currentParent"
+                data-ng-options="option.name for option in vm.parentTree"
+                required ></select>
         </div>
     </div>
     <div class="modal-footer">
