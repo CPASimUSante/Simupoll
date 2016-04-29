@@ -17,6 +17,13 @@
         </div>
     </div>
 
+    <ul class="propositiongroup">
+        <li class="simupoll-propositions"
+            data-ng-repeat="(pid, proposition) in question.propositions"
+            propositions-list>
+        </li>
+    </ul>
+
     <div class="btn-group" role="group">
         <button type="button" data-ng-click="vm.doAddProposition(question)"
         class="btn btn-sm btn-primary text-right">
@@ -24,11 +31,4 @@
             <span>{{ 'proposition_add'|trans:{}:'resource' }}</span>
         </button>
     </div>
-
-    <ul class="propositiongroup">
-        <li class="simupoll-propositions"
-            data-ng-repeat="(pid, proposition) in question.propositions"
-            propositions-list>
-        </li>
-    </ul>
 </div>

@@ -41,6 +41,8 @@ export default class SimupollCreatorController {
         this.tinymceOptions.format = 'html'
 
         //modal variables
+        this._deletedProposition = null
+        this._proposition_index = 0
         this.errors             = []
         this.errorMessage       = null
         this._modalFactory      = simupollCreatorModal
@@ -48,11 +50,10 @@ export default class SimupollCreatorController {
         this._service           = SimupollCreatorService
 
         //questions / propositions
-        this.dd = 'ABC';
         let simupollquestions = [
-            {'title':'title1','id':1,'propositions':[{'choice':5,'mark':2},{'choice':3,'mark':1}]},
-            {'title':'title2','id':2,'propositions':[{'choice':2,'mark':3}]},
-            {'title':'title3','id':3,'propositions':[{'choice':1,'mark':4},{'choice':2,'mark':5},{'choice':3,'mark':6}]},
+            {'title':'title1','id':1,'propositions':[{'id':1, 'choice':5,'mark':2},{'id':2, 'choice':3,'mark':1}]},
+            {'title':'title2','id':2,'propositions':[{'id':3, 'choice':2,'mark':3}]},
+            {'title':'title3','id':3,'propositions':[{'id':4, 'choice':1,'mark':4},{'id':5, 'choice':2,'mark':5},{'id':6, 'choice':3,'mark':6}]},
         ]
         this.simupollquestions = simupollquestions
     }
@@ -80,11 +81,19 @@ export default class SimupollCreatorController {
         }
     }
 
-    showDeleteProposition(question) {
+    showDeleteProposition(proposition, index) {
+console.log(proposition)
+        this._deletedProposition = proposition
+        this._proposition_index = index
         this._modal(deletePropositionTemplate)
     }
 
-    doDeleteProposition(question) {
+    doDeleteProposition(proposition) {
+        this._service.deleteProposition(
+          this._deletedProposition,
+          this._proposition_index,
+          () => this._modal(errorTemplate, 'proposition_delete_failure')
+        )
         this._closeModal()
     }
 

@@ -8,40 +8,6 @@
 
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
-{% macro proposition_prototype(form) %}
-    <table class="table">
-        <tr>
-            <td class="proposition_widget">{{ form_widget(form.choice) }}</td>
-            <td class="proposition_widget">{{ form_widget(form.mark) }}</td>
-        </tr>
-    </table>
-{% endmacro %}
-
-{% macro question_prototype(form, questionId) %}
-    <table class="table">
-        <tr>
-            <td class="question_label">{{ form_label(form.title) }}</td>
-            <td class="question_widget">{{ form_widget(form.title) }}{{ form_widget(form.orderq) }}</td>
-        </tr>
-        <tr>
-            <td class="question_label">{{ form_label(form.category) }}</td>
-            <td class="question_widget">{{ form_widget(form.category) }}</td>
-        </tr>
-        <tr>
-            <td class="question_label">{{ form_label(form.propositions) }}</td>
-            <td class="question_widget">
-                <ul class="propositiongroup" data-question="{{questionId}}"
-                    data-prototype="{{ _self.proposition_prototype(form.propositions.vars.prototype)|e }}">
-                    {# Add already saved propositions #}
-                    {% for proposition in form.propositions %}
-                        <li class="proposition">{{ _self.proposition_prototype(proposition) }}</li>
-                    {% endfor %}
-                </ul>
-            </td>
-        </tr>
-    </table>
-{% endmacro %}
-
 {% block section_content %}
     <div class="panel panel-default" data-ng-app="SimupollCreatorApp">
         <div class="panel-heading">
@@ -64,6 +30,8 @@
     <script>
         AngularApp = {}
         AngularApp.webDir = "{{asset('')}}"
+        window.simupollSid = {{ sid }}
+        window.simupollData = "{{ simupollData }}"
     </script>
     <script type="text/javascript" src='{{ hotAsset('dist/cpasimusante-simupoll-simupoll-creator.js') }}'></script>
 {% endblock %}

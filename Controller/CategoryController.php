@@ -272,7 +272,8 @@ class CategoryController extends Controller
     }
 
     /**
-     * @EXT\Route("/category/{id}", name="simupoll_edit_category")
+     * @EXT\Route("/category/{id}", name="simupoll_edit_category", options = {"expose"=true})
+     * @EXT\ParamConverter("category", class="CPASimUSanteSimupollBundle:Period", options={"mapping": {"id" = "id"}})
      * @EXT\Method("PUT")
      *
      * @param Request $request
@@ -336,7 +337,7 @@ class CategoryController extends Controller
         $simupoll = $this->simupollManager->getSimupollById($sid);
         $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
         $data = $this->categoryManager->getParentCategories($simupoll, $category);
-        
+
         return new JsonResponse($data, 200);
     }
 

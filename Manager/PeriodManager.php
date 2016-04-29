@@ -138,13 +138,12 @@ class PeriodManager
      * @param string $periodStart
      * @param string $periodStop
      */
-    public function updatePeriod($pid, $sid, $periodTitle, $periodStart, $periodStop)
+    public function updatePeriod(Period $period, $periodTitle, $periodStart, $periodStop)
     {
-        $editedPeriod = $this->getPeriodBySimupollAndId($pid, $sid);
-        $editedPeriod->setTitle($periodTitle);
-        $editedPeriod->setStart(new \DateTime($periodStart));
-        $editedPeriod->setStop(new \DateTime($periodStop));
-        $this->om->persist($editedPeriod);
+        $period->setTitle($periodTitle);
+        $period->setStart(new \DateTime($periodStart));
+        $period->setStop(new \DateTime($periodStop));
+        $this->om->persist($period);
         $this->om->flush();
     }
 }

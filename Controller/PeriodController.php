@@ -271,7 +271,8 @@ class PeriodController extends Controller
      }
 
      /**
-      * @EXT\Route("/edit/{pid}/{sid}", name="simupoll_edit_period")
+      * @EXT\Route("/edit/{pid}/", name="simupoll_edit_period", options = {"expose"=true})
+      * @EXT\ParamConverter("period", class="CPASimUSanteSimupollBundle:Period", options={"mapping": {"pid" = "id"}})
       * @EXT\Method("PUT")
       *
       * @param Request $request
@@ -279,7 +280,7 @@ class PeriodController extends Controller
       *
       * @return JsonResponse
       */
-     public function editCategoryAction(Request $request, Period $period)
+     public function editPeriodAction(Request $request, Period $period)
      {
          //$this->assertCanEdit($category->getResult());
          $periodTitle = $request->request->get('title', false);
@@ -300,8 +301,7 @@ class PeriodController extends Controller
                          $response->setData('Period stop is not valid');
                          $response->setStatusCode(422);
                      } else {
-                         $this->periodManager->updatePeriod($period, $sid, $periodTitle, $periodStart, $periodStop);
-                         //$response->setData($category->getId());
+                         $this->periodManager->updatePeriod($period, $periodTitle, $periodStart, $periodStop);
                      }
                  }
              }

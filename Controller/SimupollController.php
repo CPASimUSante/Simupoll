@@ -109,43 +109,13 @@ class SimupollController extends Controller
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
         if ($simupollAdmin === true) {
-            $em = $this->getDoctrine()->getManager();
 
-            // Create an array of the current Question objects in the database
-            $originalQuestions = array();
-            foreach ($simupoll->getQuestions() as $question) {
-                $originalQuestions[] = $question;
-            }
+            $simupollData = $this->simupollManager->getSimupollData($simupoll);
 
-            //pass the simupoll id to filter the categories
-            $form = $this->get('form.factory')
-                ->create(new SimupollType($simupoll->getId()), $simupoll);
-
-            $form->handleRequest($request);
-            if ($form->isValid()) {
-
-                // remove the relationship between the question and the Simupoll
-                foreach ($originalQuestions as $question) {
-                    if (false === $simupoll->getQuestions()->contains($question)) {
-                        // remove the Simupoll from the question
-                        //$question->getSimupoll()->removeElement($simupoll);
-
-                        // in a a ManyToOne relationship, remove the relationship
-                       // $question->setSimupoll(null);
-                       // $em->persist($question);
-
-                        // to delete the question entirely, you can also do that
-                        $em->remove($question);
-                    }
-                }
-//echo '<pre>';var_dump();echo '</pre>';die();
-                $em->persist($simupoll);
-                $em->flush();
-                $this->get('session')->getFlashBag()->add('info', 'Simupoll mis à jour');
-            }
             return array(
                 '_resource'     => $simupoll,
-                'form'          => $form->createView(),
+                'simupollData'  => 'X',
+                'sid'           => $simupoll->getId(),
             );
         }
         //If not admin, open

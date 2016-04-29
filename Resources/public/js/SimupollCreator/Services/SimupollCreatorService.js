@@ -4,8 +4,31 @@ export default class SimupollCreatorService {
         //declaration of variables
         this.$http      = $http
         this.$q         = $q
-        // this._periods   = SimupollCreatorService._getGlobal('simupollPeriods')
-        // this._sid       = SimupollCreatorService._getGlobal('simupollSid')
+         this._simupoll = SimupollCreatorService._getGlobal('simupollData')
+         this._sid      = SimupollCreatorService._getGlobal('simupollSid')
+    }
+
+    getSimupoll () {
+      return this._simupoll
+    }
+
+    getSid () {
+      return this._sid
+    }
+
+    deleteProposition(proposition, index) {
+        const url = Routing.generate('simupoll_delete_proposition', {
+          pid: proposition.id
+        })
+
+        this._deleteProposition(proposition)
+
+        this.$http
+          .delete(url)
+          .then(null, () => {
+            //this._periods.push(proposition)
+            onFail()
+        })
     }
 
     //defined in template script

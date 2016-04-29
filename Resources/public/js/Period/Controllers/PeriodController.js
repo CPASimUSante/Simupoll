@@ -6,12 +6,12 @@ import errorTemplate from '../../Common/Partials/modalError.html'
 
 export default class PeriodController {
     //no import of Angular stuff ($window, $scope…)
-    constructor(PeriodService, periodModal) {
-        this.datepickerOptions = {langage: 'fr-FR'}
-        this.popupStart = {}
-        this.popupStop = {}
-        this.popupStart.opened = false
-        this.popupStop.opened = false
+    constructor(PeriodService, periodModal, dateFormatFilter) {
+        this.datepickerOptions  = {langage: 'fr-FR'}
+        this.popupStart         = {}
+        this.popupStop          = {}
+        this.popupStart.opened  = false
+        this.popupStop.opened   = false
 
         //declaration of variables
         this.periods            = PeriodService.getPeriods()
@@ -25,6 +25,7 @@ export default class PeriodController {
         this._modalFactory      = periodModal
         this._modalInstance     = null
         this._service           = PeriodService
+        this._datefilter        = dateFormatFilter
     }
 
     pickerStart() {
@@ -49,12 +50,13 @@ export default class PeriodController {
         }
     }
 
-    showEditPeriod (period, sid) {
+    showEditPeriod (period) {
         //save original variables values
+//console.log(period.start.date)
         this.editedPeriod.original = period
         this.editedPeriod.title = period.title
-        this.editedPeriod.start = period.start
-        this.editedPeriod.stop = period.stop
+        this.editedPeriod.start = this._datefilter(period.start.date)
+        this.editedPeriod.stop = this._datefilter(period.stop.date)
         this._modal(editPeriodTemplate)
     }
 

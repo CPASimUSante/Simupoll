@@ -59,6 +59,12 @@ class SimupollManager
             ->findOneById($sid);
     }
 
+    public function getSimupollData(Simupoll $simupoll)
+    {
+        return $this->om->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->getQuestionsAndPropositions($simupoll->getId());
+    }
+
     /**
      * Does the Simupoll has answer
      *

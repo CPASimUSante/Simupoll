@@ -72,8 +72,7 @@ export default class PeriodService {
       const originalStart = originalPeriod.start
       const originalStop = originalPeriod.stop
       const url = Routing.generate('simupoll_edit_period', {
-        pid: originalPeriod.id,
-        sid: this._sid
+        pid: originalPeriod.id
       })
 
       originalPeriod.title = newTitle
@@ -81,7 +80,7 @@ export default class PeriodService {
       originalPeriod.stop = newStop
 
       this.$http
-        .put(url, { name: newTitle, start: newStart, stop: newStop })
+        .put(url, { title: newTitle, start: newStart, stop: newStop })
         //if error, rollback
         .then(null, () => {
           originalPeriod.title = originalTitle,
