@@ -18,7 +18,7 @@ export default class PeriodService {
     }
 
     addPeriod (props, period, onFail) {
-      const result = { title: props.title, start:props.start, stop:props.stop  }
+      const result = { title: props.title, start:props.start, stop:props.stop }
       const url = Routing.generate('simupoll_add_period', {
         sid: this._sid
       })

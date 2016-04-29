@@ -61,8 +61,24 @@ class SimupollManager
 
     public function getSimupollData(Simupoll $simupoll)
     {
-        return $this->om->getRepository('CPASimUSanteSimupollBundle:Simupoll')
-            ->getQuestionsAndPropositions($simupoll->getId());
+        $simupollData = array();
+        $simupollRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->findOneById($simupoll->getId());
+
+        $questionRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Question')
+            ->getQuestionsArrayBySimupoll($simupoll);
+        foreach ($questionRawData as $keyq => $question) {
+            $propositionRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Proposition')
+                ->findByQuestion($question);
+            $props = array();
+            foreach ($propositionRawData as $keyp => $proposition) {
+                $props[] = array('id'=>$proposition->getId(), 'choice'=> $proposition->getChoice(), 'mark'=> $proposition->getmark());
+            }
+            $simupollData['qp'][] = array('title'=> $question['title'], 'id'=>$question['id'], 'propositions'=> $props);
+        }
+        $simupollData['description'] = $simupollRawData->getDescription();
+
+        return $simupollData;
     }
 
     /**

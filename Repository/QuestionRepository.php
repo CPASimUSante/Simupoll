@@ -3,8 +3,10 @@
 namespace CPASimUSante\SimupollBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Question;
+use CPASimUSante\SimupollBundle\Entity\Simupoll;
 
 class QuestionRepository extends EntityRepository
 {
@@ -154,5 +156,19 @@ class QuestionRepository extends EntityRepository
         //die($qb->getQuery()->getSQL());
         //return $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     *
+     */
+    public function getQuestionsArrayBySimupoll(Simupoll $simupoll)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('q')
+            ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
+            ->where('q.simupoll=:simupoll')
+            ->setParameter('simupoll', $simupoll);
+        $results = $qb->getQuery()->getResult(Query::HYDRATE_ARRAY);
+        return $results;
     }
 }

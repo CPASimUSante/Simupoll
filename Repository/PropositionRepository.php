@@ -1,7 +1,6 @@
 <?php
 
 namespace CPASimUSante\SimupollBundle\Repository;
-
 /**
  * PropositionRepository
  *

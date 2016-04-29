@@ -35,43 +35,70 @@ export default class SimupollCreatorController {
             }
         }
 
-        this.tinymceOptions.plugins = plugins
-        this.tinymceOptions.toolbar1 = toolbar
-        this.tinymceOptions.trusted = true
-        this.tinymceOptions.format = 'html'
+        this.tinymceOptions.plugins         = plugins
+        this.tinymceOptions.toolbar1        = toolbar
+        this.tinymceOptions.trusted         = true
+        this.tinymceOptions.format          = 'html'
 
         //modal variables
-        this._deletedProposition = null
-        this._proposition_index = 0
-        this.errors             = []
-        this.errorMessage       = null
-        this._modalFactory      = simupollCreatorModal
-        this._modalInstance     = null
-        this._service           = SimupollCreatorService
+        this._addedSimupoll                 = {}
+        this._deletedPropositionQuestion    = null
+        this._proposition_index             = 0
+        this.errors                         = []
+        this.errorMessage                   = null
+        this._modalFactory                  = simupollCreatorModal
+        this._modalInstance                 = null
+        this._service                       = SimupollCreatorService
 
+        this.description = SimupollCreatorService.getDescription()
         //questions / propositions
-        let simupollquestions = [
-            {'title':'title1','id':1,'propositions':[{'id':1, 'choice':5,'mark':2},{'id':2, 'choice':3,'mark':1}]},
-            {'title':'title2','id':2,'propositions':[{'id':3, 'choice':2,'mark':3}]},
-            {'title':'title3','id':3,'propositions':[{'id':4, 'choice':1,'mark':4},{'id':5, 'choice':2,'mark':5},{'id':6, 'choice':3,'mark':6}]},
-        ]
-        this.simupollquestions = simupollquestions
+        this.simupollquestions = SimupollCreatorService.getSimupoll()
+    }
+
+    saveSimupoll(form) {
+        if (form.$valid) {
+            this._service.saveSimupoll(
+              this.description,
+              this.simupollquestions,
+              () => this._modal(errorTemplate, 'simupoll_save_failure')
+            )
+        }
     }
 
     inlineAddQuestion() {
-        console.log('inlineadd');
+        this.doAddQuestion()
     }
 
     doAddQuestion() {
-
+        this._service.addQuestion(
+          this.simupollquestions,
+          () => this._modal(errorTemplate, 'question_add_failure')
+        )
     }
 
-    showDeleteQuestion(question) {
+    inlineAddProposition(question) {
+        this.doAddPropostion(question)
+    }
+
+    doAddPropostion(question) {
+        this._service.addProposition(
+          this.simupollquestions,
+          question,
+          () => this._modal(errorTemplate, 'proposition_add_failure')
+        )
+    }
+
+    showDeleteQuestion(index) {
+        this._question_index = index
         this._modal(deleteQuestionTemplate)
     }
 
-    doDeleteQuestion(question) {
-
+    doDeleteQuestion(index) {
+        this._service.deleteQuestion(
+          this._question_index,
+          () => this._modal(errorTemplate, 'question_delete_failure')
+        )
+        this._closeModal()
     }
 
     doAddProposition(form) {
@@ -81,16 +108,15 @@ export default class SimupollCreatorController {
         }
     }
 
-    showDeleteProposition(proposition, index) {
-console.log(proposition)
-        this._deletedProposition = proposition
+    showDeleteProposition(question, index) {
+        this._deletedPropositionQuestion = question
         this._proposition_index = index
         this._modal(deletePropositionTemplate)
     }
 
     doDeleteProposition(proposition) {
         this._service.deleteProposition(
-          this._deletedProposition,
+          this._deletedPropositionQuestion,
           this._proposition_index,
           () => this._modal(errorTemplate, 'proposition_delete_failure')
         )

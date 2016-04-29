@@ -22,3 +22,8 @@ period_controller:
     resource: "@CPASimUSanteSimupollBundle/Controller/PeriodController.php"
     type: annotation
     prefix: /period
+
+proposition_controller:
+    resource: "@CPASimUSanteSimupollBundle/Controller/PropositionController.php"
+    type: annotation
+    prefix: /proposition

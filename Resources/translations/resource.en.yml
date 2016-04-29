@@ -66,4 +66,5 @@ question_title: 'Question title'
 
 select_users_to_add_to_simupollgraph: 'Choose users for the graph'
 simupoll_question_add: 'Indiquez les questions associées à ce Simupoll'
+simupoll_save_failure: 'Failure to save simupoll'
 stat_category_manage: '3- Check the checkbox for categories to group.'

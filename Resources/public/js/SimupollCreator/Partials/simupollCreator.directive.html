@@ -1,5 +1,5 @@
 <div class="simupollcreator">
-    <form name="simupollCreatorForm">
+    <form name="simupollCreatorForm" novalidate>
         <div class="form-group" data-ng-class="{ 'has-error': (simupollCreatorForm.$submitted || simupollCreatorForm.name.$dirty) && !simupollCreatorForm.name.$valid }">
             <label for="name">{{ 'description'|trans }}</label>
             <textarea data-ui-tinymce="vm.tinymceOptions"
@@ -11,7 +11,7 @@
 
         <div class="questions">
             <ul class="questiongroup">
-                <li class="questiongroup-li"
+                <li class="question"
                     data-ng-repeat="question in vm.simupollquestions"
                     questions-list>
                 </li>
@@ -25,6 +25,15 @@
                     <span>{{ 'question_add'|trans:{}:'resource' }}</span>
                 </button>
             </div>
+
+            <div class="btn-group" role="group">
+                <button type="button"
+                    data-ng-click="vm.saveSimupoll(simupollCreatorForm)"
+                    class="btn btn-sm btn-primary">
+                    <span>{{ 'save'|trans }}</span>
+                </button>
+            </div>
+
         </div>
     </form>
 </div>

@@ -1,34 +1,34 @@
 <div class="simupoll-question" >
     <div>
         <label class="control-label col-md-4 required">{{ 'question_title'|trans:{}:'resource' }} :</label>
-        <div class="col-md-6 question-title">
+        <div class="col-md-8 question-title">
             <input class="form-control" name="question-title"
                    data-ng-class="question-title" data-ng-model="question.title"
                    type="text" required field-validation />
         </div>
-
-        <div class="col-md-2">
-            <button type="button"
-                data-ng-click="vm.showDeleteQuestion(question, $index)"
-                class="btn btn-sm btn-danger text-right">
-                <span class="fa fa-trash"></span>
-                <span>{{ 'question_delete'|trans:{}:'resource' }}</span>
-            </button>
-        </div>
     </div>
 
-    <ul class="propositiongroup">
-        <li class="simupoll-propositions"
-            data-ng-repeat="(pid, proposition) in question.propositions"
-            propositions-list>
-        </li>
-    </ul>
+    <div>
+        <label class="control-label col-md-4 required">{{ 'proposition_value'|trans:{}:'resource' }} :</label>
+        <ul class="propositiongroup col-md-8 ">
+            <li class="proposition"
+                data-ng-repeat="(pid, proposition) in question.propositions"
+                propositions-list>
+            </li>
+            <li><button type="button" data-ng-click="vm.inlineAddProposition(question)"
+            class="btn btn-sm btn-primary text-right">
+                <span class="fa fa-plus"></span>
+                <span>{{ 'proposition_add'|trans:{}:'resource' }}</span>
+            </button></li>
+        </ul>
+    </div>
 
     <div class="btn-group" role="group">
-        <button type="button" data-ng-click="vm.doAddProposition(question)"
-        class="btn btn-sm btn-primary text-right">
-            <span class="fa fa-plus"></span>
-            <span>{{ 'proposition_add'|trans:{}:'resource' }}</span>
+        <button type="button"
+            data-ng-click="vm.showDeleteQuestion($index)"
+            class="btn btn-sm btn-danger text-right">
+            <span class="fa fa-trash"></span>
+            <span>{{ 'question_delete'|trans:{}:'resource' }}</span>
         </button>
     </div>
 </div>

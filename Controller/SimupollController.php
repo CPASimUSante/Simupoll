@@ -108,20 +108,17 @@ class SimupollController extends Controller
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
-        if ($simupollAdmin === true) {
-
-            $simupollData = $this->simupollManager->getSimupollData($simupoll);
-
-            return array(
-                '_resource'     => $simupoll,
-                'simupollData'  => 'X',
-                'sid'           => $simupoll->getId(),
-            );
-        }
-        //If not admin, open
-        else {
+        if ($simupollAdmin !== true) {
             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
         }
+        $simupollRawData = $this->simupollManager->getSimupollData($simupoll);
+
+        return array(
+                '_resource'     => $simupoll,
+                'desc'          => $simupollRawData["description"], //for some reason, can't use 'description'
+                'simupollData'  => $simupollRawData["qp"],
+                'sid'           => $simupoll->getId(),
+        );
     }
 
     /**
@@ -781,5 +778,45 @@ class SimupollController extends Controller
         return array(
             '_resource'     => $sim,
         );
+    }
+
+    /**
+     * Save Simupoll creation
+     *
+     * @EXT\Route("/save/{sid}", name="simupoll_save_simupoll", options={"expose"=true})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"mapping": {"sid" = "id"}})
+     * @EXT\Method("POST")
+     *
+     * @return array
+     */
+    public function saveSimupollAction(Request $request, Simupoll $simupoll)
+    {
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        //$this->assertCanEdit($category->getResult());
+        //retrive the data passed through the AJS CategoryService
+        $description = $request->request->get('description');
+//         echo 'XX';echo $description;
+// die();
+        //create response
+        $response = new JsonResponse();
+/*
+        $cid = $request->request->get('cid');
+        $categoryName = $request->request->get('name', false);
+
+        //test if data is ok
+        if ($categoryName !== false) {
+            if ($categoryName == '') {
+                $response->setData('Category is not valid');
+                $response->setStatusCode(422);
+            } else {
+                $this->categoryManager->addCategory($sid, $cid, $user, $categoryName);
+                //$response->setData($category->getId());
+            }
+        } else {
+            $response->setData('Field "name" is missing');
+            $response->setStatusCode(422);
+        }
+*/
+        return $response;
     }
 }

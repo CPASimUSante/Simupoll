@@ -23,6 +23,11 @@
     </div>
 {% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('bundles/cpasimusantesimupoll/css/simupoll.css') }}">
+{% endblock %}
+
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
@@ -31,7 +36,8 @@
         AngularApp = {}
         AngularApp.webDir = "{{asset('')}}"
         window.simupollSid = {{ sid }}
-        window.simupollData = "{{ simupollData }}"
+        window.simupollDescription = "{{ desc|raw }}"
+        window.simupollData = {{ simupollData|json_encode|raw }}
     </script>
     <script type="text/javascript" src='{{ hotAsset('dist/cpasimusante-simupoll-simupoll-creator.js') }}'></script>
 {% endblock %}
