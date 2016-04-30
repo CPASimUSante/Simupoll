@@ -66,15 +66,35 @@ class SimupollManager
             ->findOneById($simupoll->getId());
 
         $questionRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Question')
-            ->getQuestionsArrayBySimupoll($simupoll);
+            ->getQuestionsBySimupoll($simupoll);
+
         foreach ($questionRawData as $keyq => $question) {
             $propositionRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Proposition')
                 ->findByQuestion($question);
             $props = array();
+            $cat = $question->getCategory();
+            $category = array(
+                'id'        => $cat->getId(),
+                'name'      => $cat->getName(),
+                'lft'       => $cat->getLft(),
+                'lvl'       => $cat->getLvl(),
+                'rgt'       => $cat->getRgt(),
+                'root'      => $cat->getRoot(),
+                'indent'    => str_repeat("=",($cat->getLvl())*2)
+            );
             foreach ($propositionRawData as $keyp => $proposition) {
-                $props[] = array('id'=>$proposition->getId(), 'choice'=> $proposition->getChoice(), 'mark'=> $proposition->getmark());
+                $props[] = array(
+                    'id'=>$proposition->getId(),
+                    'choice'=> $proposition->getChoice(),
+                    'mark'=> $proposition->getmark()
+                );
             }
-            $simupollData['qp'][] = array('title'=> $question['title'], 'id'=>$question['id'], 'propositions'=> $props);
+            $simupollData['qp'][] = array(
+                'title'         => $question->getTitle(),
+                'category'      => $category,
+                'id'            => $question->getId(),
+                'propositions'  => $props
+            );
         }
         $simupollData['description'] = $simupollRawData->getDescription();
 

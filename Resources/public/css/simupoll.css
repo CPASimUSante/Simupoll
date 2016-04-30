@@ -9,6 +9,7 @@ li.proposition table {margin:0}
 .containerradar{width: 100%;position:relative}
 p.simuquestion {font-weight: bold;text-decoration: underline;}
 .simuproposition li{display: inline}
+.pad1 {padding: 1em 0; clear: both;}
 @media screen and (max-width: 640px) {
      .panel-simupoll .btn span{display: none}
 }

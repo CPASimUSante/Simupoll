@@ -50,9 +50,10 @@ export default class SimupollCreatorController {
         this._modalInstance                 = null
         this._service                       = SimupollCreatorService
 
-        this.description = SimupollCreatorService.getDescription()
+        this.description                    = SimupollCreatorService.getDescription()
+        this.categories                     = SimupollCreatorService.getTree()
         //questions / propositions
-        this.simupollquestions = SimupollCreatorService.getSimupoll()
+        this.simupollquestions              = SimupollCreatorService.getSimupoll()
     }
 
     saveSimupoll(form) {

@@ -7,6 +7,7 @@ export default class SimupollCreatorService {
         this._description   = SimupollCreatorService._getGlobal('simupollDescription')
         this._simupoll      = SimupollCreatorService._getGlobal('simupollData')
         this._sid           = SimupollCreatorService._getGlobal('simupollSid')
+        this._tree          = SimupollCreatorService._getGlobal('simupollCategories')
     }
 
     getSimupoll () {
@@ -19,6 +20,10 @@ export default class SimupollCreatorService {
 
     getDescription () {
       return this._description
+    }
+
+    getTree () {
+      return this._tree
     }
 
     saveSimupoll(description, props, onFail) {

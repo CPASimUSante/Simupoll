@@ -153,22 +153,20 @@ class QuestionRepository extends EntityRepository
         }
         $qb->orderBy('q.id', 'ASC');
         $qb->setParameter('simupoll', $sid);
-        //die($qb->getQuery()->getSQL());
-        //return $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 
     /**
      *
      */
-    public function getQuestionsArrayBySimupoll(Simupoll $simupoll)
+    public function getQuestionsBySimupoll(Simupoll $simupoll)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q')
             ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
             ->where('q.simupoll=:simupoll')
             ->setParameter('simupoll', $simupoll);
-        $results = $qb->getQuery()->getResult(Query::HYDRATE_ARRAY);
+        $results = $qb->getQuery()->getResult();
         return $results;
     }
 }

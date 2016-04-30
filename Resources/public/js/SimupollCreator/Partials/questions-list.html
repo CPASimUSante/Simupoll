@@ -1,5 +1,5 @@
 <div class="simupoll-question" >
-    <div>
+    <div class="pad1">
         <label class="control-label col-md-4 required">{{ 'question_title'|trans:{}:'resource' }} :</label>
         <div class="col-md-8 question-title">
             <input class="form-control" name="question-title"
@@ -7,8 +7,17 @@
                    type="text" required field-validation />
         </div>
     </div>
-
-    <div>
+    <div class="pad1">
+        <label class="control-label col-md-4 required">{{ 'category_name'|trans:{}:'resource' }} :</label>
+        <div class="col-md-8 category-name">
+            <select class="form-control" name="category-name"
+                data-ng-class="category-name"
+                data-ng-model="question.category"
+                data-ng-options="option.indent+' '+option.name for option in vm.categories track by option.id"
+                required></select>
+        </div>
+    </div>
+    <div class="pad1">
         <label class="control-label col-md-4 required">{{ 'proposition_value'|trans:{}:'resource' }} :</label>
         <ul class="propositiongroup col-md-8 ">
             <li class="proposition"

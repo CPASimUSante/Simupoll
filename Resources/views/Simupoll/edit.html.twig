@@ -36,6 +36,7 @@
         AngularApp = {}
         AngularApp.webDir = "{{asset('')}}"
         window.simupollSid = {{ sid }}
+        window.simupollCategories = {{ categories|json_encode|raw }}
         window.simupollDescription = "{{ desc|raw }}"
         window.simupollData = {{ simupollData|json_encode|raw }}
     </script>

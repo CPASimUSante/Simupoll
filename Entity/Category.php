@@ -188,6 +188,16 @@ class Category
         return $this->lft;
     }
 
+    public function getRgt()
+    {
+        return $this->rgt;
+    }
+
+    public function getRoot()
+    {
+        return $this->root;
+    }
+
     public function getUser()
     {
         return $this->user;

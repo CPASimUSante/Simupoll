@@ -113,8 +113,11 @@ class SimupollController extends Controller
         }
         $simupollRawData = $this->simupollManager->getSimupollData($simupoll);
 
+        $tree = $this->categoryManager->getCategoryTreeNg($simupoll);
+
         return array(
                 '_resource'     => $simupoll,
+                'categories'    => $tree,
                 'desc'          => $simupollRawData["description"], //for some reason, can't use 'description'
                 'simupollData'  => $simupollRawData["qp"],
                 'sid'           => $simupoll->getId(),
@@ -795,6 +798,8 @@ class SimupollController extends Controller
         //$this->assertCanEdit($category->getResult());
         //retrive the data passed through the AJS CategoryService
         $description = $request->request->get('description');
+        $title = $request->request->get('question-title');
+        $category = $request->request->get('category-name');
 //         echo 'XX';echo $description;
 // die();
         //create response
