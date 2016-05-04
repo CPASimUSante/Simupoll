@@ -150,7 +150,7 @@ class SimupollController extends Controller
         }
         //If not admin, open
         else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
         }
     }
 
@@ -305,7 +305,7 @@ class SimupollController extends Controller
                 '_resource'         => $simupoll,
             );
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
         }
     }
 
@@ -325,6 +325,7 @@ class SimupollController extends Controller
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
 
+
         //can user access ?
         $this->checkAccess('OPEN', $simupoll);
 
@@ -332,10 +333,12 @@ class SimupollController extends Controller
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
-
+// echo '<pre>';var_dump(is_object($user));echo '</pre>';
+// //echo '<pre>';var_dump($simupollAdmin);echo '</pre>';
+// die();
         //can user manage exercise
         $allowToCompose = 0;
-        if (is_object($user) && ($simupollAdmin === true) ) {
+        if (is_object($user) ) {
             $allowToCompose = 1;
 
             return array(
@@ -343,7 +346,7 @@ class SimupollController extends Controller
                 '_resource'         => $simupoll,
             );
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
         }
     }
 
@@ -464,7 +467,7 @@ class SimupollController extends Controller
             );
         //User not auth => get out!
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
         }
 
 /*
@@ -596,7 +599,7 @@ class SimupollController extends Controller
             }
 //echo '<pre>';var_dump($categoryList);echo '</pre>';die();
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('simupollId' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_results', array('id' => $simupoll->getId())));
         }
 
         return array(

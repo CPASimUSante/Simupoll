@@ -29,9 +29,11 @@
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_allhtml', {'id': _resource.getId() }) }}" title="{{ 'display_results_simupoll' | trans }}">
                     <i class="fa fa-table"></i> <span>{{ 'display_results_simupoll' | trans }}</span>
                 </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_csv', {'id': _resource.getId() }) }}" title="{{ 'export_csv_simupoll' | trans }}">
-                    <i class="fa fa-upload"></i> <span>{{ 'export_csv_simupoll' | trans }}</span>
-                </a>
+                {% if is_granted('ADMINISTRATE', _resource) %}
+                    <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_stats_csv', {'id': _resource.getId() }) }}" title="{{ 'export_csv_simupoll' | trans }}">
+                        <i class="fa fa-upload"></i> <span>{{ 'export_csv_simupoll' | trans }}</span>
+                    </a>
+                {% endif %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_graph_show', {'id': _resource.getId() }) }}" title="{{ 'show_graphics_simupoll' | trans }}">
                     <i class="fa fa-bar-chart"></i> <span>{{ 'show_graphics_simupoll' | trans }}</span>
                 </a>
