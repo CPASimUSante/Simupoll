@@ -584,8 +584,16 @@ class SimupollController extends Controller
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
-            $users = $this->simupollManager->getUserData($userlist);
 
+            //non admin user get to see only their stats and those of the group
+            $simupollAdmin = $this->container
+                ->get('cpasimusante_simupoll.services.simupoll')
+                ->isGrantedAccess($simupoll, 'ADMINISTRATE');
+            if ($simupollAdmin != true) {
+                $userlist = array($user->getId());
+            }
+
+            $users = $this->simupollManager->getUserData($userlist);
             foreach($categoryList as $inc => $categories) {
                 $datas = $this->prepareResultsAndStatsForSimupoll(
                     $simupoll,
@@ -712,15 +720,27 @@ class SimupollController extends Controller
             ->getToken()->getUser();
 
         //get the stat Configuration
-        $statsmanage = $this->statmanageManager->getStatmanageBySimupollAndUser($user, $simupoll);
-        $statcategorygroup = $this->statcategorygroupManager->getStatcategorygroupByStatmanage($statsmanage);
+        $statsmanage = $this->statmanageManager
+            ->getStatmanageBySimupollAndUser($user, $simupoll);
+        $statcategorygroup = $this->statcategorygroupManager
+            ->getStatcategorygroupByStatmanage($statsmanage);
 
         if (isset($statsmanage[0])) {
             //retrieve titles and categorygroups
-            $data = $this->simupollManager->getStatcategoryData($statcategorygroup);
+            $data = $this->simupollManager
+                ->getStatcategoryData($statcategorygroup);
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            
+            //non admin user get to see only their stats and those of the group
+            $simupollAdmin = $this->container
+                ->get('cpasimusante_simupoll.services.simupoll')
+                ->isGrantedAccess($simupoll, 'ADMINISTRATE');
+            if ($simupollAdmin != true) {
+                $userlist = array($user->getId());
+            }
+
             $users = $this->simupollManager->getUserData($userlist);
 
             //get categories groups : array (groups) of array (categories)
