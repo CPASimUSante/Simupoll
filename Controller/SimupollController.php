@@ -186,17 +186,19 @@ class SimupollController extends Controller
             $allowToCompose = 1;
         }
 
-        //is there a period set or is this the right period to answer?
+        //is there a period set or is this the right period to answer ?
         $opened = $this->periodManager->getOpenedPeriod($simupoll->getId());
 
         //is there any response to this simupoll
         $hasresponse = $this->simupollManager->hasResponse($simupoll);
 
         //is there any question for this simupoll
-        $hasquestion = $this->simupollManager->hasQuestion($simupoll);
+        //$hasquestion = $this->simupollManager->hasQuestion($simupoll);
+        $hasquestion = ($simupoll->getHasPaper() !== true) ? false : true;
 
         //is there any category for this simupoll
         $hascategory = $this->simupollManager->hasCategory($simupoll);
+
 
         return array(
             '_resource'         => $simupoll,
@@ -732,7 +734,7 @@ class SimupollController extends Controller
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
             $userlist = ($userdata == '') ? array() : explode(',', $userdata);
-            
+
             //non admin user get to see only their stats and those of the group
             $simupollAdmin = $this->container
                 ->get('cpasimusante_simupoll.services.simupoll')

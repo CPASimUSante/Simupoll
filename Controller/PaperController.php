@@ -303,6 +303,12 @@ class PaperController extends Controller
                          $em->persist($answer);
                     }
                  }
+                 
+                 //The simupoll has been answered to at least once
+                  if ($simupoll->getHasPaper() !== true) {
+                      $simupoll->setHasPaper(true);
+                      $em->persist($simupoll);
+                  }
                  $em->flush();
              }
          }

@@ -25,7 +25,7 @@
             {# display the messsages - macros defined in core #}
             <div>{{ macros.flashBox() }}</div>
             {% if not opened %}
-                <div class="well">Attention, actuellement, les périodes définies ne permettent pas de répondre au Simupoll</div>
+                <div class="well">{{ 'simupoll_warning_period_not_defined' | trans({}, 'platform') }}</div>
             {% endif %}
             {% if is_granted('ADMINISTRATE', _resource) %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}" title="{{ 'manage_categories' | trans }}">
@@ -35,12 +35,14 @@
                     <i class="fa fa-cogs"></i> <span>{{ 'manage_periods' | trans }}</span>
                 </a>
                 {% if opened and hascategory %}
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_edit', { 'id': _resource.id }) }}" title="{{ 'edit_simupoll' | trans }}">
-                    <i class="fa fa-pencil"></i> <span>{{ 'edit_simupoll' | trans }}</span>
-                </a>
-                <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_organize', { 'id': _resource.id }) }}" title="{{ 'organize_simupoll' | trans }}">
-                    <i class="fa fa-cogs"></i> <span>{{ 'organize_simupoll' | trans }}</span>
-                </a>
+                    {% if hasresponse != true %}
+                    <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_edit', { 'id': _resource.id }) }}" title="{{ 'edit_simupoll' | trans }}">
+                        <i class="fa fa-pencil"></i> <span>{{ 'edit_simupoll' | trans }}</span>
+                    </a>
+                    {% endif %}
+                    <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_organize', { 'id': _resource.id }) }}" title="{{ 'organize_simupoll' | trans }}">
+                        <i class="fa fa-cogs"></i> <span>{{ 'organize_simupoll' | trans }}</span>
+                    </a>
                 {% endif %}
             {% endif %}
 
