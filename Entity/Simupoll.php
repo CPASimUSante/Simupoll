@@ -36,6 +36,14 @@ class Simupoll extends AbstractResource
     private $description;
 
     /**
+     * Does the Simupoll has paper : no modification of Simupoll possible
+     * @var string $hasPaper
+     *
+     * @ORM\Column(name="has_paper", type="boolean", nullable=true)
+     */
+    private $hasPaper = false;
+
+    /**
      * @var Questions[]
      *
      * @ORM\OneToMany(targetEntity="CPASimUSante\SimupollBundle\Entity\Question", mappedBy="simupoll", cascade={"all"})
@@ -125,5 +133,15 @@ class Simupoll extends AbstractResource
     public function getDescription()
     {
         return $this->description;
+    }
+
+    public function getHasPaper()
+    {
+        return $this->hasPaper;
+    }
+
+    public function setHasPaper($hasPaper)
+    {
+        $this->hasPaper = $hasPaper;
     }
 }
