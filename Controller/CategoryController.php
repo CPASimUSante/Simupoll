@@ -324,18 +324,20 @@ class CategoryController extends Controller
 
     /**
      * @EXT\Route("/parent/{cid}/simupoll/{sid}", name="simupoll_parent_category", options = {"expose"=true})
+     * @EXT\ParamConverter("category", class="CPASimUSanteSimupollBundle:Category", options={"mapping": {"cid" = "id"}})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"mapping": {"sid" = "id"}})
      * @EXT\Method("GET")
      *
      * @param integer $cid
      *
      * @return JsonResponse
      */
-    public function getParentCategoryAction($cid, $sid)
+    public function getParentCategoryAction(Simupoll $simupoll, Category $category)
     {
         //$this->assertCanEdit($category->getResult());
-        $user = $this->tokenStorage->getToken()->getUser();
-        $simupoll = $this->simupollManager->getSimupollById($sid);
-        $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
+        //$user = $this->tokenStorage->getToken()->getUser();
+        //$simupoll = $this->simupollManager->getSimupollById($sid);
+        //$category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
         $data = $this->categoryManager->getParentCategories($simupoll, $category);
 
         return new JsonResponse($data, 200);

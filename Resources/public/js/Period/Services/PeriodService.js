@@ -75,9 +75,11 @@ export default class PeriodService {
         pid: originalPeriod.id
       })
 
+      //update data
       originalPeriod.title = newTitle
-      originalPeriod.start = newStart
-      originalPeriod.stop = newStop
+      //setUTCHours(0,0,0,0) to prevent problem with timezone
+      originalPeriod.start = {'date':(new Date(newStart)).setUTCHours(0,0,0,0)}
+      originalPeriod.stop = {'date':(new Date(newStop)).setUTCHours(0,0,0,0)}
 
       this.$http
         .put(url, { title: newTitle, start: newStart, stop: newStop })

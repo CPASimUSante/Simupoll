@@ -39,7 +39,7 @@ class PeriodController extends Controller
     /**
      * @DI\InjectParams({
      *     "simupollManager"  = @DI\Inject("cpasimusante.simupoll.simupoll_manager"),
-     *     "periodManager"  = @DI\Inject("cpasimusante.simupoll.period_manager"),
+     *     "periodManager"    = @DI\Inject("cpasimusante.simupoll.period_manager")
      * })
      *
      * @param SimupollManager   simupollManager
@@ -50,8 +50,8 @@ class PeriodController extends Controller
         PeriodManager $periodManager
     )
     {
-      $this->simupollManager = $simupollManager;
-      $this->periodManager = $periodManager;
+      $this->simupollManager    = $simupollManager;
+      $this->periodManager      = $periodManager;
     }
 
     /**

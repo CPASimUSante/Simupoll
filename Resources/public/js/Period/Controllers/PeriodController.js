@@ -25,12 +25,15 @@ export default class PeriodController {
         this._modalFactory      = periodModal
         this._modalInstance     = null
         this._service           = PeriodService
+        //custom AJS filter for the date
         this._datefilter        = dateFormatFilter
     }
 
+    //open popup for period start
     pickerStart() {
         this.popupStart.opened = true
     }
+    //open popup for period stop
     pickerStop() {
         this.popupStop.opened = true
     }
@@ -50,13 +53,12 @@ export default class PeriodController {
         }
     }
 
-    showEditPeriod (period) {
+    showEditPeriod(period) {
         //save original variables values
-//console.log(period.start.date)
         this.editedPeriod.original = period
         this.editedPeriod.title = period.title
-        this.editedPeriod.start = this._datefilter(period.start.date)
-        this.editedPeriod.stop = this._datefilter(period.stop.date)
+        this.editedPeriod.start = new Date(period.start.date)//this._datefilter(period.start.date)
+        this.editedPeriod.stop = new Date(period.stop.date)//this._datefilter(period.stop.date)
         this._modal(editPeriodTemplate)
     }
 

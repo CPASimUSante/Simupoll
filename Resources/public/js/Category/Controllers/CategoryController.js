@@ -9,7 +9,7 @@ export default class CategoryController {
     constructor(CategoryService, categoryModal) {
         //declaration of variables
         this.tree               = CategoryService.getTree()
-        this.parentTree         = {}
+        this.parentTree         = []
         this.sid                = CategoryService.getSid()
         this.currentCategory    = {}
         this.currentParent      = {}
@@ -44,9 +44,11 @@ export default class CategoryController {
         this.editedCategory.original = category
         this.editedCategory.newName = category.name
         //get possible parent categories for this category
-        const mod = this._modal(editCategoryTemplate)
-        this.parentTree = this._service.getParentCategoriesFor(category, mod)
-        //this._modal(editCategoryTemplate)
+        this.parentTree = this._service.getParentCategoriesFor(category)
+        //const mod = this._modal(editCategoryTemplate)
+// console.log("this.tree");console.log(this.tree);
+// console.log("this.parentTree");console.log(this.parentTree);
+        this._modal(editCategoryTemplate)
     }
 
     doEditCategory(form) {
@@ -54,6 +56,7 @@ export default class CategoryController {
             this._service.editCategory(
                 this.editedCategory.original,
                 this.editedCategory.newName,
+                this.parentTree,
                 () => this._modal(errorTemplate, 'category_edition_failure')
             )
             this._resetForm(form)

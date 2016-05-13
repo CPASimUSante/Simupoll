@@ -6,7 +6,7 @@ export default class CategoryService {
         this.$q             = $q
         this._tree          = CategoryService._getGlobal('simupollTree')
         this._sid           = CategoryService._getGlobal('simupollSid')
-        this._parentTree    = []
+        this.parentTree    = []
     }
 
     getTree () {
@@ -18,30 +18,31 @@ export default class CategoryService {
     }
 
     /**
-     * Retrieve all parent category possible
+     * Retrieve all parent category possible for a given category
      */
-    getParentCategoriesFor(category, mod) {
-        let result = []
+    getParentCategoriesFor(category) {
+        let result = {}
         const url = Routing.generate('simupoll_parent_category', {
           cid: category.id,
           sid: this._sid
         })
 
+        //this.parentTree = result
+// console.log("this.parentTree");console.log(this.parentTree);
         this.$http
-          .get(url, {})
+          .get(url, {cid:category.id, sid:this._sid})
           .then(
             response => {
+// console.log("result.id");console.log(result.id);
+// console.log("response.data");console.log(response.data);
                 result = response.data
-                // mod
-                // return this._parentTree
+                // this.parentTree = response.data
+                // return this.parentTree
              },
             () => {
                 console.log('Error in category list retrieving')
               }
           )
-        //return this._parentTree
-        //console.log(this._tree)
-        //return this._tree
     }
 
     addCategory (props, category, onFail) {

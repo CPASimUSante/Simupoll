@@ -22,9 +22,9 @@
             <label for="start">{{ 'period_start'|trans:'resource' }}</label>
             <p class="input-group">
                 <input id="start" type="text" name="start" class="form-control"
-                uib-datepicker-popup="dd/MM/yyyy"
-                datepicker-options="vm.datepickerOptions"
-                is-open="vm.popupStart.opened"
+                    uib-datepicker-popup="dd/MM/yyyy"
+                    datepicker-options="vm.datepickerOptions"
+                    is-open="vm.popupStart.opened"
                     data-ng-model="vm.editedPeriod.start"
                     data-valid-date
                     required />
@@ -32,7 +32,6 @@
                     <button type="button" class="btn btn-default" ng-click="vm.pickerStart()"><i class="fa fa-calendar"></i></button>
                 </span>
             </p>
-
             <p class="help-block"
                 data-ng-if="(periodEditForm.$submitted || periodEditForm.start.$dirty) && periodEditForm.start.$error.required">
                 {{ 'error_not_blank'|trans:'resource' }}
