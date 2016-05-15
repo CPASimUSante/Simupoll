@@ -272,8 +272,8 @@ class CategoryController extends Controller
     }
 
     /**
-     * @EXT\Route("/category/{id}", name="simupoll_edit_category", options = {"expose"=true})
-     * @EXT\ParamConverter("category", class="CPASimUSanteSimupollBundle:Period", options={"mapping": {"id" = "id"}})
+     * @EXT\Route("/edit/{id}", name="simupoll_edit_category", options = {"expose"=true})
+     * @EXT\ParamConverter("category", class="CPASimUSanteSimupollBundle:Category", options={"mapping": {"id" = "id"}})
      * @EXT\Method("PUT")
      *
      * @param Request $request
@@ -294,7 +294,7 @@ class CategoryController extends Controller
                 $response->setData('Category is not valid');
                 $response->setStatusCode(422);
             } else {
-                $this->manager->updateCategory($category, $user, $newName, $newParent);
+                $this->categoryManager->updateCategory($category, $user, $newName, $newParent);
                 $response->setStatusCode(204);
             }
         } else {

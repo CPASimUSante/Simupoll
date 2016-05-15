@@ -21,28 +21,13 @@ export default class CategoryService {
      * Retrieve all parent category possible for a given category
      */
     getParentCategoriesFor(category) {
-        let result = {}
         const url = Routing.generate('simupoll_parent_category', {
           cid: category.id,
           sid: this._sid
         })
-
-        //this.parentTree = result
-// console.log("this.parentTree");console.log(this.parentTree);
-        this.$http
+        //$http returns a promise
+        return this.$http
           .get(url, {cid:category.id, sid:this._sid})
-          .then(
-            response => {
-// console.log("result.id");console.log(result.id);
-// console.log("response.data");console.log(response.data);
-                result = response.data
-                // this.parentTree = response.data
-                // return this.parentTree
-             },
-            () => {
-                console.log('Error in category list retrieving')
-              }
-          )
     }
 
     addCategory (props, category, onFail) {
@@ -59,8 +44,9 @@ export default class CategoryService {
         .post(url, { name: props.name, cid:category.id })
         .then(
           response => { result.id = response.data },
-          //and check if it's alright
+          //and if there's an error
           () => {
+            //rollback
             this._deleteCategory(result)
             onFail()
             }

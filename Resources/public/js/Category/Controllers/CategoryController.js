@@ -12,7 +12,7 @@ export default class CategoryController {
         this.parentTree         = []
         this.sid                = CategoryService.getSid()
         this.currentCategory    = {}
-        this.currentParent      = {}
+        this.currentParent      = null
         this.addedCategory      = {}
         this.editedCategory     = {}
         //variable containing the category to be deleted
@@ -44,11 +44,16 @@ export default class CategoryController {
         this.editedCategory.original = category
         this.editedCategory.newName = category.name
         //get possible parent categories for this category
-        this.parentTree = this._service.getParentCategoriesFor(category)
-        //const mod = this._modal(editCategoryTemplate)
-// console.log("this.tree");console.log(this.tree);
-// console.log("this.parentTree");console.log(this.parentTree);
-        this._modal(editCategoryTemplate)
+        let promise = this._service.getParentCategoriesFor(category)
+        promise.then(
+          parentlist => {
+              this.parentTree = parentlist.data              //  result.id = response.data
+              this._modal(editCategoryTemplate)
+           },
+          () => {
+              console.log('Error in category list retrieving')
+            }
+        )
     }
 
     doEditCategory(form) {
@@ -56,7 +61,7 @@ export default class CategoryController {
             this._service.editCategory(
                 this.editedCategory.original,
                 this.editedCategory.newName,
-                this.parentTree,
+                this.currentParent.id,
                 () => this._modal(errorTemplate, 'category_edition_failure')
             )
             this._resetForm(form)

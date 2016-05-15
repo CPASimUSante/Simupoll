@@ -305,9 +305,8 @@ class CategoryManager
      * @param string $categoryName
      * @param integer $parent_cid
      */
-    public function updateCategory($cid, User $user, $categoryName, $parent_cid)
+    public function updateCategory(Category $editedCategory, User $user, $categoryName, $parent_cid)
     {
-        $editedCategory = $this->getCategoryByIdAndUser($cid, $user);
         $editedCategory->setName($categoryName);
         if ($parent_cid != 0) {
             $parent_category = $this->getCategoryByIdAndUser($parent_cid, $user);
