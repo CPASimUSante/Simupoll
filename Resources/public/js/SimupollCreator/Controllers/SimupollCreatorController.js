@@ -53,16 +53,16 @@ export default class SimupollCreatorController {
         this.description                    = SimupollCreatorService.getDescription()
         this.categories                     = SimupollCreatorService.getTree()
         //questions / propositions
-        this.simupollquestions              = SimupollCreatorService.getSimupoll()
+        this.simupolldata                   = SimupollCreatorService.getSimupoll()
     }
 
     saveSimupoll(form) {
         if (form.$valid) {
             this._service.saveSimupoll(
               this.description,
-              this.simupollquestions,
+              this.simupolldata,
               () => this._modal(errorTemplate, 'simupoll_save_failure')
-            )
+          )
         }
     }
 
@@ -72,7 +72,7 @@ export default class SimupollCreatorController {
 
     doAddQuestion() {
         this._service.addQuestion(
-          this.simupollquestions,
+          this.simupolldata,
           () => this._modal(errorTemplate, 'question_add_failure')
         )
     }
@@ -83,7 +83,7 @@ export default class SimupollCreatorController {
 
     doAddPropostion(question) {
         this._service.addProposition(
-          this.simupollquestions,
+          this.simupolldata,
           question,
           () => this._modal(errorTemplate, 'proposition_add_failure')
         )
@@ -126,7 +126,6 @@ export default class SimupollCreatorController {
 
     //close X modal
     cancel (form) {
-console.log('close')
       if (form) {
         this._resetForm(form)
       }

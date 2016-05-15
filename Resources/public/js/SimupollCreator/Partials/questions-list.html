@@ -1,9 +1,11 @@
 <div class="simupoll-question" >
+    <ng-form name="questionFieldForm">
     <div class="pad1">
         <label class="control-label col-md-4 required">{{ 'question_title'|trans:{}:'resource' }} :</label>
         <div class="col-md-8 question-title">
             <input class="form-control" name="question-title"
-                   data-ng-class="question-title" data-ng-model="question.title"
+                   data-ng-class="question-title"
+                   data-ng-model="question.title"
                    type="text" required field-validation />
         </div>
     </div>
@@ -40,4 +42,5 @@
             <span>{{ 'question_delete'|trans:{}:'resource' }}</span>
         </button>
     </div>
+    </ng-form>
 </div>

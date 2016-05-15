@@ -3,7 +3,8 @@
     "entry": {
       "category": "public/js/Category/category.module",
       "period": "public/js/Period/period.module",
-      "simupoll-creator": "public/js/SimupollCreator/simupoll-creator.module"
+      "simupoll-creator": "public/js/SimupollCreator/simupoll-creator.module",
+      "simupoll-paper": "public/js/SimupollPaper/simupoll-paper.module"
     }
   }
 }

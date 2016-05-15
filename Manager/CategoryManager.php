@@ -300,7 +300,7 @@ class CategoryManager
     /**
      * Update a category
      *
-     * @param integer $cid
+     * @param Category $editedCategory
      * @param User $user
      * @param string $categoryName
      * @param integer $parent_cid

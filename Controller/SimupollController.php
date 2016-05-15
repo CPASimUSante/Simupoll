@@ -798,30 +798,38 @@ class SimupollController extends Controller
         //$this->assertCanEdit($category->getResult());
         //retrive the data passed through the AJS CategoryService
         $description = $request->request->get('description');
-        $title = $request->request->get('question-title');
-        $category = $request->request->get('category-name');
-//         echo 'XX';echo $description;
-// die();
+        $simupolldata = $request->request->get('simupolldata');
+
         //create response
         $response = new JsonResponse();
-/*
-        $cid = $request->request->get('cid');
-        $categoryName = $request->request->get('name', false);
 
-        //test if data is ok
-        if ($categoryName !== false) {
-            if ($categoryName == '') {
-                $response->setData('Category is not valid');
-                $response->setStatusCode(422);
-            } else {
-                $this->categoryManager->addCategory($sid, $cid, $user, $categoryName);
-                //$response->setData($category->getId());
+        $error = array();
+        //check for errors, server-side
+        foreach ($simupolldata as $data) {
+            if ($data['title'] == '') {
+                $error[] = 'Title is empty';
             }
-        } else {
-            $response->setData('Field "name" is missing');
-            $response->setStatusCode(422);
+            if (!isset($data['category'])
+                || !isset($data['category']['id'])
+                || ($data['category']['name'] == '')) {
+                    $error[] = 'Category missing';
+            }
+            if (isset($data['propositions'])) {
+                foreach ($data['propositions'] as $proposition) {
+                    if ($proposition['mark'] != ''
+                        && $proposition['choice'] == '') {
+                            $error[] = "Choice can't be null";
+                        }
+                }
+            }
         }
-*/
+        if ($error != array()) {
+            $response->setData('<ul><li>'.implode('</li><li>', $error).'</li></ul>');
+            $response->setStatusCode(422);
+        } else {
+            $this->simupollManager->saveSimupoll($simupoll, $description, $simupolldata);
+            $response->setStatusCode(200);
+        }
         return $response;
     }
 }

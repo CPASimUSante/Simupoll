@@ -30,10 +30,11 @@ export default class SimupollCreatorService {
         const url = Routing.generate('simupoll_save_simupoll', {
           sid: this._sid
         })
-
+console.log("description");console.log(description)
+console.log("props");console.log(props)
         this.$http
           //pass variables to controller
-          .post(url, { description: props.description, simupollquestions:props.simupollquestions })
+          .post(url, { description: description, simupolldata:props })
           .then(
             response => {response.data},
             //and check if it's alright

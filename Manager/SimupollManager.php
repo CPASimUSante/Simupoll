@@ -1049,4 +1049,54 @@ class SimupollManager
 
         return $newSimupoll;
     }
+
+    /*
+     * Angular manager part
+     */
+    /**
+     * Save the simupoll data
+     * string $description
+     * array $simupolldata
+     */
+     public function saveSimupoll(Simupoll $simupoll, $description, $simupolldata)
+     {
+         $this->om->startFlushSuite();
+
+         $simupoll->setDescription($description);
+         $this->om->persist($simupoll);
+
+         //First remove old
+         $questions = $this->om->getRepository('CPASimUSanteSimupollBundle:Question')
+             ->findBySimupoll($simupoll);
+        foreach ($questions as $questionToDelete) {
+            $propositions = $this->om->getRepository('CPASimUSanteSimupollBundle:Proposition')
+                ->findByQuestion($questionToDelete);
+            foreach ($propositions as $propositionToDelete) {
+                $this->om->remove($propositionToDelete);
+            }
+            $this->om->remove($questionToDelete);
+        }
+        //then add new
+         foreach ($simupolldata as $question) {
+             //add question
+             $newQuestion = new Question();
+             $newQuestion->setTitle($question['title']);
+             $category = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+                 ->findById($question['category']['id']);
+             $newQuestion->setCategory($category);
+             $newQuestion->setOrderq(1);
+             $newQuestion->setSimupoll($simupoll);
+             $this->om->persist($newQuestion);
+
+            foreach ($question['proposition'] as $proposition) {
+                $newProposition = new Proposition();
+                $newProposition->setQuestion($newQuestion);
+                $newProposition->setChoice($proposition['choice']);
+                $mark = (int)($proposition['mark']);
+                $newProposition->setMark($mark);
+                $this->om->persist($newProposition);
+            }
+        }
+         $this->om->endFlushSuite();
+     }
 }

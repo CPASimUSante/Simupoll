@@ -1,6 +1,10 @@
 In AJS directives, we use this.template instead of this.templateUrl to paths relative to the asset folder ('../../../../../bundlestuff')
 Using this.template, with webpack allows to load the template into the module without extra http request
 
+Dynamic Angular Form
+https://scotch.io/tutorials/building-dynamic-angular-forms-with-ngrepeat-and-ngform
+http://stackoverflow.com/questions/33074652/submitting-a-dynamic-form-in-angularjs
+
 
 get categories
 http://stackoverflow.com/questions/25090919/create-tree-nested-select-option

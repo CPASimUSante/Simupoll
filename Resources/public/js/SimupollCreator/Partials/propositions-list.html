@@ -1,15 +1,18 @@
 <div>
+    <ng-form name="propositionFieldForm">
     <div class="condition-proposition-element">
         <!-- list of proposition -->
         <div class="row form-group">
             <label class="control-label col-md-2 required data-ng-binding">{{ 'proposition_choice'|trans:{}:'resource' }}</label>
             <div class="col-md-5 proposition-name">
-                <input class="form-control" name="proposition" data-ng-model="proposition.choice" value="">
+                <input class="form-control" name="proposition"
+                    data-ng-model="proposition.choice" value="">
             </div>
 
             <label class="control-label col-md-2 required data-ng-binding">{{ 'proposition_mark'|trans:{}:'resource' }}</label>
             <div class="col-md-2 proposition-name">
-                <input class="form-control" name="mark" data-ng-model="proposition.mark" value="">
+                <input class="form-control" name="mark"
+                    data-ng-model="proposition.mark" value="">
             </div>
 
             <div class="col-md-1">
@@ -22,4 +25,5 @@
             <div>
         </div>
     </div>
+    </ng-form>
 </div>

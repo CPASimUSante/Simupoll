@@ -6,5 +6,4 @@
 
 
 Bugs, AJS :
-- periods : add period => pb with timestamp (CET -2) => J -> J-1
-- period : delete period after creation => error
+- Add AJS fields validation
