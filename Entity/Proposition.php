@@ -3,12 +3,10 @@
 namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use CPASimUSante\SimupollBundle\Entity\Question;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Proposition
+ * Proposition.
  *
  * @ORM\Table(name="cpasimusante__simupoll_proposition")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\PropositionRepository")
@@ -16,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Proposition
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -33,14 +31,14 @@ class Proposition
     protected $question;
 
     /**
-     * @var string $choice
+     * @var string
      *
      * @ORM\Column(name="choice", type="string", length=255)
      */
     private $choice;
 
     /**
-     * @var float $mark
+     * @var float
      *
      * @ORM\Column(name="mark", type="float", options={"default" = 0})
      * @Assert\Type(type = "numeric")
@@ -51,9 +49,9 @@ class Proposition
     private $mark;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -61,7 +59,7 @@ class Proposition
     }
 
     /**
-     * Get question
+     * Get question.
      *
      * @return \CPASimUSante\SimupollBundle\Entity\Question
      */
@@ -71,7 +69,7 @@ class Proposition
     }
 
     /**
-     * Set question
+     * Set question.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Question $question
      *
@@ -85,7 +83,7 @@ class Proposition
     }
 
     /**
-     * Get choice
+     * Get choice.
      */
     public function getChoice()
     {
@@ -93,8 +91,10 @@ class Proposition
     }
 
     /**
-     * Set itemselector
+     * Set itemselector.
+     *
      * @param string $choice
+     *
      * @return Proposition
      */
     public function setChoice($choice)
@@ -105,9 +105,10 @@ class Proposition
     }
 
     /**
-     * Set mark
+     * Set mark.
      *
      * @param float $mark
+     *
      * @return Question
      */
     public function setMark($mark)
@@ -118,9 +119,9 @@ class Proposition
     }
 
     /**
-     * Get mark
+     * Get mark.
      *
-     * @return integer
+     * @return int
      */
     public function getMark()
     {

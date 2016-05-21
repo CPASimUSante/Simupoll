@@ -3,13 +3,11 @@
 namespace CPASimUSante\SimupollBundle\Manager;
 
 use JMS\DiExtraBundle\Annotation as DI;
-use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
-
 use CPASimUSante\SimupollBundle\Entity\Proposition;
 
 /**
- * Helper functions for Proposition
+ * Helper functions for Proposition.
  *
  * @DI\Service("cpasimusante.simupoll.proposition_manager")
  */
@@ -30,7 +28,7 @@ class PropositionManager
     }
 
     /**
-     * Deletes a Proposition
+     * Deletes a Proposition.
      *
      * @param Proposition $proposition
      */

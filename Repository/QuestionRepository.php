@@ -3,7 +3,6 @@
 namespace CPASimUSante\SimupollBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Question;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
@@ -11,9 +10,10 @@ use CPASimUSante\SimupollBundle\Entity\Simupoll;
 class QuestionRepository extends EntityRepository
 {
     /**
-     * Count the number of question associated with a category
+     * Count the number of question associated with a category.
      *
      * @param $cid
+     *
      * @return mixed
      */
     public function getQuestionCount($cid)
@@ -22,14 +22,15 @@ class QuestionRepository extends EntityRepository
         $qb->select('COUNT(q.id) AS qcount')
             ->from('CPASimUSante\SimupollBundle\Entity\Question', 'q')
             ->where('q.category = :category')
-            ->setParameter('category',$cid);
+            ->setParameter('category', $cid);
+
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
      *
      */
-    public function getQuestionsWithinCategories($sid, $current=-1, $next=-1)
+    public function getQuestionsWithinCategories($sid, $current = -1, $next = -1)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q.id')
@@ -47,18 +48,20 @@ class QuestionRepository extends EntityRepository
         $qb->orderBy('c.lft', 'ASC')
             ->addOrderBy('q.id', 'ASC')
             ->setParameter('simupoll', $sid);
+
         return $qb->getQuery()->getArrayResult();
     }
 
     /**
-     * Find questions in the selected categories
+     * Find questions in the selected categories.
      *
      * @param $sid
      * @param int $current
      * @param int $next
+     *
      * @return array of object or null
      */
-    public function getQuestionsWithCategories($sid, $current=-1, $next=-1)
+    public function getQuestionsWithCategories($sid, $current = -1, $next = -1)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q')
@@ -78,19 +81,21 @@ class QuestionRepository extends EntityRepository
             ->addOrderBy('q.id', 'ASC')
             ->addOrderBy('p.id', 'ASC')
             ->setParameter('simupoll', $sid);
+
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Retrieve question already answered
+     * Retrieve question already answered.
      *
      * @param $sid integer Simupoll id
      * @param $pid integer Paper id
      * @param $limit integer number of question to display
      * @param $offset integer offset of questions to start to
+     *
      * @return array list of questions, with their answers
      */
-    public function getQuestionsWithAnswers($sid, $pid, $limit=0, $offset=0)
+    public function getQuestionsWithAnswers($sid, $pid, $limit = 0, $offset = 0)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('q');
@@ -104,7 +109,7 @@ class QuestionRepository extends EntityRepository
         $qb->where('q.simupoll = :simupoll');
         if ($pid != 0) {
             $qb->andWhere('a.paper = :paper');
-            $qb->setParameter('paper',$pid);
+            $qb->setParameter('paper', $pid);
         }
         $qb->orderBy('q.id', 'ASC');
         if ($limit != 0) {
@@ -113,17 +118,17 @@ class QuestionRepository extends EntityRepository
         if ($offset != 0) {
             $qb->setFirstResult($offset);
         }
-        $qb->setParameter('simupoll',$sid);
+        $qb->setParameter('simupoll', $sid);
         //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }
 
     /**
-     *
      * @param $sid
      * @param $pid
      * @param $current
      * @param $next
+     *
      * @return array
      */
     public function getQuestionsWithAnswersInCategories($sid, $pid, $current, $next)
@@ -153,6 +158,7 @@ class QuestionRepository extends EntityRepository
         }
         $qb->orderBy('q.id', 'ASC');
         $qb->setParameter('simupoll', $sid);
+
         return $qb->getQuery()->getResult();
     }
 
@@ -167,6 +173,7 @@ class QuestionRepository extends EntityRepository
             ->where('q.simupoll=:simupoll')
             ->setParameter('simupoll', $simupoll);
         $results = $qb->getQuery()->getResult();
+
         return $results;
     }
 }

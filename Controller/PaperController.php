@@ -1,37 +1,33 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
-
 use CPASimUSante\SimupollBundle\Manager\PaperManager;
 use CPASimUSante\SimupollBundle\Manager\PeriodManager;
-use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Paper;
 use CPASimUSante\SimupollBundle\Entity\Answer;
 use CPASimUSante\SimupollBundle\Entity\Question;
 use CPASimUSante\SimupollBundle\Entity\Proposition;
-use Doctrine\Common\Collections\ArrayCollection;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 
 /**
- * Class PaperController
+ * Class PaperController.
  *
  * @category   Controller
- * @package    CPASimUSante
- * @subpackage Simupoll
+ *
  * @author     CPASimUSante <contact@simusante.com>
  * @copyright  2015 CPASimUSante
  * @license    http://www.opensource.org/licenses/mit-license.php MIT License
+ *
  * @version    0.1
+ *
  * @link       http://simusante.com
  *
  * @EXT\Route(
@@ -62,26 +58,25 @@ class PaperController extends Controller
         PeriodManager $periodManager,
         SessionInterface $session,
         TranslatorInterface $translator
-    )
-    {
-        $this->paperManager   = $paperManager;
-        $this->periodManager  = $periodManager;
-        $this->session        = $session;
-        $this->translator     = $translator;
+    ) {
+        $this->paperManager = $paperManager;
+        $this->periodManager = $periodManager;
+        $this->session = $session;
+        $this->translator = $translator;
     }
 
-    /**
-     * Prepare the data to display the paper
-     *
-     * @EXT\Route(
-     *      "/open/{id}/{page}/{all}",
-     *      name="cpasimusante_simupoll_paper",
-     *      defaults={ "page" = 1, "all" = 0 },
-     *      requirements={},
-     *      options={"expose"=true}
-     * )
-     * @EXT\Template("CPASimUSanteSimupollBundle:Paper:open.html.twig")
-     */
+     /**
+      * Prepare the data to display the paper.
+      *
+      * @EXT\Route(
+      *      "/open/{id}/{page}/{all}",
+      *      name="cpasimusante_simupoll_paper",
+      *      defaults={ "page" = 1, "all" = 0 },
+      *      requirements={},
+      *      options={"expose"=true}
+      * )
+      * @EXT\Template("CPASimUSanteSimupollBundle:Paper:open.html.twig")
+      */
      public function openAction(Request $request, Simupoll $simupoll)
      {
          $sessionFlashBag = $this->session->getFlashBag();
@@ -91,9 +86,7 @@ class PaperController extends Controller
          $user = $this->container->get('security.token_storage')
              ->getToken()->getUser();
          if (is_string($user)) {
-
          } else {
-
          }
          $uid = $user->getId();
          $sid = $simupoll->getId();
@@ -151,8 +144,9 @@ class PaperController extends Controller
              }
          } else {
              //no organization set : get out
-             $msg = $this->translator->trans('organization_not_set',array(),'resource');
+             $msg = $this->translator->trans('organization_not_set', array(), 'resource');
              $sessionFlashBag->add('error', $msg);
+
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }
 
@@ -177,9 +171,9 @@ class PaperController extends Controller
                 ->findByUserAndSimupoll($uid, $sid);
             if ($papers != array()) {
                 foreach ($papers as $paper) {
-                    $periodId                   = $paper->getPeriod()->getId();
-                    $arrPapersIds[$periodId]    = $paper->getId();
-                    $arrPeriodsIds[]            = $periodId;
+                    $periodId = $paper->getPeriod()->getId();
+                    $arrPapersIds[$periodId] = $paper->getId();
+                    $arrPeriodsIds[] = $periodId;
                 }
             }
 //echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump($arrPapersIds);echo '</pre>';
@@ -212,8 +206,8 @@ class PaperController extends Controller
 */
          //4 - the save part
          if ($request->isMethod('POST')) {
-             $next_category     = $request->request->get('next');
-             $current_category  = $request->request->get('current');
+             $next_category = $request->request->get('next');
+             $current_category = $request->request->get('current');
 
 //echo '<br>IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
              //4 - 1 save paper
@@ -221,10 +215,10 @@ class PaperController extends Controller
              $tmp = array();
              //for each period
              foreach ($periods['id'] as $key => $per_id) {
-//echo $per_id.' -key='.$key.'<br>';
+                 //echo $per_id.' -key='.$key.'<br>';
                  //if paper has not been saved
                  if (!array_key_exists($per_id, $arrPapersIds)) {
-//echo 'new paper, period='.$per_id.'<br>';
+                     //echo 'new paper, period='.$per_id.'<br>';
                      $maxNumPaper = $maxNumPaper + 1;
                      //save the paper
                      $paper = $this->paperManager
@@ -243,7 +237,7 @@ class PaperController extends Controller
                      //session data
                      $tmp[] = $paper->getId().'-'.$per_id;
                  } else {
-//echo 'paper exists, period='.$per_id.'<br>';
+                     //echo 'paper exists, period='.$per_id.'<br>';
                      $arrPaper[$per_id] = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
                          ->findOneById($arrPapersIds[$per_id]);
                     //session data
@@ -268,7 +262,9 @@ class PaperController extends Controller
                  $qids = array();
                  if ($questionList != null) {
                      //get question id array
-                     foreach($questionList as $ql){$qids[] = $ql['id'];}
+                     foreach ($questionList as $ql) {
+                         $qids[] = $ql['id'];
+                     }
                      if ($qids != array()) {
                          //remove old answers, for each paper = corresponding to each period
                          foreach ($arrPapersIds as $paperId) {
@@ -282,9 +278,9 @@ class PaperController extends Controller
                 //Then, save the answers
                 //$this->paperManager->saveAnswers($choices, $arrPaper);
 
-                 foreach($choices as $key => $propo) {
+                 foreach ($choices as $key => $propo) {
                      //retrieve data from $key : question_id - period_id and $propo : proposition_id
-                     $atmp  = explode('-', $key);
+                     $atmp = explode('-', $key);
                      $quest_id = $atmp[0];
                      $per_id = $atmp[1];
                      //get proposition
@@ -295,12 +291,12 @@ class PaperController extends Controller
 //echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre>';
                     //save answer
                     if (is_object($arrPaper[$per_id])) {
-                         $answer = new Answer();
-                         $answer->setPaper($thepaper);
-                         $answer->setQuestion($proposition->getQuestion());
-                         $answer->setAnswer($proposition->getId().';');
-                         $answer->setMark($proposition->getMark());
-                         $em->persist($answer);
+                        $answer = new Answer();
+                        $answer->setPaper($thepaper);
+                        $answer->setQuestion($proposition->getQuestion());
+                        $answer->setAnswer($proposition->getId().';');
+                        $answer->setMark($proposition->getMark());
+                        $em->persist($answer);
                     }
                  }
                  $em->flush();
@@ -316,8 +312,12 @@ class PaperController extends Controller
          $tmp_answers = array();
 
          if ($choice == 2) {
-             if ($next_category == -1) {$current_page = $total_page;}
-             if ($current_category == -1) {$current_page = 1;}
+             if ($next_category == -1) {
+                 $current_page = $total_page;
+             }
+             if ($current_category == -1) {
+                 $current_page = 1;
+             }
              if ($request->isMethod('POST')) {
                  $direction = $request->request->get('direction');
 //echo 'next ';echo '<pre>next=';var_dump($request->request->get('next'));echo '</pre>';echo '<br>';echo 'direction ';var_dump($direction);echo '<br>';
@@ -326,7 +326,7 @@ class PaperController extends Controller
                      //get current pos. of "next"
                      $k = array_search($next_category, $categorybounds);
                      if ($k !== false) {
-//echo 'k='.$k.'<br>';echo '3next - current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
+                         //echo 'k='.$k.'<br>';echo '3next - current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          $current_category = $next_category;
                          $current_page = $k + 1;
                          //not the last position
@@ -350,8 +350,8 @@ class PaperController extends Controller
                          $current_page = $k;
 //echo 'k='.$k.'<br>';echo '3prev- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          //not the first position
-                         if (isset($categorybounds[$k-1])) {
-                             $current_category = $categorybounds[$k-1];
+                         if (isset($categorybounds[$k - 1])) {
+                             $current_category = $categorybounds[$k - 1];
 //echo 'isset<br>';
                              //last pos
                          } else {
@@ -374,7 +374,7 @@ class PaperController extends Controller
              //find questions and answers for these categories
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                 ->getQuestionsWithCategories($sid, $current_category, $next_category);
-            $answers = $this->paperManager
+             $answers = $this->paperManager
                 ->getAnswers($arrPapersIds, $sid, $answers, $current_category, $next_category);
 /*
             $answers = array();
@@ -401,7 +401,7 @@ class PaperController extends Controller
 */
              $tmp_answers = $this->paperManager
                  ->getAnswers($arrPapersIds, $sid, $tmp_answers, $current_category, $next_category);
-            $answers = array_merge($tmp_answers);
+             $answers = array_merge($tmp_answers);
 //echo '$answers all =<br><pre>';var_dump($answers);echo '</pre><br>';
              //get all questions and propositions
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
@@ -413,23 +413,23 @@ class PaperController extends Controller
 // echo '<pre>$periods';var_dump($periods['current']);echo '</pre>';
 
          return array(
-             'choice'           => $choice,
-             'pids'             => $arrPapersIds,
-             'page'             => $current_page,
-             'total'            => $total_page,
-             'categories'       => $categories,
-             'questions'        => $questions,
-             'answers'          => $answers,
-             'next'             => $next_category,
-             'current'          => $current_category,
-             'periods'          => $periods,    //array of all periods (id, title) for the simupoll
-             'workspace'        => $workspace,
-             '_resource'        => $simupoll
+             'choice' => $choice,
+             'pids' => $arrPapersIds,
+             'page' => $current_page,
+             'total' => $total_page,
+             'categories' => $categories,
+             'questions' => $questions,
+             'answers' => $answers,
+             'next' => $next_category,
+             'current' => $current_category,
+             'periods' => $periods,    //array of all periods (id, title) for the simupoll
+             'workspace' => $workspace,
+             '_resource' => $simupoll,
          );
      }
 
     /**
-     * json request, save the paper data
+     * json request, save the paper data.
      *
      * @EXT\Route(
      *      "/validate/{sid}/{page}/{all}",
@@ -438,11 +438,10 @@ class PaperController extends Controller
      *      requirements={},
      *      options={"expose"=true}
      * )
-     * @access public
      *
-     * @param integer $sid id of Simupoll
-     * @param integer $page for the pagination, page destination
-     * @param boolean $all for use or not use the pagination
+     * @param int  $sid  id of Simupoll
+     * @param int  $page for the pagination, page destination
+     * @param bool $all  for use or not use the pagination
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
@@ -474,16 +473,15 @@ class PaperController extends Controller
           //  if (count($paper) == 0) {
                 //Create paper
                 $paper = new Paper();
-                $paper->setUser($user);
-                $paper->setStart(new \DateTime());
-                $paper->setSimupoll($simupoll);
-                $paper->setNumPaper((int) $maxNumPaper + 1);
-                $em->persist($paper);
-                $em->flush();
+            $paper->setUser($user);
+            $paper->setStart(new \DateTime());
+            $paper->setSimupoll($simupoll);
+            $paper->setNumPaper((int) $maxNumPaper + 1);
+            $em->persist($paper);
+            $em->flush();
 
                 //Save responses
-                foreach($choices as $choice)
-                {
+                foreach ($choices as $choice) {
                     $proposition = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')
                         ->findOneById($choice[1]);
                     $answer = new Answer();
@@ -493,12 +491,13 @@ class PaperController extends Controller
                     $answer->setMark($proposition->getMark());
                     $em->persist($answer);
                 }
-                $em->flush();
+            $em->flush();
 
                 //Set session
                 $session->set('simupaper', $paper->getId());
 
             $data = $choices;
+
             return new JsonResponse($data);
         }
     }

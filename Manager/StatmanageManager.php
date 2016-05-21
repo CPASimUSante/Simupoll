@@ -3,13 +3,11 @@
 namespace CPASimUSante\SimupollBundle\Manager;
 
 use JMS\DiExtraBundle\Annotation as DI;
-use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
-
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 
 /**
- * Helper functions for Statmanage
+ * Helper functions for Statmanage.
  *
  * @DI\Service("cpasimusante.simupoll.statmanage_manager")
  */

@@ -5,7 +5,7 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Paper
+ * Paper.
  *
  * @ORM\Table(name="cpasimusante__simupoll_paper")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\PaperRepository")
@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Paper
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -36,7 +36,7 @@ class Paper
     private $end;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="num_paper", type="integer")
      */
@@ -60,9 +60,9 @@ class Paper
     private $period;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -70,7 +70,7 @@ class Paper
     }
 
     /**
-     * Set start
+     * Set start.
      *
      * @param \DateTime $start
      *
@@ -84,7 +84,7 @@ class Paper
     }
 
     /**
-     * Get start
+     * Get start.
      *
      * @return \DateTime
      */
@@ -94,7 +94,7 @@ class Paper
     }
 
     /**
-     * Set end
+     * Set end.
      *
      * @param \DateTime $end
      *
@@ -108,7 +108,7 @@ class Paper
     }
 
     /**
-     * Get end
+     * Get end.
      *
      * @return \DateTime
      */
@@ -118,9 +118,9 @@ class Paper
     }
 
     /**
-     * Set numPaper
+     * Set numPaper.
      *
-     * @param integer $numPaper
+     * @param int $numPaper
      *
      * @return Paper
      */
@@ -132,9 +132,9 @@ class Paper
     }
 
     /**
-     * Get numPaper
+     * Get numPaper.
      *
-     * @return integer
+     * @return int
      */
     public function getNumPaper()
     {
@@ -171,4 +171,3 @@ class Paper
         $this->period = $period;
     }
 }
-

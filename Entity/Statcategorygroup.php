@@ -3,13 +3,8 @@
 namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Claroline\CoreBundle\Entity\User;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
-use CPASimUSante\SimupollBundle\Entity\Statmanage;
-use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
-
 /**
- * Statcategorygroup
+ * Statcategorygroup.
  *
  * @ORM\Table(name="cpasimusante__simupoll_statcategorygroup")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\StatcategorygroupRepository")
@@ -17,7 +12,7 @@ use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
 class Statcategorygroup
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -26,14 +21,14 @@ class Statcategorygroup
     private $id;
 
     /**
-     * @var string $title
+     * @var string
      *
      * @ORM\Column(name="title", type="string", length=255)
      */
     private $title;
 
     /**
-     * @var string $group
+     * @var string
      *
      * @ORM\Column(name="categorygroup", type="string", length=255, nullable=true)
      */
@@ -48,9 +43,9 @@ class Statcategorygroup
     protected $statmanage;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -58,9 +53,10 @@ class Statcategorygroup
     }
 
     /**
-     * Set title
+     * Set title.
      *
      * @param string $title
+     *
      * @return Statcategorygroup
      */
     public function setTitle($title)
@@ -71,7 +67,7 @@ class Statcategorygroup
     }
 
     /**
-     * Get title
+     * Get title.
      *
      * @return string
      */
@@ -81,9 +77,10 @@ class Statcategorygroup
     }
 
     /**
-     * Set group
+     * Set group.
      *
      * @param string $group
+     *
      * @return Statcategorygroup
      */
     public function setGroup($group)
@@ -94,7 +91,7 @@ class Statcategorygroup
     }
 
     /**
-     * Get group
+     * Get group.
      *
      * @return string
      */
@@ -104,7 +101,7 @@ class Statcategorygroup
     }
 
     /**
-     * Get statmanage
+     * Get statmanage.
      *
      * @return \CPASimUSante\SimupollBundle\Entity\Statmanage
      */
@@ -114,7 +111,7 @@ class Statcategorygroup
     }
 
     /**
-     * Set statmanage
+     * Set statmanage.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Statmanage $statmanage
      *

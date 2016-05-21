@@ -1,30 +1,28 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
-
 use CPASimUSante\SimupollBundle\Manager\SimupollManager;
 use CPASimUSante\SimupollBundle\Manager\PeriodManager;
 use CPASimUSante\SimupollBundle\Entity\Period;
 use CPASimUSante\SimupollBundle\Form\PeriodType;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
-use Doctrine\Common\Collections\ArrayCollection;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * Class PeriodController
+ * Class PeriodController.
  *
  * @category   Controller
- * @package    CPASimUSante
- * @subpackage Simupoll
+ *
  * @author     CPASimUSante <contact@simusante.com>
  * @copyright  2015 CPASimUSante
  * @license    http://www.opensource.org/licenses/mit-license.php MIT License
+ *
  * @version    0.1
+ *
  * @link       http://simusante.com
  *
  * @EXT\Route(
@@ -48,14 +46,13 @@ class PeriodController extends Controller
     public function __construct(
         SimupollManager $simupollManager,
         PeriodManager $periodManager
-    )
-    {
-      $this->simupollManager    = $simupollManager;
-      $this->periodManager      = $periodManager;
+    ) {
+        $this->simupollManager = $simupollManager;
+        $this->periodManager = $periodManager;
     }
 
     /**
-     * Lists all Period
+     * Lists all Period.
      *
      * @EXT\Route(
      *      "/periods/{id}",
@@ -66,9 +63,7 @@ class PeriodController extends Controller
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Period:list.html.twig")
      *
-     * @access public
-     *
-     * @param integer $simupoll id of Simupoll
+     * @param int $simupoll id of Simupoll
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
@@ -80,13 +75,13 @@ class PeriodController extends Controller
 
         return array(
             '_resource' => $simupoll,
-            'sid'       => $sid,
-            'periods'   => $periods
+            'sid' => $sid,
+            'periods' => $periods,
         );
     }
 
     /**
-     * Data for modal form for period add
+     * Data for modal form for period add.
      *
      * @EXT\Route(
      *     "/add/form/{sid}",
@@ -99,14 +94,15 @@ class PeriodController extends Controller
     {
         $form = $this->get('form.factory')
             ->create(new PeriodType());
+
         return array(
-            'form'   => $form->createView(),
-            'sid'    => $sid
+            'form' => $form->createView(),
+            'sid' => $sid,
         );
     }
 
     /**
-     * Process period add
+     * Process period add.
      *
      * @EXT\Route(
      *     "/add/submit/{sid}",
@@ -123,7 +119,6 @@ class PeriodController extends Controller
         $form->handleRequest($request);
         $idperiod = 0;
         if ($form->isValid()) {
-
             $em = $this->getDoctrine()->getManager();
             $simupoll = $this->simupollManager->getSimupollById($sid);
             $newperiod = $form->getData();
@@ -136,18 +131,16 @@ class PeriodController extends Controller
             $idperiod = $newperiod->getId();
 
             return new JsonResponse('success', 200);
-        }
-        else
-        {
+        } else {
             return array(
-                'form'        => $form->createView(),
-                'idperiod'    => $idperiod
+                'form' => $form->createView(),
+                'idperiod' => $idperiod,
             );
         }
     }
 
     /**
-     * Process period delete
+     * Process period delete.
      *
      * @EXT\Route(
      *     "/delete/{idperiod}/{sid}",
@@ -163,16 +156,15 @@ class PeriodController extends Controller
             $period = $this->periodManager->getPeriodBySimupollAndId($idperiod, $sid);
             $em->remove($period);
             $em->flush();
+
             return new JsonResponse('success', 200);
-        }
-        else
-        {
+        } else {
             return array();
         }
     }
 
     /**
-     * Data for modal form for period modify
+     * Data for modal form for period modify.
      *
      * @EXT\Route(
      *     "/modify/form/{idperiod}/{sid}",
@@ -193,27 +185,27 @@ class PeriodController extends Controller
         if ($form->isValid()) {
             $em->persist($period);
             $em->flush();
+
             return new JsonResponse('success', 200);
         }
 
         return array(
-            'form'    => $form->createView(),
-            'parent'  => $idperiod,
-            'sid'     => $sid
+            'form' => $form->createView(),
+            'parent' => $idperiod,
+            'sid' => $sid,
         );
     }
 
-
-    /**
-     * Calls from Angular
-     */
+     /**
+      * Calls from Angular.
+      */
 
      /**
       * @EXT\Route("/period/delete/{pid}/{sid}", name="simupoll_delete_period", options = {"expose"=true})
       * @EXT\Method("DELETE")
       *
-      * @param integer $pid
-      * @param integer $sid
+      * @param int $pid
+      * @param int $sid
       *
       * @return JsonResponse
       */
@@ -230,7 +222,7 @@ class PeriodController extends Controller
       * @EXT\Method("POST")
       *
       * @param Request $request
-      * @param integer $sid
+      * @param int $sid
       *
       * @return JsonResponse
       */

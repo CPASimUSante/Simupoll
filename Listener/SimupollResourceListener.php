@@ -1,4 +1,5 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Listener;
 
 use Symfony\Component\DependencyInjection\ContainerAware;
@@ -20,12 +21,12 @@ class SimupollResourceListener extends ContainerAware
     public function onCreateForm(CreateFormResourceEvent $event)
     {
         $form = $this->container->get('form.factory')
-            ->create(new SimupollType(), new Simupoll(), array('inside'=>false));
+            ->create(new SimupollType(), new Simupoll(), array('inside' => false));
         $content = $this->container->get('templating')->render(
             'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',
             array(
                 'form' => $form->createView(),
-                'resourceType' => 'cpasimusante_simupoll'
+                'resourceType' => 'cpasimusante_simupoll',
             )
         );
         $event->setResponseContent($content);
@@ -36,7 +37,7 @@ class SimupollResourceListener extends ContainerAware
     {
         $request = $this->container->get('request');
         $form = $this->container->get('form.factory')
-            ->create(new SimupollType(), new Simupoll(), array('inside'=>false));
+            ->create(new SimupollType(), new Simupoll(), array('inside' => false));
         $form->handleRequest($request);
         if ($form->isValid()) {
             $simupoll = $form->getData();
@@ -50,7 +51,7 @@ class SimupollResourceListener extends ContainerAware
             'CPASimUSanteSimupollBundle:Simupoll:createForm.html.twig',
             array(
                 'form' => $form->createView(),
-                'resourceType' => $event->getResourceType()
+                'resourceType' => $event->getResourceType(),
             )
         );
         $event->setErrorFormContent($content);
@@ -81,7 +82,7 @@ class SimupollResourceListener extends ContainerAware
             ->generate(
                 'cpasimusante_simupoll_open',
                 array(
-                    'id' => $event->getResource()->getId()
+                    'id' => $event->getResource()->getId(),
                 )
             );
         $event->setResponse(new RedirectResponse($route));

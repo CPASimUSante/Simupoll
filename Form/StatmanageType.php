@@ -11,18 +11,18 @@ class StatmanageType extends AbstractType
 {
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('userList', 'text', array(
                 'label' => 'userlist',
                 'required' => true,
-                'constraints' => new NotBlank()
+                'constraints' => new NotBlank(),
             )
         );
     }
-    
+
     /**
      * @param OptionsResolverInterface $resolver
      */

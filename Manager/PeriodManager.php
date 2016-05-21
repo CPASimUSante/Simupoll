@@ -3,14 +3,12 @@
 namespace CPASimUSante\SimupollBundle\Manager;
 
 use JMS\DiExtraBundle\Annotation as DI;
-use Doctrine\ORM\EntityManager;
 use Claroline\CoreBundle\Persistence\ObjectManager;
-
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Period;
 
 /**
- * Helper functions for periods
+ * Helper functions for periods.
  *
  * @DI\Service("cpasimusante.simupoll.period_manager")
  */
@@ -19,23 +17,22 @@ class PeriodManager
     private $om;
     private $simupollManager;
 
-    /**
-     * @DI\InjectParams({
-     *     "om"                 = @DI\Inject("claroline.persistence.object_manager"),
-     *     "simupollManager"    = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
-     * })
-     *
-     * @param ObjectManager $om
-     * @param SimupollManager   simupollManager
-     */
+     /**
+      * @DI\InjectParams({
+      *     "om"                 = @DI\Inject("claroline.persistence.object_manager"),
+      *     "simupollManager"    = @DI\Inject("cpasimusante.simupoll.simupoll_manager")
+      * })
+      *
+      * @param ObjectManager $om
+      * @param SimupollManager   simupollManager
+      */
      public function __construct(
          ObjectManager $om,
          SimupollManager $simupollManager
-         )
-    {
-        $this->om               = $om;
-        $this->simupollManager  = $simupollManager;
-    }
+         ) {
+         $this->om = $om;
+         $this->simupollManager = $simupollManager;
+     }
 
     public function getPeriodBySimupollAndId($idperiod, $sid)
     {
@@ -43,7 +40,7 @@ class PeriodManager
             ->findOneBy(
             array(
                 'id' => $idperiod,
-                'simupoll' => $sid
+                'simupoll' => $sid,
             ));
     }
 
@@ -55,23 +52,25 @@ class PeriodManager
             ->where('p.simupoll = ?1')
             ->setParameters(array(1 => $simupoll))
             ->getQuery();
+
         return $query->getArrayResult();
     }
 
     /**
-    *
-    * @return boolean
-    */
+     * @return bool
+     */
     public function getOpenedPeriod($sid)
     {
         $isOpenedPeriod = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
             ->isOpenedPeriodForSimupoll($sid);
         $opened = ($isOpenedPeriod > 0) ? true : false;
+
         return $opened;
     }
 
     /**
-     * @param integer $sid Simipoll id
+     * @param int $sid Simipoll id
+     *
      * @return array list of periods array('id', 'title', 'entity')
      */
     public function getPeriods($sid)
@@ -83,27 +82,28 @@ class PeriodManager
         $period_list = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
             ->findBySimupoll($sid);
         foreach ($period_list as $period) {
-           $periods['id'][]     = $period->getId();
-           $periods['title'][]  = $period->getTitle();
-           $periods['entity'][] = $period;
+            $periods['id'][] = $period->getId();
+            $periods['title'][] = $period->getTitle();
+            $periods['entity'][] = $period;
 
-           if (($period->getStart()->format("Y-m-d") <= $now->format("Y-m-d")) &&
-                ($period->getStop()->format("Y-m-d") >= $now->format("Y-m-d"))) {
+            if (($period->getStart()->format('Y-m-d') <= $now->format('Y-m-d')) &&
+                ($period->getStop()->format('Y-m-d') >= $now->format('Y-m-d'))) {
                 $periods['current'][] = true;
             } else {
                 $periods['current'][] = false;
             }
-       }
-       return $periods;
+        }
+
+        return $periods;
     }
 
     /**
-     * Deletes a period
+     * Deletes a period.
      *
-     * @param integer $pid
-     * @param integer $sid
+     * @param int $pid
+     * @param int $sid
      */
-    function deletePeriod($pid, $sid)
+    public function deletePeriod($pid, $sid)
     {
         $period = $this->getPeriodBySimupollAndId($pid, $sid);
         $this->om->remove($period);
@@ -111,9 +111,9 @@ class PeriodManager
     }
 
     /**
-     * Adds a period
+     * Adds a period.
      *
-     * @param integer $sid
+     * @param int    $sid
      * @param string $categoryName
      */
     public function addPeriod($sid, $periodTitle, $periodStart, $periodStop)
@@ -130,10 +130,10 @@ class PeriodManager
     }
 
     /**
-     * Update a period
+     * Update a period.
      *
-     * @param integer $pid
-     * @param integer $sid
+     * @param int    $pid
+     * @param int    $sid
      * @param string $periodTitle
      * @param string $periodStart
      * @param string $periodStop

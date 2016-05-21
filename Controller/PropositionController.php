@@ -1,27 +1,24 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
-
 use CPASimUSante\SimupollBundle\Manager\PropositionManager;
 use CPASimUSante\SimupollBundle\Entity\Proposition;
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * Class PropositionController
+ * Class PropositionController.
  *
  * @category   Controller
- * @package    CPASimUSante
- * @subpackage Simupoll
+ *
  * @author     CPASimUSante <contact@simusante.com>
  * @copyright  2015 CPASimUSante
  * @license    http://www.opensource.org/licenses/mit-license.php MIT License
+ *
  * @version    0.1
+ *
  * @link       http://simusante.com
  *
  * @EXT\Route(
@@ -42,9 +39,8 @@ class PropositionController extends Controller
      */
     public function __construct(
         PropositionManager $propositionManager
-    )
-    {
-      $this->propositionManager = $propositionManager;
+    ) {
+        $this->propositionManager = $propositionManager;
     }
 
     /**

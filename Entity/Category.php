@@ -1,15 +1,15 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\User;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
- * Simupoll categories
+ * Simupoll categories.
  *
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\CategoryRepository")
  * @ORM\Table(
@@ -31,8 +31,9 @@ class Category
     protected $id;
 
     /**
-     * name of the category
-     * @var string $value
+     * name of the category.
+     *
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=255, nullable=false)
      */
@@ -93,7 +94,7 @@ class Category
     protected $children;
 
     /**
-     * propoerty used in hierarchy display, like selectbox
+     * propoerty used in hierarchy display, like selectbox.
      */
     private $indentedName;
 
@@ -105,7 +106,7 @@ class Category
     /**
      * Returns the resource id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -114,9 +115,9 @@ class Category
 
     /**
      * Sets the resource id.
-     * Required by the ResourceController when it creates a fictionnal root
+     * Required by the ResourceController when it creates a fictionnal root.
      *
-     * @param integer $id
+     * @param int $id
      */
     public function setId($id)
     {
@@ -166,7 +167,7 @@ class Category
     /**
      * Return the lvl value of the resource in the tree.
      *
-     * @return integer
+     * @return int
      */
     public function getLvl()
     {
@@ -208,7 +209,8 @@ class Category
         $this->user = $user;
     }
     /**
-     * allows hierachy display
+     * allows hierachy display.
+     *
      * @return string
      */
     public function __toString()
@@ -217,12 +219,13 @@ class Category
     }
 
     /**
-     * allows hierachy display
+     * allows hierachy display.
+     *
      * @return string
      */
     public function getIndentedName()
     {
-        return str_repeat("----", $this->lvl) . $this->name;
+        return str_repeat('----', $this->lvl).$this->name;
         //return str_repeat($this->getParent()." > ", $this->lvl) . $this->name;
     }
 }
