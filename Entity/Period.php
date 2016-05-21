@@ -5,7 +5,7 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Period
+ * Period.
  *
  * @ORM\Table(name="cpasimusante__simupoll_period")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\PeriodRepository")
@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Period
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -42,16 +42,16 @@ class Period
     private $stop;
 
     /**
-     * @var string $title
+     * @var string
      *
      * @ORM\Column(name="title", type="string", length=255, nullable=true)
      */
     private $title;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -69,9 +69,10 @@ class Period
     }
 
     /**
-     * Set start
+     * Set start.
      *
-     * @param  \DateTime $start
+     * @param \DateTime $start
+     *
      * @return Period
      */
     public function setStart(\DateTime $start)
@@ -82,7 +83,7 @@ class Period
     }
 
     /**
-     * Get start
+     * Get start.
      *
      * @return \DateTime
      */
@@ -92,9 +93,10 @@ class Period
     }
 
     /**
-     * Set title
+     * Set title.
      *
-     * @param  string $title
+     * @param string $title
+     *
      * @return Period
      */
     public function setTitle($title)
@@ -105,7 +107,7 @@ class Period
     }
 
     /**
-     * Get title
+     * Get title.
      *
      * @return string
      */
@@ -115,9 +117,10 @@ class Period
     }
 
     /**
-     * Set stop
+     * Set stop.
      *
-     * @param  \DateTime $stop
+     * @param \DateTime $stop
+     *
      * @return Period
      */
     public function setStop(\DateTime $stop)
@@ -128,7 +131,7 @@ class Period
     }
 
     /**
-     * Get stop
+     * Get stop.
      *
      * @return \DateTime
      */

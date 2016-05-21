@@ -1,31 +1,30 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
-
 use CPASimUSante\SimupollBundle\Manager\SimupollManager;
 use CPASimUSante\SimupollBundle\Manager\CategoryManager;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Form\CategoryType;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
-
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
- * Class CategoryController
+ * Class CategoryController.
  *
  * @category   Controller
- * @package    CPASimUSante
- * @subpackage Simupoll
+ *
  * @author     CPASimUSante <contact@simusante.com>
  * @copyright  2015 CPASimUSante
  * @license    http://www.opensource.org/licenses/mit-license.php MIT License
+ *
  * @version    0.1
+ *
  * @link       http://simusante.com
  *
  * @EXT\Route(
@@ -53,15 +52,14 @@ class CategoryController extends Controller
         SimupollManager $simupollManager,
         CategoryManager $categoryManager,
         TokenStorageInterface $tokenStorage
-    )
-    {
-      $this->simupollManager = $simupollManager;
-      $this->categoryManager = $categoryManager;
-      $this->tokenStorage = $tokenStorage;
+    ) {
+        $this->simupollManager = $simupollManager;
+        $this->categoryManager = $categoryManager;
+        $this->tokenStorage = $tokenStorage;
     }
 
     /**
-     * Lists all Categories
+     * Lists all Categories.
      *
      * @EXT\Route(
      *      "/categories/{id}",
@@ -72,9 +70,7 @@ class CategoryController extends Controller
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Category:list.html.twig")
      *
-     * @access public
-     *
-     * @param integer $simupoll id of Simupoll
+     * @param int $simupoll id of Simupoll
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
@@ -86,13 +82,13 @@ class CategoryController extends Controller
 
         return array(
             '_resource' => $simupoll,
-            'sid'       => $sid,
-            'tree2'     => $tree
+            'sid' => $sid,
+            'tree2' => $tree,
         );
     }
 
     /**
-     * Data for modal form for category add
+     * Data for modal form for category add.
      *
      * @EXT\Route(
      *     "/add/form/{cid}/{sid}",
@@ -106,14 +102,14 @@ class CategoryController extends Controller
         $form = $this->get('form.factory')->create(new CategoryType());
 
         return array(
-            'form'    => $form->createView(),
-            'parent'  => $cid,
-            'sid'     => $sid
+            'form' => $form->createView(),
+            'parent' => $cid,
+            'sid' => $sid,
         );
     }
 
     /**
-     * Process category add
+     * Process category add.
      *
      * @EXT\Route(
      *     "/add/{cid}/{sid}",
@@ -141,25 +137,24 @@ class CategoryController extends Controller
             $newcat->setUser($user);
             if ($cid != 0) {
                 $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
-            }
-            else {
+            } else {
                 $category = null;
             }
             $newcat->setParent($category);
             $em->persist($newcat);
             $em->flush();
+
             return new JsonResponse('success', 200);
-        }
-        else {
+        } else {
             return array(
-                'form'  => $form->createView(),
-                'cid'   => $cid
+                'form' => $form->createView(),
+                'cid' => $cid,
             );
         }
     }
 
     /**
-     * Process category delete
+     * Process category delete.
      *
      * @EXT\Route(
      *     "/delete/{cid}",
@@ -176,15 +171,15 @@ class CategoryController extends Controller
             $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
             $em->remove($category);
             $em->flush();
+
             return new JsonResponse('success', 200);
-        }
-        else {
+        } else {
             return array();
         }
     }
 
     /**
-     * Data for modal form for category modify
+     * Data for modal form for category modify.
      *
      * @EXT\Route(
      *     "/modify/form/{cid}/{sid}",
@@ -204,20 +199,21 @@ class CategoryController extends Controller
         $category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
 
         $form = $this->get('form.factory')
-            ->create(new CategoryType($simupoll, $category), $category, array('inside'=>true));
+            ->create(new CategoryType($simupoll, $category), $category, array('inside' => true));
         $form->handleRequest($request);
 
         if ($form->isValid()) {
             $em = $this->getDoctrine()->getManager();
             $em->persist($category);
             $em->flush();
+
             return new JsonResponse('success', 200);
         }
 
         return array(
-            'form'    => $form->createView(),
-            'parent'  => $cid,
-            'sid'     => $sid
+            'form' => $form->createView(),
+            'parent' => $cid,
+            'sid' => $sid,
         );
     }
 }

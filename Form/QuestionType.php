@@ -2,7 +2,6 @@
 
 namespace CPASimUSante\SimupollBundle\Form;
 
-use CPASimUSante\SimupollBundle\Repository\CategoryRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -22,16 +21,16 @@ class QuestionType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $simupoll    = $this->simupoll;
+        $simupoll = $this->simupoll;
 
         $builder
             ->add('title', 'text', array(
                     'label' => 'question_title',
-                    'required' => true
+                    'required' => true,
                 )
             )
             ->add('category', 'entity', array(
@@ -50,28 +49,29 @@ class QuestionType extends AbstractType
                             ->where('c.simupoll = :simupoll')
                             ->setParameter('simupoll', $simupoll);
                         $qb->orderBy('c.lft', 'ASC');
+
                         return $qb;
                     },
                 )
             )
             ->add(
                 'propositions', 'collection', array(
-                    'type'              => new PropositionType(),
-                    'label'             => 'proposition_value',
-                    'by_reference'      => false,
-                    'prototype'         => true,
-                    'prototype_name'    => '__proposition_proto__',
-                    'allow_add'         => true,
-                    'allow_delete'      => true
+                    'type' => new PropositionType(),
+                    'label' => 'proposition_value',
+                    'by_reference' => false,
+                    'prototype' => true,
+                    'prototype_name' => '__proposition_proto__',
+                    'allow_add' => true,
+                    'allow_delete' => true,
                 )
             )
             ->add('orderq', 'hidden', array(
-                    'data'              => 0    //to avoid null TODO: use this attribute
+                    'data' => 0,    //to avoid null TODO: use this attribute
                 )
             )
         ;
     }
-    
+
     /**
      * @param OptionsResolverInterface $resolver
      */

@@ -11,7 +11,7 @@ class PeriodType extends AbstractType
 {
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -24,9 +24,9 @@ class PeriodType extends AbstractType
             'attr' => array(
                 'class' => 'datepicker input-small',
                 'data-date-format' => 'dd-mm-yyyy',
-                'autocomplete' => 'off'
+                'autocomplete' => 'off',
             ),
-            'constraints' => array(new NotBlank())
+            'constraints' => array(new NotBlank()),
         );
         $startParam = $dateParams;
         $startParam['label'] = 'period_start';
@@ -48,7 +48,7 @@ class PeriodType extends AbstractType
         $builder
             ->add('title', 'text', array(
                     'label' => 'period_title',
-                    'required' => false
+                    'required' => false,
                 )
             )
             ->add('start', 'datepicker', $startParam)
@@ -64,7 +64,7 @@ class PeriodType extends AbstractType
         $resolver->setDefaults(array(
             'data_class' => 'CPASimUSante\SimupollBundle\Entity\Period',
             'language' => 'en',
-            'translation_domain' => 'resource'
+            'translation_domain' => 'resource',
         ));
     }
 

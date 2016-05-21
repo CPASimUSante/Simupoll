@@ -3,7 +3,6 @@
 namespace CPASimUSante\SimupollBundle\Repository;
 
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\EntityRepository;
 use CPASimUSante\SimupollBundle\Entity\Paper;
 use CPASimUSante\SimupollBundle\Entity\Category;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
@@ -12,7 +11,9 @@ class CategoryRepository extends NestedTreeRepository
 {
     /**
      * @param $simupoll
+     *
      * @return mixed
+     *
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getMaxLevel($simupoll)
@@ -27,7 +28,7 @@ class CategoryRepository extends NestedTreeRepository
     }
 
     /**
-     * get root category for simupoll
+     * get root category for simupoll.
      *
      * @param $sid integer id of simupoll
      */
@@ -39,18 +40,20 @@ class CategoryRepository extends NestedTreeRepository
             ->where('c.lvl = 0')
             ->andWhere('c.simupoll = :simupoll');
         $qb->setParameter('simupoll', $sid);
+
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * Categories between lft values
+     * Categories between lft values.
      *
      * @param $sid
      * @param int $begin
      * @param int $end
+     *
      * @return array
      */
-    public function getCategoriesBetweenLft($sid, $begin=-1, $end=-1)
+    public function getCategoriesBetweenLft($sid, $begin = -1, $end = -1)
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('c')
@@ -70,10 +73,11 @@ class CategoryRepository extends NestedTreeRepository
     }
 
     /**
-     * List of category from lvl list
+     * List of category from lvl list.
      *
      * @param $sid
      * @param $lftList array
+     *
      * @return array
      */
     public function getCategoriesInLft($sid, $lftList)
@@ -85,6 +89,7 @@ class CategoryRepository extends NestedTreeRepository
             ->andWhere('c.lft IN (:lftlist)')
             ->setParameter('simupoll', $sid)
             ->setParameter('lftlist', $lftList);
+
         return $qb->getQuery()->getResult();
     }
 
@@ -95,20 +100,23 @@ class CategoryRepository extends NestedTreeRepository
             ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
             ->where('c.simupoll = :sid')
             ->andWhere('c.id IN (:categories)')
-            ->setParameters(array('sid'=>$sid, 'categories'=>$cids))
+            ->setParameters(array('sid' => $sid, 'categories' => $cids))
             ->orderBy('c.lft', 'ASC');
         $result = $qb->getQuery()->getArrayResult();
-        return array_column($result, "lft");
+
+        return array_column($result, 'lft');
     }
 
     /**
-     * Categories between lft values
+     * Categories between lft values.
+     *
      * @param $sid
      * @param int $begin
      * @param int $end
+     *
      * @return array
      */
-    public function getCategoriesBetween($sid, $begin=-1, $end='')
+    public function getCategoriesBetween($sid, $begin = -1, $end = '')
     {
         $qb = $this->_em->createQueryBuilder();
         $qb->select('c.id')
@@ -124,23 +132,24 @@ class CategoryRepository extends NestedTreeRepository
         //echo $qb->getQuery()->getSQL();
         $result = $qb->getQuery()->getResult();
         //simplifies the result array
-        return array_column($result, "id");
+        return array_column($result, 'id');
     }
 
     /**
      * Prepares the QueryBuilder for the modification of category
-     * shows only categories not children of $category
+     * shows only categories not children of $category.
      *
      * @param $simupoll Paper
      * @param $category Category
+     *
      * @return $qb QueryBuilder
      */
     public function getCategoriesWithoutChildren($simupoll, $category)
     {
         //QB for the node and its children
          $qb_notin = $this->getChildrenQueryBuilder($category, false, null, 'ASC', true);
-         $result_notin = $qb_notin->getQuery()->getResult();
-         $not_ids = array();
+        $result_notin = $qb_notin->getQuery()->getResult();
+        $not_ids = array();
         foreach ($result_notin as $key => $value) {
             $not_ids[] = $value->getId();
         }
@@ -152,6 +161,7 @@ class CategoryRepository extends NestedTreeRepository
             ->where('c.simupoll = ?1')
             ->andWhere('c.id NOT IN ('.$ids.')')
             ->setParameter(1, $simupoll);
+
         return $qb;
     }
 }

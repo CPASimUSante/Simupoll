@@ -4,13 +4,10 @@ namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Claroline\CoreBundle\Entity\User;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
-use CPASimUSante\SimupollBundle\Entity\Statmanage;
-use CPASimUSante\SimupollBundle\Entity\Statcategorygroup;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Statmanage
+ * Statmanage.
  *
  * @ORM\Table(name="cpasimusante__simupoll_statmanage")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\StatmanageRepository")
@@ -18,7 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Statmanage
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -66,7 +63,7 @@ class Statmanage
     private $simupoll;
 
     /**
-     * Class constructor
+     * Class constructor.
      */
     public function __construct()
     {
@@ -74,9 +71,9 @@ class Statmanage
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -84,7 +81,7 @@ class Statmanage
     }
 
     /**
-     * Set userList
+     * Set userList.
      *
      * @param string $userList
      *
@@ -98,7 +95,7 @@ class Statmanage
     }
 
     /**
-     * Get userList
+     * Get userList.
      *
      * @return string
      */
@@ -108,7 +105,7 @@ class Statmanage
     }
 
     /**
-     * Set categoryList
+     * Set categoryList.
      *
      * @param string $categoryList
      *
@@ -122,7 +119,7 @@ class Statmanage
     }
 
     /**
-     * Get categoryList
+     * Get categoryList.
      *
      * @return string
      */
@@ -132,7 +129,7 @@ class Statmanage
     }
 
     /**
-     * Set completeCategoryList
+     * Set completeCategoryList.
      *
      * @param string $completeCategoryList
      *
@@ -146,7 +143,7 @@ class Statmanage
     }
 
     /**
-     * Get completeCategoryList
+     * Get completeCategoryList.
      *
      * @return string
      */
@@ -176,7 +173,7 @@ class Statmanage
     }
 
     /**
-     * Add statcategorygroup
+     * Add statcategorygroup.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup
      *
@@ -186,11 +183,12 @@ class Statmanage
     {
         $this->statcategorygroups[] = $statcategorygroup;
         $statcategorygroup->setStatmanage($this);
+
         return $this;
     }
 
     /**
-     * Remove statcategorygroup
+     * Remove statcategorygroup.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Statcategorygroup $statcategorygroup
      */
@@ -200,7 +198,7 @@ class Statmanage
     }
 
     /**
-     * Get statcategorygroups
+     * Get statcategorygroups.
      *
      * @return \Doctrine\Common\Collections\Collection
      */

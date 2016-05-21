@@ -3,10 +3,9 @@
 namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
 
 /**
- * Organization
+ * Organization.
  *
  * @ORM\Table(name="cpasimusante__simupoll_organization")
  * @ORM\Entity()
@@ -14,7 +13,7 @@ use CPASimUSante\SimupollBundle\Entity\Simupoll;
 class Organization
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -50,9 +49,9 @@ class Organization
     private $simupoll;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -60,7 +59,7 @@ class Organization
     }
 
     /**
-     * Set choice
+     * Set choice.
      *
      * @param string $choice
      *
@@ -74,7 +73,7 @@ class Organization
     }
 
     /**
-     * Get choice
+     * Get choice.
      *
      * @return string
      */
@@ -84,7 +83,7 @@ class Organization
     }
 
     /**
-     * Set choiceData
+     * Set choiceData.
      *
      * @param string $choiceData
      *
@@ -98,7 +97,7 @@ class Organization
     }
 
     /**
-     * Get choiceData
+     * Get choiceData.
      *
      * @return string
      */
@@ -129,4 +128,3 @@ class Organization
         $this->simupoll = $simupoll;
     }
 }
-

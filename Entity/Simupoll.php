@@ -22,22 +22,23 @@ use Claroline\CoreBundle\Entity\Resource\AbstractResource;
 class Simupoll extends AbstractResource
 {
     /**
-     * @var string $title
+     * @var string
      *
      * @ORM\Column(name="title", type="string", length=255)
      */
     private $title;
 
     /**
-     * @var string $description
+     * @var string
      *
      * @ORM\Column(type="text", nullable=true)
      */
     private $description;
 
     /**
-     * Does the Simupoll has paper : no modification of Simupoll possible
-     * @var string $hasPaper
+     * Does the Simupoll has paper : no modification of Simupoll possible.
+     *
+     * @var string
      *
      * @ORM\Column(name="has_paper", type="boolean", nullable=true)
      */
@@ -51,7 +52,7 @@ class Simupoll extends AbstractResource
     protected $questions;
 
     /**
-     * Class constructor
+     * Class constructor.
      */
     public function __construct()
     {
@@ -59,7 +60,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Set title
+     * Set title.
      *
      * @param string $title
      */
@@ -69,7 +70,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Get title
+     * Get title.
      *
      * @return string
      */
@@ -79,7 +80,8 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Add question
+     * Add question.
+     *
      * @param \CPASimUSante\SimupollBundle\Entity\Question $question
      *
      * @return Simupoll
@@ -88,6 +90,7 @@ class Simupoll extends AbstractResource
     {
         $this->questions[] = $question;
         $question->setSimupoll($this);
+
         return $this;
         /*
         $question->setSimupoll($this);
@@ -96,7 +99,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Remove question
+     * Remove question.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Question $question
      */
@@ -106,7 +109,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Get questions
+     * Get questions.
      *
      * @return \Doctrine\Common\Collections\Collection
      */
@@ -116,7 +119,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Set description
+     * Set description.
      *
      * @param string $description
      */
@@ -126,7 +129,7 @@ class Simupoll extends AbstractResource
     }
 
     /**
-     * Get description
+     * Get description.
      *
      * @return string
      */

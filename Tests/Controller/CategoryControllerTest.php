@@ -1,10 +1,9 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use CPASimUSante\SimupollBundle\Entity\Category;
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
-
-use Claroline\CoreBundle\Entity\Role;
 use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use CPASimUSante\SimupollBundle\Testing\Persister;
@@ -22,7 +21,7 @@ class CategoryControllerTest extends TransactionalTestCase
     //standard setup
     protected function setUp()
     {
-       //if use of setUp(), get parent setUp()
+        //if use of setUp(), get parent setUp()
         parent::setUp();
         $this->om = $this->client->getContainer()->get('claroline.persistence.object_manager');
         $this->persist = new Persister($this->om);

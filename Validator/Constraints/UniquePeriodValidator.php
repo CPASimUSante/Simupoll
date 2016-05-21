@@ -1,4 +1,5 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
@@ -24,8 +25,7 @@ class UniquePeriodValidator extends ConstraintValidator
     public function __construct(
         EntityManager $em,
         TokenStorageInterface $tokenStorage
-    )
-    {
+    ) {
         $this->em = $em;
         $this->tokenStorage = $tokenStorage;
     }

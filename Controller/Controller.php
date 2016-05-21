@@ -1,18 +1,16 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller as BaseController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
-
-use Claroline\CoreBundle\Event\Log\LogResourceReadEvent;
 use Claroline\CoreBundle\Library\Resource\ResourceCollection;
 
-class Controller extends BaseController {
+class Controller extends BaseController
+{
     /**
-     * @param string $permission
-     *
+     * @param string   $permission
      * @param Simupoll $simupoll
      *
      * @throws AccessDeniedException
@@ -26,8 +24,7 @@ class Controller extends BaseController {
     }
 
     /**
-     * @param string $permission
-     *
+     * @param string   $permission
      * @param Simupoll $simupoll
      *
      * @return bool
@@ -41,6 +38,7 @@ class Controller extends BaseController {
         if ($this->get('security.authorization_checker')->isGranted($permission, $collection)) {
             $checkPermission = true;
         }
+
         return $checkPermission;
     }
 }

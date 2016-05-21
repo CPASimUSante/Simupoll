@@ -5,7 +5,7 @@ namespace CPASimUSante\SimupollBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Answer
+ * Answer.
  *
  * @ORM\Table(name="cpasimusante__simupoll_answer")
  * @ORM\Entity(repositoryClass="CPASimUSante\SimupollBundle\Repository\AnswerRepository")
@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Answer
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -48,9 +48,9 @@ class Answer
     private $question;
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -58,7 +58,7 @@ class Answer
     }
 
     /**
-     * Set mark
+     * Set mark.
      *
      * @param float $mark
      *
@@ -72,7 +72,7 @@ class Answer
     }
 
     /**
-     * Get mark
+     * Get mark.
      *
      * @return float
      */
@@ -82,7 +82,7 @@ class Answer
     }
 
     /**
-     * Set response
+     * Set response.
      *
      * @param string $response
      *
@@ -96,7 +96,7 @@ class Answer
     }
 
     /**
-     * Get answer
+     * Get answer.
      *
      * @return string
      */
@@ -116,7 +116,7 @@ class Answer
     }
 
     /**
-     * Set question
+     * Set question.
      *
      * @param string $question
      */
@@ -126,7 +126,7 @@ class Answer
     }
 
     /**
-     * Get question
+     * Get question.
      *
      * @return string
      */
@@ -135,4 +135,3 @@ class Answer
         return $this->question;
     }
 }
-

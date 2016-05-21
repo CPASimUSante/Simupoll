@@ -25,7 +25,7 @@
             {# display the messsages - macros defined in core #}
             <div>{{ macros.flashBox() }}</div>
             {% if not opened %}
-                <div class="well">{{ 'simupoll_warning_period_not_defined' | trans({}, 'platform') }}</div>
+                <div class="well">{{ 'simupoll_warning_period_not_defined' | trans({}, 'resource') }}</div>
             {% endif %}
             {% if is_granted('ADMINISTRATE', _resource) %}
                 <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_category_manage', { 'id': _resource.id }) }}" title="{{ 'manage_categories' | trans }}">

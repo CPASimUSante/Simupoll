@@ -14,7 +14,7 @@ class PropositionType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -22,14 +22,14 @@ class PropositionType extends AbstractType
             ->add(
                 'choice', 'text', array(
                     'required' => true,
-                    'label' => 'proposition_choice'
+                    'label' => 'proposition_choice',
                 )
             )
             ->add(
                 'mark', 'text', array(
                     'required' => true,
                     'label' => 'proposition_mark',
-                    'attr'=> array('class' => 'small')
+                    'attr' => array('class' => 'small'),
                 )
             );
     }
@@ -40,7 +40,7 @@ class PropositionType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'CPASimUSante\SimupollBundle\Entity\Proposition'
+            'data_class' => 'CPASimUSante\SimupollBundle\Entity\Proposition',
         ));
     }
 

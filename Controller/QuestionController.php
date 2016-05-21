@@ -1,25 +1,24 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
-use JMS\DiExtraBundle\Annotation as DI;
-
 use CPASimUSante\SimupollBundle\Entity\Question;
 use CPASimUSante\SimupollBundle\Form\QuestionType;
-
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Class QuestionController
+ * Class QuestionController.
  *
  * @category   Controller
- * @package    CPASimUSante
- * @subpackage Simupoll
+ *
  * @author     CPASimUSante <contact@simusante.com>
  * @copyright  2015 CPASimUSante
  * @license    http://www.opensource.org/licenses/mit-license.php MIT License
+ *
  * @version    0.1
+ *
  * @link       http://simusante.com
  *
  * @EXT\Route(
@@ -29,21 +28,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 class QuestionController extends Controller
 {
     /**
-     * list questions
+     * list questions.
      */
     public function indexAction()
     {
-
     }
 
     /**
-     * Manage questions
+     * Manage questions.
      *
      * @EXT\Route("/manage/{id}", name="cpasimusante_simupoll_question_manage", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("question", class="CPASimUSanteSimupollBundle:Question", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Question:manage.html.twig")
-     * @param Request $request
+     *
+     * @param Request  $request
      * @param Question $question
+     *
      * @return array
      */
     public function manageAction(Request $request, Question $question)
@@ -78,7 +78,7 @@ class QuestionController extends Controller
 
         return array(
             '_resource' => $question,
-            'form'      => $form->createView(),
+            'form' => $form->createView(),
         );
     }
 }

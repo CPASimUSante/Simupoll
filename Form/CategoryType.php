@@ -6,11 +6,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
-
 use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use CPASimUSante\SimupollBundle\Entity\Category;
-use CPASimUSante\SimupollBundle\Repository\CategoryRepository;
 
 class CategoryType extends AbstractType
 {
@@ -20,7 +17,7 @@ class CategoryType extends AbstractType
     private $simupoll;
     private $category;
 
-    public function __construct(Simupoll $simupoll=null, Category $category=null)
+    public function __construct(Simupoll $simupoll = null, Category $category = null)
     {
         $this->simupoll = $simupoll;
         $this->category = $category;
@@ -28,7 +25,7 @@ class CategoryType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -38,7 +35,7 @@ class CategoryType extends AbstractType
         $builder->add('name', 'text', array(
                 'label' => 'category_name',
                 'required' => true,
-                'constraints' => new NotBlank()
+                'constraints' => new NotBlank(),
             ));
         //for category modification
         if ($options['inside']) {
@@ -62,7 +59,7 @@ class CategoryType extends AbstractType
         $resolver->setDefaults(array(
             'data_class' => 'CPASimUSante\SimupollBundle\Entity\Category',
             'translation_domain' => 'resource',
-            'inside' => false
+            'inside' => false,
         ));
     }
 

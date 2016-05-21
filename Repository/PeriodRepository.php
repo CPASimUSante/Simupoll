@@ -9,9 +9,10 @@ use CPASimUSante\SimupollBundle\Entity\Period;
 class PeriodRepository extends EntityRepository
 {
     /**
-     * Get currently opened simupoll period
+     * Get currently opened simupoll period.
      *
      * @param $sid integer simupoll id
+     *
      * @return array
      */
     public function getOpenedPeriodForSimupoll($sid)
@@ -26,14 +27,16 @@ class PeriodRepository extends EntityRepository
             ->andWhere('p.start <= :now')
             ->andWhere('p.stop >= :now')
             ->setParameters(array('sid' => $sid, 'now' => $now));
+
         return $qb->getQuery()->getResult();
     }
 
     /**
-     * User can access the compose button when the time is right
+     * User can access the compose button when the time is right.
      *
      * @param $sid integer simupoll id
-     * @return integer
+     *
+     * @return int
      */
     public function isOpenedPeriodForSimupoll($sid)
     {
@@ -46,15 +49,15 @@ class PeriodRepository extends EntityRepository
             ->where('s.id = :sid')
             ->andWhere('p.start <= :now')
             ->andWhere('p.stop >= :now')
-            ->setParameters(array('sid' => $sid,'now' => $now));
+            ->setParameters(array('sid' => $sid, 'now' => $now));
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
-     *
      * @param $uid
      * @param $date
+     *
      * @return array
      */
     public function findOneContaining($uid, $date)
@@ -67,6 +70,7 @@ class PeriodRepository extends EntityRepository
             ->andWhere('p.start <= :thedate')
             ->andWhere('p.stop >= :thedate')
             ->setParameters(array('uid' => $uid, 'thedate' => $date));
+
         return $qb->getQuery()->getResult();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace CPASimUSante\SimupollBundle\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;

@@ -13,9 +13,6 @@ namespace CPASimUSante\SimupollBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Claroline\CoreBundle\Entity\Resource\AbstractResource;
-use CPASimUSante\SimupollBundle\Entity\Category;
-use CPASimUSante\SimupollBundle\Entity\Simupoll;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -25,7 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Question
 {
     /**
-     * @var integer $id
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -34,14 +31,14 @@ class Question
     private $id;
 
     /**
-     * @var string $title
+     * @var string
      *
      * @ORM\Column(name="title", type="string", length=255, nullable=true)
      */
     private $title;
 
     /**
-     * @var integer $orderq
+     * @var int
      *
      * @ORM\Column(name="orderq", type="integer", options={"default" = 0})
      * @Assert\Type(type = "numeric")
@@ -60,7 +57,7 @@ class Question
     protected $simupoll;
 
     /**
-     * Category of question
+     * Category of question.
      *
      * @ORM\ManyToOne(targetEntity="CPASimUSante\SimupollBundle\Entity\Category")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="id",onDelete="CASCADE")
@@ -75,7 +72,7 @@ class Question
     protected $propositions;
 
     /**
-     * Class constructor
+     * Class constructor.
      */
     public function __construct()
     {
@@ -83,9 +80,9 @@ class Question
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -93,9 +90,10 @@ class Question
     }
 
     /**
-     * Set title
+     * Set title.
      *
      * @param string $title
+     *
      * @return Question
      */
     public function setTitle($title)
@@ -106,7 +104,7 @@ class Question
     }
 
     /**
-     * Get title
+     * Get title.
      *
      * @return string
      */
@@ -116,9 +114,10 @@ class Question
     }
 
     /**
-     * Set order
+     * Set order.
      *
-     * @param integer $order
+     * @param int $order
+     *
      * @return Question
      */
     public function setOrderq($orderq)
@@ -129,9 +128,9 @@ class Question
     }
 
     /**
-     * Get order
+     * Get order.
      *
-     * @return integer
+     * @return int
      */
     public function getOrderq()
     {
@@ -139,9 +138,10 @@ class Question
     }
 
     /**
-     * Set category
+     * Set category.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Category $category
+     *
      * @return Question
      */
     public function setCategory(Category $category = null)
@@ -152,7 +152,7 @@ class Question
     }
 
     /**
-     * Get category
+     * Get category.
      *
      * @return \CPASimUSante\SimupollBundle\Entity\Category
      */
@@ -162,7 +162,7 @@ class Question
     }
 
     /**
-     * Add proposition
+     * Add proposition.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Proposition $proposition
      *
@@ -172,6 +172,7 @@ class Question
     {
         $this->propositions[] = $proposition;
         $proposition->setQuestion($this);
+
         return $this;
        /*
         $proposition->setQuestion($this);
@@ -180,7 +181,7 @@ class Question
     }
 
     /**
-     * Remove proposition
+     * Remove proposition.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Proposition $proposition
      */
@@ -190,7 +191,7 @@ class Question
     }
 
     /**
-     * Get propositions
+     * Get propositions.
      *
      * @return \Doctrine\Common\Collections\Collection
      */
@@ -200,7 +201,7 @@ class Question
     }
 
     /**
-     * Get simupoll
+     * Get simupoll.
      *
      * @return \CPASimUSante\SimupollBundle\Entity\Simupoll
      */
@@ -210,7 +211,7 @@ class Question
     }
 
     /**
-     * Set simupoll
+     * Set simupoll.
      *
      * @param \CPASimUSante\SimupollBundle\Entity\Question $question
      *
