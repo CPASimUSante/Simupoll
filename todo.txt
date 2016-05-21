@@ -1,5 +1,6 @@
 - add tests
 - add export    -> wip
 - fix empty start / end period (validation)
-- go for AJS, to be like other Claro bunldes :-(
 - fix copy resource
+- check auth access
+- Improve result display settings

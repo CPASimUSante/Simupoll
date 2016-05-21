@@ -192,8 +192,8 @@ class SimupollController extends Controller
         $hasresponse = $this->simupollManager->hasResponse($simupoll);
 
         //is there any question for this simupoll
-        //$hasquestion = $this->simupollManager->hasQuestion($simupoll);
-        $hasquestion = ($simupoll->getHasPaper() !== true) ? false : true;
+        $hasquestion = $this->simupollManager->hasQuestion($simupoll);
+        //$hasquestion = ($simupoll->getHasPaper() !== true) ? false : true;
 
         //is there any category for this simupoll
         $hascategory = $this->simupollManager->hasCategory($simupoll);
