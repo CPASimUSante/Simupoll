@@ -19,7 +19,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
     public function deleteOldAnswersInCategories($pid, $questionList)
     {
         $qb = $this->_em->createQueryBuilder();
-        //$query = $qb->delete('CPASimUSante\SimupollBundle\Entity\Answer', 'a')
+
         $query = $qb->delete('CPASimUSanteSimupollBundle:Answer', 'a')
             ->where('a.question IN (:questionslist)')
             ->andWhere('a.paper = :pid')
@@ -46,7 +46,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->join('p.simupoll', 's')
             ->where('s.id = :sid')
 //            ->orderBy($order, 'ASC')
-            ->setParameters(array('sid' => $simupollId));
+            ->setParameters(['sid' => $simupollId]);
 
         return $qb->getQuery();
     }
@@ -72,7 +72,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->where('s.id = :sid')
             ->andWhere('c.id IN (:categories)')
             ->orderBy('p.'.$order, 'ASC')
-            ->setParameters(array('sid' => $simupollId, 'categories' => $categories));
+            ->setParameters(['sid' => $simupollId, 'categories' => $categories]);
 //echo '<pre>';print_r(array('sql'=> $qb->getQuery()->getSQL(),'parameters' => $qb->getQuery()->getParameters(),));echo '</pre>';
         return $qb->getQuery()->getResult();
     }
@@ -94,7 +94,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->leftJoin('a.question', 'q')
             ->leftJoin('q.category', 'c')
             ->where('q.simupoll = :simupoll');
-        if ($pids != array()) {
+        if ($pids != []) {
             $qb->andWhere('a.paper IN (:paper)');
             $qb->setParameter('paper', $pids);
         }
@@ -160,7 +160,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
             ->join('p.simupoll', 'e')
             ->where('e.id = ?1')
             ->groupBy('p.user')
-            ->setParameters(array(1 => $simupollId));
+            ->setParameters([1 => $simupollId]);
 
         return $qb->getQuery()->getResult();
     }
@@ -191,7 +191,7 @@ class AnswerRepository extends \Doctrine\ORM\EntityRepository
                        ->getDQL()
                ))
             ->groupBy('p.user')
-            ->setParameters(array(1 => $sid));
+            ->setParameters([1 => $sid]);
         // echo $qb->getQuery()->getSQL().'<br><br>';
         return $qb->getQuery()->getResult();
     }

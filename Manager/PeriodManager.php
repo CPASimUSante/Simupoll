@@ -64,7 +64,7 @@ class PeriodManager
     /**
      * @param int $sid Simipoll id
      *
-     * @return array list of periods array('id', 'title', 'entity')
+     * @return array list of periods array('id', 'title', 'entity', 'current')
      */
     public function getPeriods($sid)
     {
@@ -82,8 +82,10 @@ class PeriodManager
             if (($period->getStart()->format('Y-m-d') <= $now->format('Y-m-d')) &&
                 ($period->getStop()->format('Y-m-d') >= $now->format('Y-m-d'))) {
                 $periods['current'][] = true;
+                $periods['currentid'][$period->getId()] = true;
             } else {
                 $periods['current'][] = false;
+                $periods['currentid'][$period->getId()] = false;
             }
         }
 

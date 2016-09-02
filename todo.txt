@@ -4,3 +4,6 @@
 - fix copy resource
 - check auth access
 - Improve result display settings
+
+
+- clean heavily the code : remove "saveAnswers"

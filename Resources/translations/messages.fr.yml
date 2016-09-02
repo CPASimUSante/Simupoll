@@ -1,9 +1,12 @@
-back: Retour
+back: 'Retour'
+back_to_main: 'Retour à la page principale de %simupoll%'
+back_to_result: 'Retour à la page des résultats'
 compose: 'Répondre'
 cpasimusante_papers: 'Gérer copies'
 display_results_simupoll: 'Afficher résultats'
 edit_simupoll: 'Créer Simupoll'
 export_csv_simupoll: 'Exporter résultats'
+group_check: 'cochez les groupes'
 import_simupoll: 'Importer données'
 manage_categories: 'Gérer catégories'
 manage_periods : 'Gérer périodes'

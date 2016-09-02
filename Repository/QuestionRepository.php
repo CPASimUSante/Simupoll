@@ -27,7 +27,13 @@ class QuestionRepository extends EntityRepository
     }
 
     /**
+     * Retrieve the list of question for a given simupoll, between 2 categories, defined by lft values.
      *
+     * @param $sid simupoll id
+     * @param $current integer begin bound for the category (lft value)
+     * @param $next integer end bound for the category (lft value)
+     *
+     * @return array of results
      */
     public function getQuestionsWithinCategories($sid, $current = -1, $next = -1)
     {

@@ -726,8 +726,10 @@ class SimupollManager
     public function importFile($sid, $file, $datatype, $user = null)
     {
         $sessionFlashBag = $this->session->getFlashBag();
-        $datalines = array();
+        $datalines = [];
 
+        //TODO : check file
+        //read csv file
         $data = file_get_contents($file);
         $data = $this->container->get('claroline.utilities.misc')
             ->formatCsvOutput($data);
@@ -737,8 +739,8 @@ class SimupollManager
             $datalines[] = str_getcsv($line, ';');
         }
 
-        if ($datalines != array()) {
-            $createddata = array();
+        if ($datalines !== []) {
+            $createddata = [];
 
             if ($datatype == 'question') {
                 $createddata = $this->importQuestions($sid, $datalines, $createddata);
@@ -751,7 +753,7 @@ class SimupollManager
                     $msg = '<'.$created.'> ';
                     $msg .= $this->translator->trans(
                     'has_been_created',
-                    array(),
+                    [],
                     'platform'
                     );
                     $sessionFlashBag->add('success', $msg);
@@ -762,7 +764,7 @@ class SimupollManager
                 foreach ($createddata['nokq'] as $created) {
                     $msg = $this->translator->trans(
                         'question_not_created',
-                        array('%questionname%' => $created), 'resource'
+                        ['%questionname%' => $created], 'resource'
                     );
                     $sessionFlashBag->add('error', $msg);
                 }
@@ -771,7 +773,7 @@ class SimupollManager
                 foreach ($createddata['nokc'] as $created) {
                     $msg = $this->translator->trans(
                         'category_not_created',
-                        array('%categoryname%' => $created), 'resource'
+                        ['%categoryname%' => $created], 'resource'
                     );
                     $sessionFlashBag->add('error', $msg);
                 }
@@ -780,7 +782,7 @@ class SimupollManager
                 foreach ($createddata['nokqc'] as $created) {
                     $msg = $this->translator->trans(
                         'question_category_missing',
-                        array('%questionname%' => $created[0], '%categoryname%' => $created[1]), 'resource'
+                        ['%questionname%' => $created[0], '%categoryname%' => $created[1]], 'resource'
                     );
                     $sessionFlashBag->add('error', $msg);
                 }
@@ -789,7 +791,7 @@ class SimupollManager
                 foreach ($createddata['nokqp'] as $created) {
                     $msg = $this->translator->trans(
                         'mark_not_set',
-                        array('%questionname%' => $created), 'resource'
+                        ['%questionname%' => $created], 'resource'
                     );
                     $sessionFlashBag->add('error', $msg);
                 }
@@ -800,16 +802,16 @@ class SimupollManager
     /**
      * Import Questions.
      *
-     * @param $sid integer
+     * @param $sid integer id of Simupoll
      * @param $questions array
      *
      * @return $returnValues array
      */
-    public function importQuestions($sid, array $questions, $returnValues = array())
+    public function importQuestions($sid, array $questions, $returnValues = [])
     {
         $this->om->startFlushSuite();
 
-        //cant use $simupoll entity directly because doesn't come from the same om
+        //can't use $simupoll entity directly because doesn't come from the same om
         //would cause doctrine error
         $simupoll = $this->om
             ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
@@ -823,20 +825,20 @@ class SimupollManager
             //does the question exists ?
             $question = $this->om
                 ->getRepository('CPASimUSanteSimupollBundle:Question')
-                ->findOneBy(array(
+                ->findOneBy([
                     'title' => $questionTitle,
                     'simupoll' => $simupoll,
-                ));
+                ]);
 
             if ($question === null) {
                 //get category
                 $category = $this->om
                 ->getRepository('CPASimUSanteSimupollBundle:Category')
-                ->findOneBy(array(
+                ->findOneBy([
                     'name' => $questionCategoryName,
                     'simupoll' => $simupoll,
-                ));
-                if ($category != null) {
+                ]);
+                if ($category !== null) {
                     //add question
                     $newQuestion = new Question();
                     $newQuestion->setTitle($questionTitle);
@@ -853,7 +855,7 @@ class SimupollManager
 
                         for ($inc = 0;$inc < $countP;$inc += 2) {
                             //if there is a score for each proposition
-                            if (($countP % 2 == 0 && $inc == $countP - 1) || isset($propositions[($inc + 1)])) {
+                            if (($countP % 2 === 0 && $inc === $countP - 1) || isset($propositions[($inc + 1)])) {
                                 $newProposition = new Proposition();
                                 $newProposition->setQuestion($newQuestion);
                                 $newProposition->setChoice($propositions[$inc]);
@@ -861,14 +863,14 @@ class SimupollManager
                                 $this->om->persist($newProposition);
                             }
                         }
-                        if ($countP % 2 != 0) {
+                        if ($countP % 2 !== 0) {
                             $returnValues['nokqp'][] = $questionTitle;
                         }
                     }
 
                     $returnValues['ok'][] = 'Question : '.$questionTitle;
                 } else {
-                    $returnValues['nokqc'][] = array($questionTitle, $questionCategoryName);
+                    $returnValues['nokqc'][] = [$questionTitle, $questionCategoryName];
                 }
             } else {
                 $returnValues['nokq'][] = $questionTitle;
@@ -888,29 +890,29 @@ class SimupollManager
      *
      * @return $returnValues array
      */
-    public function importCategories($sid, array $categories, User $user, $returnValues = array())
+/*
+    public function importCategories($sid, array $categories, User $user, $returnValues = [])
     {
-        $this->om->startFlushSuite();
-
         $simupoll = $this->om
             ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
             ->findOneById($sid);
 
-        $cats = array();
-        $parents = array();
-        $children = array();
+        $cats = [];
+        $parents = [];
+        $children = [];
 
+        $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
+
+        $this->om->startFlushSuite();
         foreach ($categories as $category) {
             if (count($category) > 1) {
                 $categoryName = $category[0];
                 $categoryParent = $category[1];
                 //does the category exists already ?
-                $cat = $this->om
-                ->getRepository('CPASimUSanteSimupollBundle:Category')
-                ->findOneBy(array(
+                $cat = $repoCat->findOneBy([
                     'name' => $categoryName,
                     'simupoll' => $simupoll,
-                ));
+                ]);
                 //if it doesn't
                 if ($cat === null) {
                     //create category, with no parent
@@ -935,24 +937,131 @@ class SimupollManager
         $this->om->endFlushSuite();
 
         //update parent
-        $this->om->startFlushSuite();
-
+        //$this->om->startFlushSuite();
         //search for parent
         foreach ($parents as $id => $parent) {
             if ($parent !== 'null') {
-                $pc = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
-                ->findOneBy(array(
+                $pc = $repoCat->findOneBy([
                     'name' => $parent,
                     'simupoll' => $simupoll,
-                ));
+                ]);
                 //if parent is created
                 if ($pc !== null) {
+echo '<pre>Parent:'.$cats[$id]->getName().' <= '.$pc->getName().'</pre>';
                     $cats[$id]->setParent($pc);
                     $this->om->persist($cats[$id]);
+                    $this->om->flush();
                 }
             }
         }
-        $this->om->endFlushSuite();
+        //$this->om->endFlushSuite();
+
+        return $returnValues;
+    }
+*/
+    public function importCategories($sid, array $categories, User $user, $returnValues = [])
+    {
+        $simupoll = $this->om
+            ->getRepository('CPASimUSanteSimupollBundle:Simupoll')
+            ->findOneById($sid);
+
+        $cats = [];
+        $parents = [];
+        $children = [];
+
+        $repoCat = $this->om->getRepository('CPASimUSanteSimupollBundle:Category');
+
+        $saved = [];
+        /*
+        foreach ($categories as $category) {
+            if (count($category) > 1) {
+                $categoryName = $category[0];
+                $categoryParent = $category[1];
+                //does the category exists already ?
+                $cat = $repoCat->findOneBy([
+                    'name' => $categoryName,
+                    'simupoll' => $simupoll,
+                ]);
+                //if it doesn't
+                if ($cat === null) {
+                    //create category,
+                    $newCategory = new Category();
+                    $newCategory->setName($categoryName);
+                    if ($categoryParent !== 'null') {
+                        $newCategory->setParent($saved[$categoryParent]);
+                    }
+                    $newCategory->setSimupoll($simupoll);
+                    $newCategory->setUser($user);
+                    $this->om->persist($newCategory);
+                    $this->om->flush();
+
+                    $saved[$categoryName] = $newCategory;
+
+                    //save infos
+                    $cats[] = $newCategory;
+                    $children[] = $categoryName;
+                    $parents[] = $categoryParent;
+
+                    $returnValues['ok'][] = 'Catégorie : '.$categoryName;
+                } else {
+                    $returnValues['nokc'][] = $categoryName;
+                }
+            }
+        }
+        */
+
+$this->om->startFlushSuite();
+foreach ($categories as $category) {
+    if (count($category) > 1) {
+        $categoryName = $category[0];
+        $categoryParent = $category[1];
+        //does the category exists already ?
+        $cat = $repoCat->findOneBy([
+            'name' => $categoryName,
+            'simupoll' => $simupoll,
+        ]);
+        //if it doesn't
+        if ($cat === null) {
+            //create category,
+            $newCategory = new Category();
+            $newCategory->setName($categoryName);
+            $newCategory->setParent(null);
+            $newCategory->setSimupoll($simupoll);
+            $newCategory->setUser($user);
+            $this->om->persist($newCategory);
+            $this->om->flush();
+
+            $saved[$categoryName] = $newCategory;
+
+            //save infos
+            $cats[] = $newCategory;
+            $children[] = $categoryName;
+            $parents[] = $categoryParent;
+
+            $returnValues['ok'][] = 'Catégorie : '.$categoryName;
+        } else {
+            $returnValues['nokc'][] = $categoryName;
+        }
+    }
+}
+$this->om->endFlushSuite();
+
+//update parent
+$this->om->startFlushSuite();
+//search for parent
+foreach ($parents as $id => $parent) {
+    if ($parent !== 'null') {
+        $pc = $repoCat->findOneBy([
+            'name' => $parent,
+            'simupoll' => $simupoll,
+        ]);
+        //if parent is created
+        if ($pc !== null) {
+            $repoCat->persistAsLastChildOf($cats[$id], $pc);
+        }
+    }
+}
+$this->om->endFlushSuite();
 
         return $returnValues;
     }

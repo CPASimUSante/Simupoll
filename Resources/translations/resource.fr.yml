@@ -20,9 +20,9 @@ graph_show: 'Afficher le graphique'
 graph_export: 'Enregistrer le graphique'
 group_name: 'Nom du groupe'
 group_title: 'Intitulé du groupe inc'
-
+import: 'Importer'
 mark_not_set: 'Il y a un problème avec les propositions / points attribués pour la question %questionname%'
-organization_not_set: 'L''organisation n''a pas été définie'
+organization_not_set: 'L''organisation de l''affichage des catégories n''a pas été définie'
 
 period_add : 'Ajouter une période'
 period_delete: 'Suppression de la période'
@@ -53,3 +53,4 @@ select_users_to_add_to_simupollgraph: 'Choisir les utilisateurs pour le graphiqu
 simupoll_question_add: 'Indiquez les questions associées à ce Simupoll'
 simupoll_warning_period_not_defined : 'Attention, actuellement, les périodes définies ne permettent pas de répondre au Simupoll'
 stat_category_manage: '3- Cochez les cases des catégories à regrouper. Séléctionner par colonne les catégories à regrouper dans les statistiques : une colonne = un groupe. CTRL + clic pour déselectionner'
+statmanage_not_set: 'L''organisation des résultats n''a pas été définie'

@@ -18,7 +18,7 @@
 
         <div class="panel-body" id="period_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
-                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                <i class="fa fa-arrow-left"></i> {{ 'back_to_main' | trans({'%simupoll%': _resource.getResourceNode().getName()}) }}
             </a>
             <hr>
             <table class="table">

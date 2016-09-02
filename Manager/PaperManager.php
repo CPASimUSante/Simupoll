@@ -35,7 +35,7 @@ class PaperManager
       */
      public function getAnswers($arrPapersIds, $sid, $answers, $current_category, $next_category)
      {
-         $answers = array();
+         $answers = [];
          foreach ($arrPapersIds as $paperId) {
              $answers = $this->getAnswerDataForPaperInCategorylist($sid, $paperId, $answers, $current_category, $next_category);
          }
@@ -54,7 +54,7 @@ class PaperManager
      *
      * @return array('questions', 'answers');
      */
-    public function getAnswerDataForPaperInCategorylist($sid, $pid, $answers = array(), $current_category = -1, $next_category = -1)
+    public function getAnswerDataForPaperInCategorylist($sid, $pid, $answers = [], $current_category = -1, $next_category = -1)
     {
         $answersList = $this->om->getRepository('CPASimUSanteSimupollBundle:Answer')
             ->getAnswersForQuestions($sid, $pid, $current_category, $next_category);
@@ -114,6 +114,23 @@ class PaperManager
      }
 
      /**
+      * Save Answer.
+      *
+      * @return Answer $answer
+      */
+     public function saveAnswer($paper, $question, $useranswer, $mark)
+     {
+         $answer = new Answer();
+         $answer->setPaper($paper);
+         $answer->setQuestion($question);
+         $answer->setAnswer($useranswer);
+         $answer->setMark($mark);
+         $this->om->persist($answer);
+
+         return $answer;
+     }
+
+     /**
       * Save Answers.
       *
       * @param $choices array list of answers (checked radioboxes values)
@@ -132,13 +149,10 @@ class PaperManager
                 ->findOneById($propo);
              // get paper
              $thepaper = $arrPaper[$per_id];
-             echo '$per_id'.$per_id;
-             echo '</pre>';
-             var_dump(is_object($arrPaper[$per_id]));
-             echo '</pre><br>';
+// echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre><br>';
              if (is_object($arrPaper[$per_id])) {
                  //save answer
-                $answer = new Answer();
+                 $answer = new Answer();
                  $answer->setPaper($thepaper);
                  $answer->setQuestion($proposition->getQuestion());
                  $answer->setAnswer($proposition->getId().';');

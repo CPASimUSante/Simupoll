@@ -8,6 +8,8 @@ li.proposition table {margin:0}
 .containerradar{width: 100%;position:relative}
 p.simuquestion {font-weight: bold;text-decoration: underline;}
 .simuproposition li{display: inline}
+.spactive{ background-color: #74ab4b;}
+.spinactive{background-color: #c0c0c0;}
 @media screen and (max-width: 640px) {
      .panel-simupoll .btn span{display: none}
 }

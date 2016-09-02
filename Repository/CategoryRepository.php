@@ -68,6 +68,7 @@ class CategoryRepository extends NestedTreeRepository
             $qb->setParameter('end', $end);
         }
         $qb->setParameter('simupoll', $sid);
+        $qb->add('orderBy', 'c.id ASC');
         //echo $qb->getQuery()->getSQL();
         return $qb->getQuery()->getResult();
     }

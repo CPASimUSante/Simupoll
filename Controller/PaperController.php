@@ -83,16 +83,19 @@ class PaperController extends Controller
          $workspace = $simupoll->getResourceNode()->getWorkspace();
          $session = $request->getSession();
          $em = $this->getDoctrine()->getManager();
+         //can user access this page ?
+         $this->checkAccess('OPEN', $simupoll);
+
          $user = $this->container->get('security.token_storage')
              ->getToken()->getUser();
-         if (is_string($user)) {
-         } else {
-         }
+
          $uid = $user->getId();
          $sid = $simupoll->getId();
-         $arrPapersIds = array();
-         $arrPeriodsIds = array();
-         $categorybounds = array();
+         //list of papers
+         $arrPapersIds = [];
+         //list of periods for the Simupoll
+         $arrPeriodsIds = [];
+         $categoryBounds = [];
          $answers = null;
          $maxNumPaper = 0;
          $current_page = 1;
@@ -103,6 +106,9 @@ class PaperController extends Controller
 
          //get all periods for the Simupoll
         $periods = $this->periodManager->getPeriods($sid);
+// echo '<pre>period id:';var_dump($periods['id']);echo '</pre>';
+// echo '<pre>period title:';var_dump($periods['title']);echo '</pre>';
+// echo '<pre>period current:';var_dump($periods['current']);echo '</pre>';
 /*
          //1 - is the simupoll opened now ? = between start-stop in Period
          //TODO : should not be needed, if the answer button is not shown
@@ -122,61 +128,65 @@ class PaperController extends Controller
              return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
          }
 */
-         //2 - retrieve the data to drive how the questions are displayed
-         //all questions, from categories ... ?
+         //2 - Retrieve the data to drive how the questions are displayed.
+         //(all questions, from categories ...) ?
          $displayOrganization = $em->getRepository('CPASimUSanteSimupollBundle:Organization')
              ->findOneBySimupoll($simupoll);
          $choice = 0;
          $choiceData = '';
+         //if a display organization has been set
          if (isset($displayOrganization)) {
              $choice = $displayOrganization->getChoice();
              $choiceData = $displayOrganization->getChoiceData();
-             //if several categories
+             //if admin has chosen to display several categories at a time.
              if ($choice == 2) {
-                 $categorybounds = explode(',', $choiceData);
-                 $total_page = count($categorybounds);
+                 $categoryBounds = explode(',', $choiceData);
+                 $total_page = count($categoryBounds);
                  //default values
-                 $current_category = $categorybounds[0];
+                 $current_category = $categoryBounds[0];
                  //did user choose several categories
-                 if (isset($categorybounds[1])) {
-                     $next_category = $categorybounds[1];
+                 if (isset($categoryBounds[1])) {
+                     $next_category = $categoryBounds[1];
                  }
              }
          } else {
-             //no organization set : get out
-             $msg = $this->translator->trans('organization_not_set', array(), 'resource');
-             $sessionFlashBag->add('error', $msg);
+             //no display organization set : get out
+             $sessionFlashBag->add(
+                'error',
+                $this->translator->trans('organization_not_set', [], 'resource')
+            );
 
-             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $sid)));
+             return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', ['id' => $sid]));
          }
 
-//echo '<pre>$periods[id]=';var_dump($periods['id']);echo '</pre>';echo ' user_id='.$uid;echo ' simupoll_id='.$sid;
+// echo '$choice=';echo $choice;echo '<br>$current_category=';echo $current_category;echo '<br>$next_category=';echo $next_category.'<br>';
+//echo '<pre>$periods[id]=<br>';var_dump($periods['id']);echo '</pre>';echo ' user_id='.$uid;echo ' simupoll_id='.$sid;
 
         //3 - Get paper ids (list of id)
         //periodIds >= paperIds = sessionIds
         //paper already created, and simupaper session exists
         //$session->get('simupaper') = paperid1-periodid1;paperid2-periodid2...
-        if ($session->get('simupaper') != null) {
-            $tmps = explode(';', $session->get('simupaper'));
+        if ($session->get('simupaper'.$sid) !== null) {
+            $tmps = explode(';', $session->get('simupaper'.$sid));
             foreach ($tmps as $tmp) {
                 $t = explode('-', $tmp);
                 $arrPapersIds[$t[1]] = $t[0];
                 $arrPeriodsIds[] = $t[1];
             }
             $maxNumPaper = count($tmps);
-//echo '<br>session exists<br>';echo $session->get('simupaper');echo '<br><pre>$arrPapersIds =<br>';var_dump(array_keys($arrPapersIds));echo '</pre>';
+// echo '<br>session exists<br>';echo $session->get('simupaper'.$sid);echo '<br><pre>$arrPapersIds =<br>';var_dump(array_keys($arrPapersIds));echo '</pre>';
             // if (count($arrPapersIds) != count($session_papersIds))
         } else {
             $papers = $em->getRepository('CPASimUSanteSimupollBundle:Paper')
                 ->findByUserAndSimupoll($uid, $sid);
-            if ($papers != array()) {
+            if ($papers != []) {
                 foreach ($papers as $paper) {
                     $periodId = $paper->getPeriod()->getId();
                     $arrPapersIds[$periodId] = $paper->getId();
                     $arrPeriodsIds[] = $periodId;
                 }
             }
-//echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump($arrPapersIds);echo '</pre>';
+// echo '<br>session does not exist<br>';echo '<pre>$arrPapersIds =<br>';var_dump($arrPapersIds);echo '</pre>';
             $maxNumPaper = count($papers);
         }
 
@@ -209,10 +219,10 @@ class PaperController extends Controller
              $next_category = $request->request->get('next');
              $current_category = $request->request->get('current');
 
-//echo '<br>IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
+// echo '<br>IN POST 1- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
              //4 - 1 save paper
-             $arrPaper = array();
-             $tmp = array();
+             $arrPaper = [];
+             $tmp = [];
              //for each period
              foreach ($periods['id'] as $key => $per_id) {
                  //echo $per_id.' -key='.$key.'<br>';
@@ -223,16 +233,7 @@ class PaperController extends Controller
                      //save the paper
                      $paper = $this->paperManager
                         ->savePaper($user, $simupoll, $periods['entity'][$key], $maxNumPaper);
-                     /*
-                     $paper = new Paper();
-                     $paper->setUser($user);
-                     $paper->setStart(new \DateTime());
-                     $paper->setSimupoll($simupoll);
-                     $paper->setPeriod($periods['entity'][$key]);
-                     $paper->setNumPaper($maxNumPaper);
-                     $em->persist($paper);
-                     $em->flush();
-                     */
+
                      $arrPaper[$per_id] = $paper;
                      //session data
                      $tmp[] = $paper->getId().'-'.$per_id;
@@ -246,40 +247,41 @@ class PaperController extends Controller
              }
 //echo '<pre>$arrPaper =<br>';var_dump(array_keys($arrPaper));echo '</pre>';
 //die();
-             //Set session
-             $session->set('simupaper', implode(';', $tmp));
+             //Set session, with simupoll id to avoid bug if several simupoll are set
+             $session->set('simupaper'.$sid, implode(';', $tmp));
 
              //list of answers
              $choices = $request->request->get('choice');
 
-             //4 - 2 Save user Answers
+             //4 - 2 Save user answers
              if ($choices != null) {
                  //get questions for the selected categories
                  $questionList = $em->getRepository('CPASimUSanteSimupollBundle:Question')
                      ->getQuestionsWithinCategories($sid, $current_category, $next_category);
 
-                 //First, remove the already saved answers
-                 $qids = array();
+                 //4 - 2 -1 First, remove the answers already saved
+                 $qids = [];
                  if ($questionList != null) {
                      //get question id array
                      foreach ($questionList as $ql) {
                          $qids[] = $ql['id'];
                      }
-                     if ($qids != array()) {
+                     if ($qids !== []) {
                          //remove old answers, for each paper = corresponding to each period
-                         foreach ($arrPapersIds as $paperId) {
-                             $em->getRepository('CPASimUSanteSimupollBundle:Answer')
-                                ->deleteOldAnswersInCategories($paperId, $qids);
+                         foreach ($arrPapersIds as $perId => $paperId) {
+                             //remove values ONLY for curent period
+                             if (isset($periods['currentid'][$perId]) && $periods['currentid'][$perId]) {
+                                 $em->getRepository('CPASimUSanteSimupollBundle:Answer')
+                                    ->deleteOldAnswersInCategories($paperId, $qids);
+                             }
                          }
-//echo 'pid'.$pid;echo '<pre>';var_dump(implode(',',$al));echo '</pre>';
                      }
                  }
 
-                //Then, save the answers
+                //4 - 2 - 2 Then, save the answers
                 //$this->paperManager->saveAnswers($choices, $arrPaper);
-
                  foreach ($choices as $key => $propo) {
-                     //retrieve data from $key : question_id - period_id and $propo : proposition_id
+                     //retrieve data from $key : (question_id - period_id) and $propo : proposition_id
                      $atmp = explode('-', $key);
                      $quest_id = $atmp[0];
                      $per_id = $atmp[1];
@@ -287,16 +289,30 @@ class PaperController extends Controller
                      $proposition = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')
                          ->findOneById($propo);
                      // get paper
-                     $thepaper = $arrPaper[$per_id];
-//echo '$per_id'.$per_id;echo '</pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre>';
+                     //$thepaper = $arrPaper[$per_id];
+// echo '$per_id'.$per_id;echo '<br></pre>';var_dump(is_object($arrPaper[$per_id]));echo '</pre>';
                     //save answer
                     if (is_object($arrPaper[$per_id])) {
-                        $answer = new Answer();
+                        $answer = $this->paperManager
+                            ->saveAnswer(
+                                $arrPaper[$per_id],
+                                $proposition->getQuestion(),
+                                $proposition->getId().';',
+                                $proposition->getMark()
+                            );
+
+                        /*$answer = new Answer();
                         $answer->setPaper($thepaper);
                         $answer->setQuestion($proposition->getQuestion());
                         $answer->setAnswer($proposition->getId().';');
                         $answer->setMark($proposition->getMark());
-                        $em->persist($answer);
+                        $em->persist($answer);*/
+
+// echo "========<br>";
+// echo "ANSWER:<br>";
+// echo "question ".$proposition->getQuestion()->getId().':'.$proposition->getQuestion()->getTitle().'<br>';
+// echo "answer ".$proposition->getId().' '.$proposition->getMark().'<br>';
+// echo "========<br>";
                     }
                  }
 
@@ -315,7 +331,7 @@ class PaperController extends Controller
          //get new bounds
          $tmp_current = $current_category;
          $tmp_next = $next_category;
-         $tmp_answers = array();
+         $tmp_answers = [];
 
          if ($choice == 2) {
              if ($next_category == -1) {
@@ -330,14 +346,14 @@ class PaperController extends Controller
                 //click on Next button
                  if ($direction != 'prev') {
                      //get current pos. of "next"
-                     $k = array_search($next_category, $categorybounds);
+                     $k = array_search($next_category, $categoryBounds);
                      if ($k !== false) {
                          //echo 'k='.$k.'<br>';echo '3next - current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          $current_category = $next_category;
                          $current_page = $k + 1;
                          //not the last position
-                         if (isset($categorybounds[$k + 1])) {
-                             $next_category = $categorybounds[$k + 1];
+                         if (isset($categoryBounds[$k + 1])) {
+                             $next_category = $categoryBounds[$k + 1];
 //echo 'isset<br>';
                              //last pos
                          } else {
@@ -350,14 +366,14 @@ class PaperController extends Controller
                      }
                 //click on Previous button
                  } else {
-                     $k = array_search($current_category, $categorybounds);
+                     $k = array_search($current_category, $categoryBounds);
                      if ($k !== false) {
                          $next_category = $current_category;
                          $current_page = $k;
 //echo 'k='.$k.'<br>';echo '3prev- current_category '.$current_category.' next_category '.$next_category.'<br><b>current_page='.$current_page;echo '</b><br>';
                          //not the first position
-                         if (isset($categorybounds[$k - 1])) {
-                             $current_category = $categorybounds[$k - 1];
+                         if (isset($categoryBounds[$k - 1])) {
+                             $current_category = $categoryBounds[$k - 1];
 //echo 'isset<br>';
                              //last pos
                          } else {
@@ -375,7 +391,7 @@ class PaperController extends Controller
              //find categories between the bounds
              $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
                  ->getCategoriesBetweenLft($sid, $current_category, $next_category);
-//echo '<pre>cats=';foreach($categories as $c){var_dump($c->getId());}echo '</pre>'; //OK
+//echo '<pre>cats=';foreach($categories as $c){var_dump($c->getId().' '.$c->getName());}echo '</pre>'; //OK
 
              //find questions and answers for these categories
              $questions = $em->getRepository('CPASimUSanteSimupollBundle:Question')
@@ -396,8 +412,8 @@ class PaperController extends Controller
              //get all categories
              $categories = $em->getRepository('CPASimUSanteSimupollBundle:Category')
                  ->findBy(
-                     array('simupoll' => $simupoll),
-                     array('lft' => 'ASC')
+                     ['simupoll' => $simupoll],
+                     ['lft' => 'ASC']
                  );
 /*
              foreach ($arrPapersIds as $paperId) {
@@ -418,7 +434,7 @@ class PaperController extends Controller
 // echo '<pre>$arrPapersIds';var_dump($arrPapersIds);echo '</pre>';
 // echo '<pre>$periods';var_dump($periods['current']);echo '</pre>';
 
-         return array(
+         return [
              'choice' => $choice,
              'pids' => $arrPapersIds,
              'page' => $current_page,
@@ -431,7 +447,7 @@ class PaperController extends Controller
              'periods' => $periods,    //array of all periods (id, title) for the simupoll
              'workspace' => $workspace,
              '_resource' => $simupoll,
-         );
+         ];
      }
 
     /**
@@ -478,7 +494,7 @@ class PaperController extends Controller
             //if there is no paper
           //  if (count($paper) == 0) {
                 //Create paper
-                $paper = new Paper();
+            $paper = new Paper();
             $paper->setUser($user);
             $paper->setStart(new \DateTime());
             $paper->setSimupoll($simupoll);
@@ -486,21 +502,23 @@ class PaperController extends Controller
             $em->persist($paper);
             $em->flush();
 
-                //Save responses
-                foreach ($choices as $choice) {
-                    $proposition = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')
-                        ->findOneById($choice[1]);
-                    $answer = new Answer();
-                    $answer->setPaper($paper);
-                    $answer->setQuestion($proposition->getQuestion());
-                    $answer->setAnswer($proposition->getId().';');
-                    $answer->setMark($proposition->getMark());
-                    $em->persist($answer);
-                }
+            //$this->paperManager->savePaper($user, $simupoll, $period, (int) $maxNumPaper + 1);
+
+            //Save responses
+            foreach ($choices as $choice) {
+                $proposition = $em->getRepository('CPASimUSanteSimupollBundle:Proposition')
+                    ->findOneById($choice[1]);
+                $answer = new Answer();
+                $answer->setPaper($paper);
+                $answer->setQuestion($proposition->getQuestion());
+                $answer->setAnswer($proposition->getId().';');
+                $answer->setMark($proposition->getMark());
+                $em->persist($answer);
+            }
             $em->flush();
 
-                //Set session
-                $session->set('simupaper', $paper->getId());
+            //Set session
+            $session->set('simupaper'.$sid, $paper->getId());
 
             $data = $choices;
 

@@ -18,10 +18,11 @@
 
         <div class="panel-body" id="text_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
-                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                <i class="fa fa-arrow-left"></i> {{ 'back_to_main' | trans({'%simupoll%': _resource.getResourceNode().getName()}) }}
             </a>
             <hr>
-
+            {# display the messsages - macros defined in core #}
+            <div>{{ macros.flashBox() }}</div>
             {% if allowToCompose == 1 %}
                 <form action="{{ path('cpasimusante_simupoll_organize', {'id': _resource.id}) }}" method="post" id="form">
                     <h2>{{ 'question_display_method'|trans({}, 'resource') }}</h2>
@@ -50,7 +51,6 @@
                             {{ tree |raw }}
                         </table>
                     </div>
-                    <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
                     <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
                 </form>
             {% endif %}
@@ -66,5 +66,4 @@
 {% block javascripts %}
     {# Claroline JS #}
     {{ parent() }}
-    {#    <script type="text/javascript" src='{{ asset('bundles/cpasimusantesimupoll/js/simupoll-orga.js') }}'></script>#}
 {% endblock %}

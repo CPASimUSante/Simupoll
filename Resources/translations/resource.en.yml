@@ -19,7 +19,7 @@ graph_show: 'Show graph'
 graph_export: 'Save graph'
 group_name: 'Group name'
 group_title: 'Name of group inc'
-
+import: 'Import'
 mark_not_set: 'There is a problem with propositions / marks for question %questionname%'
 organization_not_set: 'The Organisation has not been set'
 

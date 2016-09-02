@@ -19,7 +19,7 @@
 
         <div class="panel-body" id="text_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
-                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                <i class="fa fa-arrow-left"></i> {{ 'back_to_main' | trans({'%simupoll%': _resource.getResourceNode().getName()}) }}
             </a>
             <hr>
 
@@ -29,7 +29,9 @@
             {% endif %}
             <p>Page {{ page }} / {{ total }}</p>
             {% for category in categories %}
-                    <h2 class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h2>
+                {# only for display "improvement" #}
+                {% if (category.lvl + 1) <7 %}{% set hlvl = category.lvl + 1 %}{% else %}{% set hlvl = 6 %}{% endif %}
+                <h{{hlvl}} class="cat-niv{{ category.lvl + 1 }}">{{ category.name }}</h{{hlvl}}>
                     {% for question in questions %}
                         {# "hack" needed because the query result are different whether there's an answer or not #}
                         {% if question[0] is defined %}{% set thequestion = question[0] %}{% else %}{% set thequestion = question %}{% endif %}
@@ -39,7 +41,7 @@
                                 <p class="simuquestion">{{ thequestion.title }}</p>
                                 {% for periodid, period in periods.id %}
                                     {{ periods.title[periodid] }}
-                                    <ul class="simuproposition">
+                                    <ul class="simuproposition sp{% if periods.current[periodid] == false %}in{% endif %}active">
                                         {% for proposition in thequestion.propositions %}
                                             {% set checked = "" %}
                                             {% set radiokey = thequestion.id ~ '-' ~ period %}
@@ -52,7 +54,7 @@
                                                 {#disable the radio when not current period#}
                                                 {% if periods.current[periodid] == false %}
                                                     <input type="radio" class="propositionchoice" {{ checked }} disabled />
-                                                    <input type="hidden" class="propositionchoicehidden" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" />
+{#                                                    <input type="hidden" class="propositionchoicehidden" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" /> #}
                                                 {% else %}
                                                     <input type="radio" class="propositionchoice" name="choice[{{ thequestion.id }}-{{ period }}]" data-question="{{ thequestion.id }}" id="choice[{{ thequestion.id }}]" value="{{ proposition.id }}" {{ checked }}/>
                                                 {% endif %}
@@ -60,7 +62,6 @@
                                             </li>
                                         {% endfor %}
                                     </ul>
-
                                 {% endfor %}{# for id, period in periods.id #}
                             </div>
                         {% endif %}
@@ -77,10 +78,10 @@
 
             {% if (choice == 2) %}
                 {% if (page > 1) %}
-                    <button class="btn btn-primary" id="prevpage" type="submit"><i class="fa fa-chevron-left"></i> {{ 'previous' | trans }}</button>
+                    <button class="btn btn-primary" id="prevpage" type="submit"><i class="fa fa-chevron-left"></i> {{ 'previous' | trans({}, 'platform') }}</button>
                 {% endif %}
                 {% if (page < total) %}
-                    <button class="btn btn-primary" id="nextpage" type="submit">{{ 'next' | trans }}  <i class="fa fa-chevron-right"></i></button>
+                    <button class="btn btn-primary" id="nextpage" type="submit">{{ 'next' | trans({}, 'platform') }}  <i class="fa fa-chevron-right"></i></button>
                     {# {% else %}
                          <input type="submit" value="{{ 'submit' | trans }}" class="btn btn-primary" id="submit" />#}
                 {% endif %}

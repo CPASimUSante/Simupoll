@@ -18,7 +18,7 @@
 
         <div class="panel-body" id="text_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_open', { 'id': _resource.getId() }) }}">
-                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                <i class="fa fa-arrow-left"></i> {{ 'back_to_main' | trans({'%simupoll%': _resource.getResourceNode().getName()}) }}
             </a>
             <hr>
             {# display the messsages - macros in core #}
@@ -48,9 +48,8 @@
                 <input id="questionfile" class="form-control" name="questionfile" type="file" /></p>
         </div>
         <div class="panel-footer">
-            <button type="button" class="btn btn-default">{{ 'cancel'|trans({}, 'platform') }}</button>
             <button type="submit" class="btn btn-primary">
-                {{ 'ok'|trans({}, 'platform') }}
+                {{ 'import'|trans({}, 'resource') }}
             </button>
             </form>
         </div>

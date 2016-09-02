@@ -18,7 +18,7 @@
 
         <div class="panel-body" id="text_content">
             <a class="btn btn-primary" href="{{ path('cpasimusante_simupoll_results', { 'id': _resource.getId() }) }}">
-                <i class="fa fa-arrow-left"></i> {{ 'back' | trans }}
+                <i class="fa fa-arrow-left"></i> {{ 'back_to_result' | trans({}) }}
             </a>
             <hr>
 <!-- users -->
@@ -38,7 +38,7 @@
 <!-- title -->
             <p>{{'categorygroups_define'|trans({}, 'resource')}}</p>
             <table class="table" id="stat-group-titles">
-                {% for inc in range(0, 4) %}
+                {% for inc in range(0, groupNb) %}
                 <tr class="group-titles" data-id="{{inc}}">
                     <td class="isel_label">{{ 'group_title'|trans({'inc':(inc + 1)}, 'resource') }}</td>
                     {% set title = (titles[inc] is defined) ? titles[inc] : '' %}
@@ -49,11 +49,10 @@
 <!-- categories -->
             <p>{{ 'stat_category_manage'|trans({}, 'resource') }}</p>
             <table class="table">
-                <tr><th class="col-md-2"></th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
+                <tr><th class="col-md-2">{{ 'group_check'|trans({}, 'resource') }}</th><th class="col-md-1">{{ 'question_count'|trans({}, 'resource') }}</th><th>{{ 'category_name'|trans({}, 'resource') }}</th></tr>
                 {{ tree |raw }}
             </table>
                 <input type="hidden" value="{{ _resource.getResourceNode().getWorkspace().id }}" name="wsn" id="wsn" />
-                <button type="button" class="btn btn-default" >{{ 'cancel'|trans({}, 'platform') }}</button>
                 <button type="submit" class="btn btn-primary">{{ 'save'|trans({}, 'platform') }}</button>
             </form>
         </div>

@@ -211,34 +211,36 @@ class SimupollController extends Controller
     }
 
     /**
-     * Organizing the Simupoll resource.
+     * Organizing the Simupoll resource, how will the questions will be displayed.
      *
      * @EXT\Route("/organize/{id}", name="cpasimusante_simupoll_organize", requirements={"id" = "\d+"}, options={"expose"=true})
      * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"id" = "id"})
      * @EXT\Template("CPASimUSanteSimupollBundle:Simupoll:organize.html.twig")
      *
+     * @param Request $request
      * @param Simupoll $simupoll
      *
      * @return array
      */
     public function organizeAction(Request $request, $simupoll)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $user = $this->container->get('security.token_storage')
-            ->getToken()->getUser();
-
         //can user access ?
         $this->checkAccess('OPEN', $simupoll);
+
+        $sid = $simupoll->getId();
 
         //can user edit ?
         $simupollAdmin = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
             ->isGrantedAccess($simupoll, 'ADMINISTRATE');
 
+        $user = $this->container->get('security.token_storage')
+            ->getToken()->getUser();
+
         //can user manage exercise
         $allowToCompose = 0;
         if (is_object($user) && ($simupollAdmin === true)) {
+            $em = $this->getDoctrine()->getManager();
             $allowToCompose = 1;
             $repoCat = $em->getRepository('CPASimUSanteSimupollBundle:Category');
             //retrieve max level of category
@@ -246,20 +248,20 @@ class SimupollController extends Controller
 
             //retrieve saved organization
             $orga = $em->getRepository('CPASimUSanteSimupollBundle:Organization')
-                ->findBySimupoll($simupoll);
-
+                ->findOneBySimupoll($simupoll);
+//echo '<pre>';var_dump($orga);echo '</pre>';
             $choice = '';
             $choiceData = '';
             $categoryList = '';
-            if ($orga != null) {
-                $choice = $orga[0]->getChoice();
-                $choiceData = $orga[0]->getChoiceData();
+            if ($orga !== null) {
+                $choice = $orga->getChoice();
+                $choiceData = $orga->getChoiceData();
             }
 
             if ($request->isMethod('POST')) {
                 //to avoid bug in simupoll compose if we change the choice
-                if (null !== $this->get('session')->get('simupaper')) {
-                    $this->get('session')->remove('simupaper');
+                if (null !== $this->get('session')->get('simupaper'.$sid)) {
+                    $this->get('session')->remove('simupaper'.$sid);
                 }
                 $choice = $request->request->get('questdisp');
                 if ($choice == 0) {
@@ -270,21 +272,21 @@ class SimupollController extends Controller
                     $choiceData = $request->request->get('question_per_category_level');*/
                 } elseif ($choice == 2) {
                     $choice_categorygroup = $request->request->get('categorygroup');
-                    $choiceData = ($choice_categorygroup != array()) ? implode(',', $choice_categorygroup) : '';
+                    $choiceData = ($choice_categorygroup !== []) ? implode(',', $choice_categorygroup) : '';
                     //retrieve category list to avoid further request in results
-                    $cats = $repoCat->getCategoriesInLft($simupoll->getId(), $choice_categorygroup);
-                    if ($cats != null) {
-                        $cl = array();
+                    $cats = $repoCat->getCategoriesInLft($sid, $choice_categorygroup);
+                    if ($cats !== null) {
+                        $cl = [];
                         foreach ($cats as $c) {
                             $cl[] = $c->getId();
                         }
-                        if ($cl != array()) {
+                        if ($cl !== array()) {
                             $categoryList = implode(',', $cl);
                         }
                     }
                 }
-//var_dump($choiceData);die();
-                if ($orga == null) {
+
+                if ($orga === null) {
                     $orga = new Organization();
                     $orga->setSimupoll($simupoll);
                     $orga->setChoice($choice);
@@ -292,26 +294,30 @@ class SimupollController extends Controller
                     $orga->setCategoryList($categoryList);
                     $em->persist($orga);
                 } else {
-                    $orga[0]->setChoice($choice);
-                    $orga[0]->setChoiceData($choiceData);
-                    $orga[0]->setCategoryList($categoryList);
-                    $em->persist($orga[0]);
+                    $orga->setChoice($choice);
+                    $orga->setChoiceData($choiceData);
+                    $orga->setCategoryList($categoryList);
+                    $em->persist($orga);
                 }
                 $em->flush();
+                $this->get('session')->getFlashBag()->add('info', 'Organisation mise à jour');
             }
 
             $categoryTree = $this->categoryManager->getCategoryTreeForQuestions($simupoll, $choice, $choiceData);
 
-            return array(
+            return [
                 'choice' => $choice,
                 'choiceData' => $choiceData,
                 'tree' => $categoryTree,
                 'maxCategoryLevel' => $maxCategoryLevel['maxlevel'],
                 'allowToCompose' => $allowToCompose,
                 '_resource' => $simupoll,
-            );
+            ];
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl(
+                'cpasimusante_simupoll_open',
+                ['id' => $sid]
+            ));
         }
     }
 
@@ -328,13 +334,11 @@ class SimupollController extends Controller
      */
     public function resultsAction($simupoll)
     {
-        $em = $this->getDoctrine()->getManager();
+        //can user access ?
+        $this->checkAccess('OPEN', $simupoll);
 
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
-
-        //can user access ?
-        $this->checkAccess('OPEN', $simupoll);
 
         //can user edit ?
         $simupollAdmin = $this->container
@@ -348,12 +352,12 @@ class SimupollController extends Controller
         if (is_object($user)) {
             $allowToCompose = 1;
 
-            return array(
+            return [
                 'allowToCompose' => $allowToCompose,
                 '_resource' => $simupoll,
-            );
+            ];
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', ['id' => $simupoll->getId()]));
         }
     }
 
@@ -371,11 +375,13 @@ class SimupollController extends Controller
      //TODO : remove categorylist and completecategorylist from statmanage
     public function statSetupAction(Request $request, $simupoll)
     {
-        $categories = array();
+        $categories = [];
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
         $uids = '';
-        $datatosave = array();
+        $datatosave = [];
+        //TODO : change for dynamic group number
+        $groupNb = 9;
 
         //TODO : manage user administrate stat display OR  chose a stat for him
         //can user OPEN ? Not ADMINISTRATE because user can make its
@@ -390,11 +396,11 @@ class SimupollController extends Controller
             //retrieve data
             $statsmanage = $this->statmanageManager
                 ->getStatmanageBySimupollAndUser($user, $simupoll);
-            $statcategorygroup = array();
-            $titles = array();
-            $categorygroupsWithComma = array();
+            $statcategorygroup = [];
+            $titles = [];
+            $categorygroupsWithComma = [];
 
-            if ($statsmanage != array()) {
+            if ($statsmanage !== []) {
                 //retrieve users
                 $uids = $statsmanage[0]->getUserList();
 
@@ -411,7 +417,7 @@ class SimupollController extends Controller
                 //list of users
                 $uids = $request->request->get('simupoll_userlist');
 
-                for ($i = 0; $i < 5; ++$i) {
+                for ($i = 0; $i <= $groupNb; ++$i) {
                     //raw values from request
                     $title = $request->request->get('group_title'.$i);
                     $categorygroup = $request->request->get('categorygroup'.$i);
@@ -424,15 +430,15 @@ class SimupollController extends Controller
                     }
 
                     //group to save
-                    if (trim($title) != '') {
-                        $datatosave[] = array('title' => $title, 'group' => $categorygroup);
+                    if (trim($title) !== '') {
+                        $datatosave[] = ['title' => $title, 'group' => $categorygroup];
                     }
                 }
 //echo '<pre>';var_dump($datatosave);echo '</pre>';
 
                 $em = $this->getDoctrine()->getManager();
                 //save Statmanage
-                if ($statsmanage == array()) {
+                if ($statsmanage === []) {
                     $statsmanage = new Statmanage();
                     $statsmanage->setUser($user);
                     $statsmanage->setSimupoll($simupoll);
@@ -446,9 +452,9 @@ class SimupollController extends Controller
                 }
                 $em->flush();
 
-                if ($datatosave != array()) {
+                if ($datatosave !== []) {
                     //save Statcategorygroup
-                    if ($statcategorygroup != array()) {
+                    if ($statcategorygroup !== []) {
                         //delete old value
                         foreach ($statcategorygroup as $scg) {
                             $em->remove($scg);
@@ -466,18 +472,19 @@ class SimupollController extends Controller
                 }
             }
 
-            $tree = $this->categoryManager->getCategoryTreeForStatsV2($simupoll, $categorygroupsWithComma);
+            $tree = $this->categoryManager->getCategoryTreeForStatsV2($simupoll, $categorygroupsWithComma, $groupNb);
 
-            return array(
+            return [
+                'groupNb' => $groupNb,
                 'userlist' => $uids,
                 'titles' => $titles,
                 'tree' => $tree,
                 'allowToCompose' => $allowToCompose,
                 '_resource' => $simupoll,
-            );
+            ];
         //User not auth => get out!
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', array('id' => $simupoll->getId())));
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_open', ['id' => $simupoll->getId()]));
         }
 
 /*
@@ -543,13 +550,13 @@ class SimupollController extends Controller
      */
     public function prepareResultsAndStatsForSimupoll(
         Simupoll $simupoll,
-        $categories = array(),
+        $categories = [],
         $groupTitle = '',
         $groupId = 0,
-        $users = array()
+        $users = []
         ) {
         //get periods for the simupoll
-        $periodData = array();
+        $periodData = [];
         $periods = $this->container
             ->get('cpasimusante_simupoll.services.simupoll')
             ->periodList($simupoll);
@@ -561,9 +568,9 @@ class SimupollController extends Controller
         $row = $this->simupollManager
             ->getResultsAndStatsForSimupoll($simupoll, $categories, $groupTitle, $groupId, $users, $periodData);
 
-        return array(
+        return [
             'row' => $row,
-        );
+        ];
     }
 
     /**
@@ -580,7 +587,7 @@ class SimupollController extends Controller
     public function getResultAllHtmlAction(Simupoll $simupoll)
     {
         //to associate the names
-        $users = array();
+        $users = [];
         $html = '';
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
@@ -597,14 +604,14 @@ class SimupollController extends Controller
             $categoryList = $data['cats'];
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
-            $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $userlist = ($userdata == '') ? [] : explode(',', $userdata);
 
             //non admin user get to see only their stats and those of the group
             $simupollAdmin = $this->container
                 ->get('cpasimusante_simupoll.services.simupoll')
                 ->isGrantedAccess($simupoll, 'ADMINISTRATE');
             if ($simupollAdmin != true) {
-                $userlist = array($user->getId());
+                $userlist = [$user->getId()];
             }
 
             $users = $this->simupollManager->getUserData($userlist);
@@ -621,13 +628,17 @@ class SimupollController extends Controller
             }
 //echo '<pre>';var_dump($categoryList);echo '</pre>';die();
         } else {
-            return $this->redirect($this->generateUrl('cpasimusante_simupoll_results', array('id' => $simupoll->getId())));
+            $this->get('session')->getFlashBag()->add(
+               'error',
+               $this->get('translator')->trans('statmanage_not_set', [], 'resource')
+           );
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_results', ['id' => $simupoll->getId()] ));
         }
 
-        return array(
+        return [
             '_resource' => $simupoll,
             'html' => $html,
-        );
+        ];
     }
 
     /**
@@ -658,7 +669,7 @@ class SimupollController extends Controller
             $categoryList = $data['cats'];
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
-            $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $userlist = ($userdata == '') ? [] : explode(',', $userdata);
             $users = $this->simupollManager->getUserData($userlist);
 
             //open file stream
@@ -678,12 +689,18 @@ class SimupollController extends Controller
             rewind($handle);
             $content = stream_get_contents($handle);
             fclose($handle);
-        }
 
-        return new Response($content, 200, array(
-            'Content-Type' => 'application/force-download',
-            'Content-Disposition' => 'attachment; filename="simupoll-exportall-'.$now.'.csv"',
-        ));
+            return new Response($content, 200, [
+                'Content-Type' => 'application/force-download',
+                'Content-Disposition' => 'attachment; filename="simupoll-exportall-'.$now.'.csv"',
+            ]);
+        } else {
+            $this->get('session')->getFlashBag()->add(
+               'error',
+               $this->get('translator')->trans('statmanage_not_set', [], 'resource')
+           );
+            return $this->redirect($this->generateUrl('cpasimusante_simupoll_results', ['id' => $simupoll->getId()]));
+        }
     }
 
     /**
@@ -699,9 +716,9 @@ class SimupollController extends Controller
      */
     public function getResultGraphAction($simupoll)
     {
-        return array(
+        return [
             '_resource' => $simupoll,
-        );
+        ];
     }
 
     /**
@@ -730,12 +747,12 @@ class SimupollController extends Controller
      */
     public function getJsonForGraphAction($simupoll)
     {
-        $json = array();
-        $users = array();
-        $allgalmeanlast = array();
-        $allgalmean = array();
-        $usernames = array();
-        $dataforjson = array();
+        $json = [];
+        $users = [];
+        $allgalmeanlast = [];
+        $allgalmean = [];
+        $usernames = [];
+        $dataforjson = [];
         $user = $this->container->get('security.token_storage')
             ->getToken()->getUser();
 
@@ -751,14 +768,14 @@ class SimupollController extends Controller
                 ->getStatcategoryData($statcategorygroup);
             //List of users to be shown in the graph
             $userdata = $statsmanage[0]->getUserList();
-            $userlist = ($userdata == '') ? array() : explode(',', $userdata);
+            $userlist = ($userdata == '') ? [] : explode(',', $userdata);
 
             //non admin user get to see only their stats and those of the group
             $simupollAdmin = $this->container
                 ->get('cpasimusante_simupoll.services.simupoll')
                 ->isGrantedAccess($simupoll, 'ADMINISTRATE');
             if ($simupollAdmin != true) {
-                $userlist = array($user->getId());
+                $userlist = [$user->getId()];
             }
 
             $users = $this->simupollManager->getUserData($userlist);
@@ -853,8 +870,8 @@ class SimupollController extends Controller
         }
 //echo '<pre>$sim->getResourceNode()->getWorkspace()->getId';var_dump($sim->getResourceNode()->getWorkspace()->getId());echo '</pre>';
 
-        return array(
+        return [
             '_resource' => $sim,
-        );
+        ];
     }
 }

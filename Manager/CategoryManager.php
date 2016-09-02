@@ -38,12 +38,19 @@ class CategoryManager
                 ));
     }
 
-    public function getCategoryBySimupoll(Simupoll $simupoll)
+    /**
+     * Retrieve category list for a given Simupoll.
+     *
+     * @param $simupoll Simupoll
+     */
+    private function getCategoryBySimupoll(Simupoll $simupoll)
     {
         return $this->om->createQueryBuilder()
             ->select('node')
             ->from('CPASimUSante\SimupollBundle\Entity\Category', 'node')
-            ->orderBy('node.root, node.lft', 'ASC')
+            ->addOrderBy('node.id', 'ASC')
+            ->addOrderBy('node.lft', 'ASC')
+
             ->where('node.simupoll = ?1')
             ->setParameters(array(1 => $simupoll))
             ->getQuery();
@@ -155,7 +162,14 @@ class CategoryManager
         return $repoCat->buildTree($query->getArrayResult(), $options);
     }
 
-    public function getCategoryTreeForStatsV2(Simupoll $simupoll, $categorygroups)
+    /**
+     * @param $simupoll Simupoll
+     * @param $categorygroups array list of categories
+     * @param $groupNb integer group number
+     *
+     * @return tree string
+     */
+    public function getCategoryTreeForStatsV2(Simupoll $simupoll, $categorygroups, $groupNb=4)
     {
         //display tree of categories for group
         $query = $this->getCategoryBySimupoll($simupoll);
@@ -167,10 +181,10 @@ class CategoryManager
             'rootClose' => '',
             'childOpen' => '<tr>',
             'childClose' => '</tr>',
-            'nodeDecorator' => function ($node) use ($repoQuestion, $categorygroups) {
+            'nodeDecorator' => function ($node) use ($repoQuestion, $categorygroups, $groupNb) {
                 $qcount = $repoQuestion->getQuestionCount($node['id']);
                 $input = '';
-                for ($inc = 0;$inc < 5;++$inc) {
+                for ($inc = 0;$inc <= $groupNb;++$inc) {
                     $checked = (isset($categorygroups[$inc]) && false !== strpos($categorygroups[$inc], ','.$node['id'].',')) ? 'checked' : '';
                     $input .= ' <input type="checkbox" title="Groupe '.($inc + 1).'" data-id="'.$node['id'].'" name="categorygroup'.$inc.'[]" class="categorygroup'.$inc.'" value="'.$node['id'].'" '.$checked.'>';
                 }
