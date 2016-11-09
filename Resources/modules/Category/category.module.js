@@ -45,3 +45,10 @@ angular
     .filter('trans', () => (string, domain = 'platform') =>
         Translator.trans(string, domain)
     )
+    //TODO : remove before merge
+    .filter('debug', function() {
+      return function(input) {
+        if (input === '') return 'empty string';
+        return input ? input : ('' + input);
+      };
+    })

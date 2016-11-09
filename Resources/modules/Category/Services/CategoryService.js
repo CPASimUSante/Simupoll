@@ -2,11 +2,11 @@
 export default class CategoryService {
     constructor($http, $q) {
         //declaration of variables
-        this.$http          = $http
-        this.$q             = $q
-        this._tree          = CategoryService._getGlobal('simupollTree')
-        this._sid           = CategoryService._getGlobal('simupollSid')
-        this.parentTree    = []
+        this.$http = $http
+        this.$q = $q
+        this._tree = CategoryService._getGlobal('simupollTree')
+        this._sid = CategoryService._getGlobal('simupollSid')
+        this.parentTree = []
     }
 
     getTree () {
@@ -31,7 +31,7 @@ export default class CategoryService {
     }
 
     addCategory (props, category, onFail) {
-      const result = { name: category.indent+'== '+props.name }
+      let result = { name: category.indent+'-- '+props.name }
       const url = Routing.generate('simupoll_add_category', {
         sid: this._sid
       })
@@ -43,7 +43,10 @@ export default class CategoryService {
         //pass variables to controller
         .post(url, { name: props.name, cid:category.id })
         .then(
-          response => { result.id = response.data },
+          response => {
+              result.id = response.data.id
+              result.name = response.data.name
+           },
           //and if there's an error
           () => {
             //rollback
@@ -54,7 +57,7 @@ export default class CategoryService {
     }
 
     editCategory (originalCategory, newName, newParent, onFail) {
-        //if no change, do nothing
+      //if no change, do nothing
       if (originalCategory.name === newName) {
         return
       }
@@ -65,7 +68,7 @@ export default class CategoryService {
         id: originalCategory.id
       })
 
-      originalCategory.name = newName
+      originalCategory.name = newName.replace(/--/g, "")
 
       this.$http
         .put(url, { name: newName, parentcategory: newParent })
@@ -81,18 +84,49 @@ export default class CategoryService {
         cid: category.id
       })
 
-      this._deleteCategory(category)
+      const oldcat = this._deleteCategory(category)
 
       this.$http
         .delete(url)
         .then(null, () => {
+          this._tree.push(oldcat)
           this._tree.push(category)
           onFail()
-        })
+      })
     }
 
+    /**
+    * delete category and sub categories
+    */
     _deleteCategory (category) {
-      this._tree.splice(this._tree.indexOf(category), 1)
+        let subcat = {}
+        //find subcategories of this category
+        const suburl = Routing.generate('simupoll_childof_category', {
+          cid: category.id,
+          sid: this._sid
+        })
+
+        this.$http
+          .get(suburl)
+          .then(response => {
+              subcat = response.data
+
+              //delete children
+              for (var i = 0, len = subcat.length; i < len; i++) {
+                function findCategory(cat) {
+                  return cat.id === subcat[i].id
+                }
+                let found = this._tree.find(findCategory)
+                if (found !== 'undefined') {
+                    this._tree.splice(this._tree.indexOf(found), 1)
+                }
+              }
+              //delete category
+              this._tree.splice(this._tree.indexOf(category), 1)
+
+              return subcat
+          })
+
     }
 
     //defined in template script

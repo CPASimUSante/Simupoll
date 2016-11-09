@@ -20,8 +20,8 @@
             </tr>
         </table>
     </div>
-
-    <div data-ng-if="vm.tree==[]">
+{{vm.tree}}
+    <div data-ng-if="vm.tree.length===0">
         <a class="btn btn-primary btn-sm category-add-btn"
             data-id="0" data-sid="{{vm.sid}}"
             data-ng-click="vm.showAddCategoryForm(0)"><i class="fa fa-plus"></i>

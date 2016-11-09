@@ -147,7 +147,7 @@ class CategoryRepository extends NestedTreeRepository
     public function getCategoriesWithoutChildren($simupoll, $category)
     {
         //QB for the node and its children
-         $qb_notin = $this->getChildrenQueryBuilder($category, false, null, 'ASC', true);
+        $qb_notin = $this->getChildrenQueryBuilder($category, false, null, 'ASC', true);
         $result_notin = $qb_notin->getQuery()->getResult();
         $not_ids = array();
         foreach ($result_notin as $key => $value) {
@@ -168,6 +168,19 @@ class CategoryRepository extends NestedTreeRepository
     public function getParentCategories($simupoll, $category)
     {
         $qb = $this->getCategoriesWithoutChildren($simupoll, $category);
+
+        return $qb->getQuery()->getArrayResult();
+    }
+
+    public function getChildOfCategory($simupoll, $category)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('c')
+            ->from('CPASimUSante\SimupollBundle\Entity\Category', 'c')
+            ->where('c.simupoll = ?1')
+            ->andWhere('c.parent = ?2')
+            ->setParameter(1, $simupoll)
+            ->setParameter(2, $category);
 
         return $qb->getQuery()->getArrayResult();
     }

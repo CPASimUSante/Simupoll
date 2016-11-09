@@ -12,7 +12,7 @@
             <td>{{ period.start.date|dateFormat }}</td>
             <td>{{ period.stop.date|dateFormat }}</td>
             <td><a class="btn btn-primary btn-sm period-modify-btn"
-                data-ng-click="vm.showEditPeriod(period)">{{ 'edit'|trans:{}:'platform' }}</a>
+                data-ng-click="vm.showEditPeriod(period)"><i class="fa fa-pencil"></i> {{ 'edit'|trans:{}:'platform' }}</a>
             </td>
             <td><a class="btn btn-danger btn-sm period-delete-btn"
                 data-ng-click="vm.showDeletePeriod(period)"><i class="fa fa-trash"></i></a>{{vm.tmp}}
@@ -20,5 +20,5 @@
         </tr>
     </table>
     <a class="btn btn-primary btn-sm period-add-btn"
-        data-ng-click="vm.showAddPeriod()"><i class="fa fa-plus"></i> {{ 'period_add'|trans:{}:'resource' }}</a>
+        data-ng-click="vm.showAddPeriod()"><i class="fa fa-plus"></i> {{ 'period_add'|trans:{}:'resource' }}</a>{{vm.periods|debug}}
 </div>

@@ -236,7 +236,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * @EXT\Route("/category/add/{sid}", name="simupoll_add_category", options = {"expose"=true})
+     * @EXT\Route("/add/{sid}", name="simupoll_add_category", options = {"expose"=true})
      * @EXT\Method("POST")
      *
      * @param Request $request
@@ -251,16 +251,18 @@ class CategoryController extends Controller
         //retrive the data passed through the AJS CategoryService
         $cid = $request->request->get('cid');
         $categoryName = $request->request->get('name', false);
+
         //create response
         $response = new JsonResponse();
+
         //test if data is ok
         if ($categoryName !== false) {
             if ($categoryName == '') {
                 $response->setData('Category is not valid');
                 $response->setStatusCode(422);
             } else {
-                $this->categoryManager->addCategory($sid, $cid, $user, $categoryName);
-                //$response->setData($category->getId());
+                $category = $this->categoryManager->addCategory($sid, $cid, $user, $categoryName);
+                $response->setData(['id'=>$category->getId(), 'name'=>$category->getIndentedName()]);
             }
         } else {
             $response->setData('Field "name" is missing');
@@ -339,6 +341,25 @@ class CategoryController extends Controller
         //$simupoll = $this->simupollManager->getSimupollById($sid);
         //$category = $this->categoryManager->getCategoryByIdAndUser($cid, $user);
         $data = $this->categoryManager->getParentCategories($simupoll, $category);
+
+        return new JsonResponse($data, 200);
+    }
+
+    /**
+     * @EXT\Route("/childof/{cid}/simupoll/{sid}", name="simupoll_childof_category", options = {"expose"=true})
+     * @EXT\ParamConverter("category", class="CPASimUSanteSimupollBundle:Category", options={"mapping": {"cid" = "id"}})
+     * @EXT\ParamConverter("simupoll", class="CPASimUSanteSimupollBundle:Simupoll", options={"mapping": {"sid" = "id"}})
+     * @EXT\Method("GET")
+     *
+     * @param int $sid
+     * @param int $cid
+     *
+     * @return JsonResponse
+     */
+    public function getChildOfCategoryAction(Category $category, Simupoll $simupoll)
+    {
+        //$this->assertCanEdit($category->getResult());
+        $data = $this->categoryManager->getChildOfCategory($simupoll, $category);
 
         return new JsonResponse($data, 200);
     }

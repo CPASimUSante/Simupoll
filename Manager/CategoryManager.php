@@ -59,6 +59,18 @@ class CategoryManager
         return $results;
     }
 
+    public function getChildofCategory($simupoll, $category)
+    {
+        $results = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
+            ->children($category);
+        $subcat = [];
+        foreach ($results as $result) {
+            $subcat[] = ['id'=>$result->getId(), 'name'=>$result->getName()];
+        }
+
+        return $subcat;
+    }
+
     public function getCategoryBySimupoll(Simupoll $simupoll)
     {
         return $this->om->createQueryBuilder()
@@ -303,6 +315,7 @@ class CategoryManager
         $newCategory->setUser($user);
         $this->om->persist($newCategory);
         $this->om->flush();
+        return $newCategory;
     }
 
     /**
