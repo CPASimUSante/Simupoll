@@ -4,6 +4,7 @@ export default class PeriodService {
         //declaration of variables
         this.$http      = $http
         this.$q         = $q
+        //this.moment     = moment
         //from PeriodController:indexAction
         this._periods   = PeriodService._getGlobal('simupollPeriods')
         this._sid       = PeriodService._getGlobal('simupollSid')
@@ -17,14 +18,13 @@ export default class PeriodService {
       return this._sid
     }
 
-    addPeriod (props, period, onFail) {
+    addPeriod (props, onFail) {
       const result = { title: props.title, start:props.start, stop:props.stop }
       const url = Routing.generate('simupoll_add_period', {
         sid: this._sid
       })
       //first, display new element, at the correct position
       this._periods.push(result)
-
       //then, do the background save
       this.$http
         //pass variables to controller
@@ -37,6 +37,7 @@ export default class PeriodService {
             onFail()
             }
         )
+
     }
 
     deletePeriod (period, onFail) {
@@ -78,8 +79,8 @@ export default class PeriodService {
       //update data
       originalPeriod.title = newTitle
       //setUTCHours(0,0,0,0) to prevent problem with timezone
-      originalPeriod.start = {'date':(new Date(newStart)).setUTCHours(0,0,0,0)}
-      originalPeriod.stop = {'date':(new Date(newStop)).setUTCHours(0,0,0,0)}
+      originalPeriod.start = newStart
+      originalPeriod.stop = newStop
 
       this.$http
         .put(url, { title: newTitle, start: newStart, stop: newStop })

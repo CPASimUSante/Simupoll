@@ -6,7 +6,8 @@ import angular from 'angular/index'
 //import classes called in dependency injection
 //for $uibModal
 import {} from 'angular-bootstrap'
-import {} from 'bootstrap-datepicker'
+import moment from 'moment/moment'
+//import {} from 'bootstrap-datepicker'
 //import {} from 'bootstrap-daterangepicker'
 
 import periodTemplate from './Partials/period.directive.html'
@@ -23,6 +24,7 @@ angular
     .service('PeriodService', [
         '$http',
         '$q',
+        // 'moment',
         periodService
     ])
     //modal management
@@ -35,10 +37,13 @@ angular
       //format date
      .filter('dateFormat', function($filter) {
           return function(input) {
-              if(input == null){ return "" }
-              return $filter('date')(new Date(input), 'dd/MM/yyyy')
-              // const _date = $filter('date')(new Date(input), 'dd/MM/yyyy')
-              // return _date.toUpperCase()
+              if (input === null){ return "" }
+console.log(input);
+              if (input.hasOwnProperty('date')){
+                  return $filter('date')(new Date(input.date), 'dd/MM/yyyy')
+              } else {
+                  return new Date(input).toISOString().split('T')[0];
+              }
           }
       })
     .controller('PeriodController', [

@@ -122,7 +122,6 @@ class PeriodController extends Controller
             $em = $this->getDoctrine()->getManager();
             $simupoll = $this->simupollManager->getSimupollById($sid);
             $newperiod = $form->getData();
-//echo '<pre>';var_dump($newperiod);echo '</pre>';
             //Add simupoll info
             $newperiod->setSimupoll($simupoll);
 
@@ -233,6 +232,7 @@ class PeriodController extends Controller
          $periodTitle = $request->request->get('title', false);
          $periodStart = $request->request->get('start', false);
          $periodStop = $request->request->get('stop', false);
+
          //create response
          $response = new JsonResponse();
          //test if data is ok
@@ -249,8 +249,9 @@ class PeriodController extends Controller
                          $response->setData('Period stop is not valid');
                          $response->setStatusCode(422);
                      } else {
-                         $this->periodManager->addPeriod($sid, $periodTitle, $periodStart, $periodStop);
-                         //$response->setData($category->getId());
+                         $period = $this->periodManager->addPeriod($sid, $periodTitle, $periodStart, $periodStop);
+                         $response->setData($period->getId());
+                         $response->setStatusCode(200);
                      }
                  }
              }

@@ -42,6 +42,15 @@ class Period
     private $stop;
 
     /**
+     * Timezone for the dates. Needed to have correct data passed between js and php.
+     * https://derickrethans.nl/storing-date-time-in-database.html
+     * @var string
+     *
+     * @ORM\Column(name="timezone", type="string", length=255)
+     */
+    private $timezone;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=255, nullable=true)
@@ -77,7 +86,10 @@ class Period
      */
     public function setStart(\DateTime $start)
     {
-        $this->start = $start;
+        //TODO : hackish !
+        $timezone = new \DateTimeZone('Europe/Paris');
+
+        $this->start = $start->setTimezone($timezone);
 
         return $this;
     }
@@ -117,6 +129,30 @@ class Period
     }
 
     /**
+     * Set timezone.
+     *
+     * @param string $timezone
+     *
+     * @return Period
+     */
+    public function setTimezone($timezone)
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    /**
+     * Get timezone.
+     *
+     * @return string
+     */
+    public function getTimezone()
+    {
+        return $this->timezone;
+    }
+
+    /**
      * Set stop.
      *
      * @param \DateTime $stop
@@ -125,7 +161,10 @@ class Period
      */
     public function setStop(\DateTime $stop)
     {
-        $this->stop = $stop;
+        //TODO : hackish !
+        $timezone = new \DateTimeZone('Europe/Paris');
+
+        $this->stop = $stop->setTimezone($timezone);
 
         return $this;
     }

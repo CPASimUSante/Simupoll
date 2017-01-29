@@ -7,7 +7,9 @@ import errorTemplate from '../../Common/Partials/modalError.html'
 export default class PeriodController {
     //no import of Angular stuff ($window, $scope…)
     constructor(PeriodService, periodModal, dateFormatFilter) {
-        this.datepickerOptions  = {langage: 'fr-FR'}
+        this.datepickerOptions  = {
+            language: 'fr'
+        }
         this.popupStart         = {}
         this.popupStop          = {}
         this.popupStart.opened  = false
@@ -44,6 +46,7 @@ export default class PeriodController {
     }
 
     doAddPeriod(form) {
+console.log(this.addedPeriod);console.log(this.currentPeriod);
         this._service.addPeriod(this.addedPeriod, this.currentPeriod, () => {
             this._modal(errorTemplate, 'period_add_failure')
         })
@@ -57,8 +60,8 @@ export default class PeriodController {
         //save original variables values
         this.editedPeriod.original = period
         this.editedPeriod.title = period.title
-        this.editedPeriod.start = new Date(period.start.date)//this._datefilter(period.start.date)
-        this.editedPeriod.stop = new Date(period.stop.date)//this._datefilter(period.stop.date)
+        this.editedPeriod.start = new Date(period.start)
+        this.editedPeriod.stop = new Date(period.stop)
         this._modal(editPeriodTemplate)
     }
 

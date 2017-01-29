@@ -38,10 +38,10 @@ class PeriodManager
     {
         return $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
             ->findOneBy(
-            array(
+            [
                 'id' => $idperiod,
                 'simupoll' => $sid,
-            ));
+            ]);
     }
 
     public function getPeriodBySimupoll(Simupoll $simupoll)
@@ -50,10 +50,23 @@ class PeriodManager
             ->select('p')
             ->from('CPASimUSante\SimupollBundle\Entity\Period', 'p')
             ->where('p.simupoll = ?1')
-            ->setParameters(array(1 => $simupoll))
+            ->setParameters([1 => $simupoll])
             ->getQuery();
+        $rawPeriods = $query->getArrayResult();
+        $periods = [];
+        foreach ($rawPeriods as $rawPeriod) {
+            //to have the correct format : 2017-01-22T23:00:00.000Z, instead of Datetime object to be used in datetimepicker
+            $start = (isset($rawPeriod['start'])) ? $rawPeriod['start']->format('Y-m-d\TH:i:s\Z') : '';
+            $stop = (isset($rawPeriod['stop'])) ? $rawPeriod['stop']->format('Y-m-d\TH:i:s\Z') : '';
 
-        return $query->getArrayResult();
+            $periods[] = [
+                'id'=>$rawPeriod['id'],
+                'start'=>$start,
+                'stop'=>$stop,
+                'title'=>$rawPeriod['title'],
+            ];
+        }
+        return $periods;
     }
 
     /**
@@ -78,7 +91,7 @@ class PeriodManager
         $now = new \DateTime();
         $now->setTime(0, 0, 0);
 
-        $periods = array();
+        $periods = [];
         $period_list = $this->om->getRepository('CPASimUSanteSimupollBundle:Period')
             ->findBySimupoll($sid);
         foreach ($period_list as $period) {
@@ -123,10 +136,14 @@ class PeriodManager
         $newPeriod->setTitle($periodTitle);
         $newPeriod->setStart(new \DateTime($periodStart));
         $newPeriod->setStop(new \DateTime($periodStop));
+
+        $newPeriod->setTimezone(date_default_timezone_get());
         //Add simupoll info
         $newPeriod->setSimupoll($simupoll);
         $this->om->persist($newPeriod);
         $this->om->flush();
+
+        return $newPeriod;
     }
 
     /**
