@@ -58,7 +58,8 @@ class SimupollManager
 
     public function getSimupollData(Simupoll $simupoll)
     {
-        $simupollData = array();
+        $simupollData = [];
+        $simupollData['qp'] = [];
         $simupollRawData = $this->om->getRepository('CPASimUSanteSimupollBundle:Simupoll')
             ->findOneById($simupoll->getId());
 
@@ -86,12 +87,12 @@ class SimupollManager
                     'mark' => $proposition->getmark(),
                 );
             }
-            $simupollData['qp'][] = array(
+            $simupollData['qp'][] = [
                 'title' => $question->getTitle(),
                 'category' => $category,
                 'id' => $question->getId(),
                 'propositions' => $props,
-            );
+            ];
         }
         $simupollData['description'] = $simupollRawData->getDescription();
 
@@ -1110,19 +1111,21 @@ class SimupollManager
              $newQuestion = new Question();
              $newQuestion->setTitle($question['title']);
              $category = $this->om->getRepository('CPASimUSanteSimupollBundle:Category')
-                 ->findById($question['category']['id']);
+                 ->findOneById($question['category']['id']);
              $newQuestion->setCategory($category);
              $newQuestion->setOrderq(1);
              $newQuestion->setSimupoll($simupoll);
              $this->om->persist($newQuestion);
 
-             foreach ($question['proposition'] as $proposition) {
-                 $newProposition = new Proposition();
-                 $newProposition->setQuestion($newQuestion);
-                 $newProposition->setChoice($proposition['choice']);
-                 $mark = (int) ($proposition['mark']);
-                 $newProposition->setMark($mark);
-                 $this->om->persist($newProposition);
+             if (isset($question['propositions'])) {
+                 foreach ($question['propositions'] as $proposition) {
+                     $newProposition = new Proposition();
+                     $newProposition->setQuestion($newQuestion);
+                     $newProposition->setChoice($proposition['choice']);
+                     $mark = (int) ($proposition['mark']);
+                     $newProposition->setMark($mark);
+                     $this->om->persist($newProposition);
+                 }
              }
          }
          $this->om->endFlushSuite();

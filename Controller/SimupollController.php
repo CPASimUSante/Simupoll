@@ -823,7 +823,7 @@ class SimupollController extends Controller
         //create response
         $response = new JsonResponse();
 
-        $error = array();
+        $error = [];
         //check for errors, server-side
         foreach ($simupolldata as $data) {
             if ($data['title'] == '') {
@@ -843,7 +843,7 @@ class SimupollController extends Controller
                 }
             }
         }
-        if ($error != array()) {
+        if ($error != []) {
             $response->setData('<ul><li>'.implode('</li><li>', $error).'</li></ul>');
             $response->setStatusCode(422);
         } else {
